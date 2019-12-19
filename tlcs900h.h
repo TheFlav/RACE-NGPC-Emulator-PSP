@@ -28,7 +28,7 @@ extern unsigned long
   gen_regsSP,   gen_regsXSSP, gen_regsXNSP;
 extern int timer0, timer1, timer2, timer3;
 extern unsigned char ldcRegs[64];
-extern int idioma;
+extern int setting_ngp_language;
 
 #define XWA0	0
 #define XBC0	1
@@ -73,5 +73,10 @@ void tlcsTI0();
 //void setErrorLog(FILE *errorlog, FILE *outputram);
 //void closeLog();
 void ngpc_run();
+#ifdef AUTO_FRAMESKIP
+void tlcs_execute(int cycles, int skipFrames);// skipFrames=how many frames to skip for each frame rendered
+#else
+void tlcs_execute(int cycles);
+#endif
 
 #endif // !defined(AFX_TLCS900H_H__41E77E01_8224_11D3_8644_00A0241D2A65__INCLUDED_)

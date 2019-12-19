@@ -33,16 +33,6 @@
 #include "StdAfx.h"
 #endif
 
-#ifdef TARGET_PSP
-#include <pspdebug.h>
-#include <pspkernel.h>
-#include <psprtc.h>
-#include <pspctrl.h>
-#include <psppower.h>
-
-#include "psp/emulate.h"
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -66,10 +56,6 @@ int contador;
 extern int gfx_hacks;
 extern int fixsoundmahjong;
 unsigned char *rasterY = get_address(0x00008035);
-
-#ifdef PSP
-void HandleStateSaving();
-#endif
 
 // ngpcdis.cpp
 //
@@ -7000,12 +6986,12 @@ inline unsigned char makeBCD(int i)
     return (upper<<4)|(i-(upper*10));
 }
 
-extern "C" int 	sceUtilityGetSystemParamInt (int id, int *value);
+//extern "C" int 	sceUtilityGetSystemParamInt (int id, int *value);
 
 void initTimezone()
 {
-#ifdef TARGET_PSP
-#define PSP_SYSTEMPARAM_ID_INT_TIMEZONE         6
+#ifdef __LIBRETRO__
+/*#define PSP_SYSTEMPARAM_ID_INT_TIMEZONE         6
 	static int tzInit=0;
 
 	if(!tzInit)
@@ -7022,7 +7008,7 @@ void initTimezone()
 		tzset ();
 	}
 #else
-	tzset();//prob need more than just this
+	tzset();//prob need more than just this*/
 #endif
 }
 
@@ -7039,11 +7025,7 @@ inline int VECT_RTCGET(unsigned int dest)
 
     time_t now;
     tm *lt;
-#ifdef TARGET_PSP
-    sceKernelLibcTime(&now);
-#else
 	now = time(NULL);
-#endif
 	initTimezone(); //make sure TZ is set up
     lt = localtime(&now);
     //int year = (lt->tm_year+1900) % 100;
@@ -9176,15 +9158,15 @@ int ngOverflow = 0;
 //#define MAX_SKIPFRAMES 2
 #endif
 
-#ifdef TARGET_PSP
-#define FIXED_FRAMESKIP (psp_options.frame_skip)
+#ifdef __LIBRETRO__
+#define FIXED_FRAMESKIP 0
 int frame=FIXED_FRAMESKIP;
 #endif
 
 #ifdef AUTO_FRAMESKIP
-inline void tlcs_execute(int cycles, int skipFrames)// skipFrames=how many frames to skip for each frame rendered
+void tlcs_execute(int cycles, int skipFrames)// skipFrames=how many frames to skip for each frame rendered
 #else
-inline void tlcs_execute(int cycles)
+void tlcs_execute(int cycles)
 #endif
 {
     int elapsed;
@@ -9204,7 +9186,9 @@ inline void tlcs_execute(int cycles)
     static unsigned int steps=1;
 #endif
 
+#ifndef __LIBRETRO__
     UpdateInputState();
+#endif
 
     while(cycles > 0)
     {
@@ -9304,10 +9288,10 @@ inline void tlcs_execute(int cycles)
 //Flavor, this auto-frameskip code is messed up
 void ngpc_run()
 {
-#ifndef TARGET_PSP
+#ifndef __LIBRETRO__
     int currTick=0,lastTick=0;
     u32 ticks_per_sec = 1000;
-#endif /* !TARGET_PSP */
+#endif /* !__LIBRETRO__ */
 
 #ifdef AUTO_FRAMESKIP
     unsigned int skipFrames=0;
@@ -9315,7 +9299,7 @@ void ngpc_run()
 
     while(m_bIsActive)  //should be some way to exit
     {
-#ifndef TARGET_PSP
+#ifndef __LIBRETRO__
 #ifndef __GP32__
         currTick = SDL_GetTicks();
 
@@ -9344,7 +9328,7 @@ void ngpc_run()
 #endif /* AUTO_FRAMESKIP */
         lastTick = currTick;
 #endif /* !__GP32 */
-#endif /* !TARGET_PSP */
+#endif /* !__LIBRETRO__ */
 
 #ifdef AUTO_FRAMESKIP
         tlcs_execute((6*1024*1024) / HOST_FPS, skipFrames);
@@ -9352,9 +9336,6 @@ void ngpc_run()
         tlcs_execute((6*1024*1024) / HOST_FPS);
 #endif
 
-#ifdef TARGET_PSP
-        HandleStateSaving();
-#endif /* TARGET_PSP */
     }
 
 #ifdef TCLS900H_PROFILING

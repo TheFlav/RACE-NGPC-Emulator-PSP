@@ -24,7 +24,7 @@ static char THIS_FILE[]=__FILE__;
 unsigned char	ngpInputState = 0;
 unsigned char	*InputByte = &ngpInputState;
 
-#ifndef TARGET_PSP
+#ifndef __LIBRETRO__
 extern SDL_Joystick *joystick;
 #endif
 #ifdef ZOOM_SUPPORT
@@ -69,7 +69,7 @@ void InitInput()
 BOOL InitInput(HWND hwnd)
 #endif
 {
-#ifndef TARGET_PSP
+#ifndef __LIBRETRO__
 #ifndef __GP32__
     keystates = PSP_GetKeyStateArray(NULL);
 #endif
@@ -94,7 +94,7 @@ BOOL InitInput(HWND hwnd)
     range.maxx = 32767;//INT_MAX;
     range.miny = -32767;//INT_MIN;
     range.maxy = 32767;//INT_MAX;
-#endif /* TARGET_PSP */
+#endif /* __LIBRETRO__ */
     return TRUE;
 }
 
@@ -107,7 +107,7 @@ extern "C"
 int zoom=0,zoomy=16;
 #endif
 
-#ifndef TARGET_PSP
+#ifndef __LIBRETRO__
 void UpdateInputState()
 {
 #ifdef __GP32__
@@ -159,7 +159,7 @@ void UpdateInputState()
 #else
     SDL_Event event;
 
-#ifdef TARGET_PSP
+#ifdef __LIBRETRO__
     while(SDL_PollEvent(&event))
     {
     }
@@ -253,7 +253,7 @@ void UpdateInputState()
 #endif
 #endif
 }
-#endif /* TARGET_PSP */
+#endif /* __LIBRETRO__ */
 
 void FreeInput()
 {

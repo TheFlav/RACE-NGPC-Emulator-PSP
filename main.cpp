@@ -10,7 +10,7 @@
 // This is the main program entry point
 //
 
-#ifndef TARGET_PSP
+#ifndef __LIBRETRO__
 #include <SDL/SDL.h>
 #include <SDL/SDL_ttf.h>
 #endif
@@ -51,13 +51,13 @@
 #ifdef __GP32__
 #include "fileio.h"
 #include "gfx.h"
-#elif !defined(TARGET_PSP)
+#elif !defined(__LIBRETRO__)
 SDL_Surface* screen = NULL;						// Main program screen
 SDL_Surface* actualScreen = NULL;						// Main program screen
 #endif
 
 extern int finscan;
-extern int idioma;
+extern int language;
 extern int tipo_consola;
 
 BOOL		m_bIsActive;
@@ -96,10 +96,10 @@ void mainemuinit()
     
     // pretend we're running in English mode
     
-    //NOTA IDIOMA 00 Ingles - 01 Jap
-    if (idioma == 0){
+    //NOTA setting_ngp_language 00 Ingles - 01 Jap
+    if (setting_ngp_language == 0){
     tlcsMemWriteB(0x00006F87,0x01);}
-    if (idioma == 1){
+    if (setting_ngp_language == 1){
     tlcsMemWriteB(0x00006F87,0x00);}    
     
     // kludges & fixes
@@ -114,7 +114,7 @@ void mainemuinit()
     //Flavor sound_start();
 }
 
-#if !defined(__GP32__) && !defined(TARGET_PSP)
+#if !defined(__GP32__) && !defined(__LIBRETRO__)
 
 void AfxMessageBox(char *a, int b, int c)
 {
@@ -455,12 +455,12 @@ int handleInputFile(char *romName)
 }
 
 
-#ifndef TARGET_PSP
+#ifndef __LIBRETRO__
 int main(int argc, char *argv[])
 {
 	char romName[512];
 
-#ifdef TARGET_PSP
+#ifdef __LIBRETRO__
     SetupCallbacks();
     scePowerSetClockFrequency(222, 222, 111);
     scePowerSetClockFrequency(266, 266, 133);
@@ -469,7 +469,7 @@ int main(int argc, char *argv[])
     if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO|SDL_INIT_JOYSTICK) < 0)
 	{
 		fprintf(stderr, "SDL_Init failed!\n");
-#ifdef TARGET_PSP
+#ifdef __LIBRETRO__
 		sceKernelExitGame();
 #endif
 		return -1;
@@ -483,7 +483,7 @@ int main(int argc, char *argv[])
 	if (actualScreen == NULL)
 	{
 		fprintf(stderr, "SDL_SetVideoMode failed!\n");
-#ifdef TARGET_PSP
+#ifdef __LIBRETRO__
 		sceKernelExitGame();
 #endif
 		return -1;
@@ -504,7 +504,7 @@ int main(int argc, char *argv[])
 	if (screen == NULL)
 	{
 		fprintf(stderr, "SDL_CreateRGBSurface failed!\n");
-#ifdef TARGET_PSP
+#ifdef __LIBRETRO__
 		sceKernelExitGame();
 #endif
 		return -1;
@@ -544,7 +544,7 @@ int main(int argc, char *argv[])
         dbg_print("Running NGPC Emulation\n");
 
         SDL_PauseAudio(0);  //run audio
-#ifdef TARGET_PSP
+#ifdef __LIBRETRO__
         switch(options[PSP_MHZ_OPTION])
         {
             case PSP_MHZ_222:
@@ -560,7 +560,7 @@ int main(int argc, char *argv[])
         }
 #endif
         ngpc_run();
-#ifdef TARGET_PSP
+#ifdef __LIBRETRO__
         scePowerSetClockFrequency(333, 333, 166);
 #endif
         SDL_PauseAudio(1);  //pause audio
@@ -569,7 +569,7 @@ int main(int argc, char *argv[])
     }
 
     //printTTF("EXITING", 10, TEXT_HEIGHT*10, white, 1);
-#ifdef TARGET_PSP
+#ifdef __LIBRETRO__
     sceKernelExitGame(); //Exit the program when it is done.
 #endif
 	return 0;

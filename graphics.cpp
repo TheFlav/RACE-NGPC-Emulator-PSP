@@ -16,16 +16,15 @@
 
 #include "StdAfx.h"
 #include "main.h"
-#ifndef TARGET_PSP
+#ifndef __LIBRETRO__
 #include "menu.h"
 #include "GP2X.h"
 #endif
 #include "graphics.h"
 #include "memory.h"
 
-#ifdef TARGET_PSP
-#include "psp/psplib/video.h"
-extern PspImage *Screen;
+#ifdef __LIBRETRO__
+extern ngp_screen* screen;
 extern int gfx_hacks;
 #endif
 
@@ -160,7 +159,7 @@ unsigned short p2[16] = {
 #define PSP_FUDGE 0//(32)  //32 is good for 480x272  -64 is for 320x240 (squish)
 #define SCREEN_OFFET (SCREEN_X_OFFSET + (SCREEN_Y_OFFSET*(screen->w+PSP_FUDGE)))//extra fudge factor for PSP?
 
-#ifndef TARGET_PSP
+#ifndef __LIBRETRO__
 #define DO_PERIODIC_FLASH_SAVES
 #define DO_FPS_DISPLAY
 #endif
@@ -182,7 +181,7 @@ void graphicsBlitEnd()
 }
 
 
-#ifdef TARGET_PSP
+#ifdef __LIBRETRO__
 void graphics_paint();
 #else
 
@@ -1065,7 +1064,7 @@ void graphicsBlitLine(unsigned char render)
             unsigned int bw = (m_emuInfo.machine == NGP);
             unsigned short OOWCol = NGPC_TO_SDL16(oowTable[*oowSelect & 0x07]);
 
-#ifndef TARGET_PSP
+#ifndef __LIBRETRO__
             SDL_LockSurface(screen);
 #endif
             if(*scanlineY == 0)
@@ -1126,7 +1125,7 @@ void graphicsBlitLine(unsigned char render)
                 lineClear(&tCBack, OOWCol);  //in 8-bit mode, this would be the index of OOWCol in the SDL palette
                 //tCBack.gbp  += SIZEX;  //Flavor, I don't get why these were here
             }
-#ifndef TARGET_PSP
+#ifndef __LIBRETRO__
             SDL_UnlockSurface(screen);
 #endif
         }
@@ -1489,8 +1488,8 @@ void myGraphicsBlitLine(unsigned char render)  //NOTA
         {
 #ifdef __GP32__
 			unsigned short* draw = &drawBuffer[*scanlineY*NGPC_SIZEX];
-#elif TARGET_PSP
-			unsigned short* draw = &drawBuffer[(*scanlineY)*(Screen->Width)];
+#elif __LIBRETRO__
+			unsigned short* draw = &drawBuffer[(*scanlineY)*(screen->w)];
 #else
 			unsigned short* draw = &drawBuffer[(*scanlineY)*(screen->w+PSP_FUDGE)];//extra fudge factor for PSP???
 #endif
@@ -1500,7 +1499,7 @@ void myGraphicsBlitLine(unsigned char render)  //NOTA
             unsigned short* pal;
             unsigned short* mempal;
 
-#if !defined(__GP32__) && !defined(TARGET_PSP)
+#if !defined(__GP32__) && !defined(__LIBRETRO__)
             SDL_LockSurface(screen);
 #endif
 
@@ -1519,7 +1518,7 @@ void myGraphicsBlitLine(unsigned char render)  //NOTA
 #endif
 			{
 
-#ifdef TARGET_PSP
+#ifdef __LIBRETRO__
 				if (((*scanlineY)&7) == 0)
 #else
 				if (options[HICOLOR_OPTION] || (!options[HICOLOR_OPTION] && ((*scanlineY)&7)==0))
@@ -1603,7 +1602,7 @@ void myGraphicsBlitLine(unsigned char render)  //NOTA
 					draw[i] = OOWCol;
 
 	        }
-#if !defined(__GP32__) && !defined(TARGET_PSP)
+#if !defined(__GP32__) && !defined(__LIBRETRO__)
             SDL_UnlockSurface(screen);
 #endif
         }
@@ -1652,10 +1651,10 @@ BOOL graphics_init(HWND phWnd)
     //put SDL setup stuff here
     //Flavor
 
-#ifdef TARGET_PSP
+#ifdef __LIBRETRO__
     palette_init = palette_init16;
     palette_init(0x001f,0x03e0,0x7c00);
-    drawBuffer = (unsigned short*)Screen->Pixels;
+    drawBuffer = (unsigned short*)screen->pixels;
 #elif __GP32__
     palette_init = palette_init16;
     palette_init(0xf800,0x07c0,0x003e);

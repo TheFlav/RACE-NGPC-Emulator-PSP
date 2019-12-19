@@ -54,7 +54,7 @@ int dacLBufferRead, dacLBufferWrite, dacLBufferCount;
 _u16 dacBufferL[DAC_BUFFERSIZE];
 int fixsoundmahjong;
 
-#if !defined(__GP32__) && !defined(TARGET_PSP)
+#if !defined(__GP32__) && !defined(__LIBRETRO__)
 
 int volume = SDL_MIX_MAXVOLUME;//SDL_MIX_MAXVOLUME / 2;
 
@@ -272,7 +272,7 @@ void sound_update(_u16* chip_buffer, int length_bytes)
 
 void WriteSoundChip(SoundChip* chip, _u8 data)
 {
-#if !defined(__GP32__) && !defined(TARGET_PSP)
+#if !defined(__GP32__) && !defined(__LIBRETRO__)
     SDL_LockAudio();
 #endif
 	//Command
@@ -382,22 +382,22 @@ void WriteSoundChip(SoundChip* chip, _u8 data)
 				break;
 		}
 	}
-#if !defined(__GP32__) && !defined(TARGET_PSP)
+#if !defined(__GP32__) && !defined(__LIBRETRO__)
     SDL_UnlockAudio();
 #endif
 }
 
 //=============================================================================
 
-//#ifdef TARGET_PSP
+//#ifdef __LIBRETRO__
 void dac_writeL(unsigned char data)
 {
     static int conv=5;
-#if !defined(__GP32__) && !defined(TARGET_PSP)
+#if !defined(__GP32__) && !defined(__LIBRETRO__)
     SDL_LockAudio();
 #endif
 
-#ifdef TARGET_PSP
+#ifdef __LIBRETRO__
     //pretend that conv=5.5 (44100/8000) conversion factor
     
     if(conv==5)
@@ -433,7 +433,7 @@ void dac_writeL(unsigned char data)
         }
     }
 
-#if !defined(__GP32__) && !defined(TARGET_PSP)
+#if !defined(__GP32__) && !defined(__LIBRETRO__)
     SDL_UnlockAudio();
 #endif
 }
@@ -460,7 +460,7 @@ void dac_writeL(unsigned char data)
 
 void dac_mixer(_u16* stream, int length_bytes)
 {
-#if !defined(__GP32__) && !defined(TARGET_PSP)
+#if !defined(__GP32__) && !defined(__LIBRETRO__)
     int length_words = length_bytes>>1;
     length_bytes &= 0xFFFFFFFE; //make sure it's 16bit safe
 
@@ -486,7 +486,7 @@ void dac_update(_u16* dac_buffer, int length_bytes)
 	while (length_bytes > 1)
 	{
 		//Copy then clear DAC data
-#ifdef TARGET_PSP
+#ifdef __LIBRETRO__
 		*(dac_buffer++) |= dacBufferL[dacLBufferRead];
 #else
 		*(dac_buffer++) = dacBufferL[dacLBufferRead];
@@ -580,7 +580,7 @@ void sound_init(int SampleRate)
 
 
 
-#ifdef TARGET_PSP
+#ifdef __LIBRETRO__
 #define NGPC_CHIP_FREQUENCY		44100
 #else
 #define NGPC_CHIP_FREQUENCY		8000
@@ -636,7 +636,7 @@ int audioCallback(unsigned short* sndBuf,int len) {
 
 #endif
 
-#ifndef TARGET_PSP
+#ifndef __LIBRETRO__
 void mixaudioCallback(void *userdata, Uint8 *stream, int len)
 {
 #ifndef __GP32__
@@ -653,18 +653,18 @@ void mixaudioCallback(void *userdata, Uint8 *stream, int len)
     }
 #endif
 }
-#endif /* TARGET_PSP */
+#endif /* __LIBRETRO__ */
 
 int sound_system_init()
 {
-#if !defined(__GP32__) && !defined(TARGET_PSP)
+#if !defined(__GP32__) && !defined(__LIBRETRO__)
     //set up SDL sound here?
     SDL_AudioSpec fmt, retFmt;
 
     fmt.freq = chip_freq;  //11025 is good for dac_ sound
     fmt.format = AUDIO_S16;
     fmt.channels = 1;
-#ifdef TARGET_PSP
+#ifdef __LIBRETRO__
     fmt.samples = 512;
 #else
     fmt.samples = 512;
@@ -691,7 +691,7 @@ int sound_system_init()
 
 
 //call this every so often to update the sound output
-void system_sound_update(void)
+void system_sound_update(int nframes)
 {
 }
 

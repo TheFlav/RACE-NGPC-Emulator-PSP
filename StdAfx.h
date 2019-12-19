@@ -9,7 +9,7 @@
 #ifndef STDAFX_H
 #define STDAFX_H
 
-#ifdef TARGET_PSP
+#ifdef __LIBRETRO__
 
 #include <stdio.h>
 
@@ -26,7 +26,7 @@
 #define TRUE  (!0)
 #define HWND void*
 
-#else /* ifdef TARGET_PSP */
+#else /* ifdef __LIBRETRO__ */
 
 #ifdef TARGET_GP2X
 
@@ -99,6 +99,6 @@ void AfxMessageBox(char *a);
 #define HWND void*
 #define BITMAP
 
-#endif /* ifdef TARGET_PSP */
+#endif /* ifdef __LIBRETRO__ */
 
 #endif //STDAFX_H

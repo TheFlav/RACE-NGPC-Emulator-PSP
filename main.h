@@ -9,7 +9,7 @@
 #include <ctype.h>
 #include <math.h>
 
-#if !defined(__GP32__) && !defined(TARGET_PSP)
+#if !defined(__GP32__) && !defined(__LIBRETRO__)
 #include "GP2X.h"
 extern SDL_Surface* screen;
 extern SDL_Surface* actualScreen;
@@ -79,7 +79,7 @@ void mainemuinit();
 #ifdef __GP32__
 #define HOST_FPS 60  //100 was what it was, originally
 #else
-#ifdef TARGET_PSP   //to call these FPS is a bit of a misnomer
+#ifdef __LIBRETRO__   //to call these FPS is a bit of a misnomer
 #define HOST_FPS 60  //the number of frames we want to draw to the host's screen every second
 #else
 #define HOST_FPS 60  //100 was what it was, originally

@@ -45,7 +45,7 @@ void soundStep(int cycles);
 void soundOutput();
 
 #define NUM_CHANNELS 32
-#if !defined(__GP32__) && !defined(PSP)
+#if !defined(__GP32__) && !defined(__LIBRETRO__)
 extern Mix_Chunk *chunks[NUM_CHANNELS];
 #endif
 

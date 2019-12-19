@@ -1,0 +1,33 @@
+LIBRETRO_COMM_DIR  = $(CORE_DIR)/libretro-common
+
+INCFLAGS = -I$(CORE_DIR)/ \
+			  -I$(CORE_DIR)/libretro
+
+ifneq (,$(findstring msvc2003,$(platform)))
+INCFLAGS += -I$(LIBRETRO_COMM_DIR)/include/compat/msvc
+endif
+
+SOURCES_CXX := $(CORE_DIR)/input.cpp \
+	$(CORE_DIR)/neopopsound.cpp \
+    $(CORE_DIR)/ngpBios.cpp \
+	$(CORE_DIR)/tlcs900h.cpp \
+	$(CORE_DIR)/memory.cpp \
+	$(CORE_DIR)/flash.cpp \
+	$(CORE_DIR)/graphics.cpp \
+    $(CORE_DIR)/main.cpp \
+	$(CORE_DIR)/state.cpp \
+	$(CORE_DIR)/sound.cpp \
+	$(CORE_DIR)/unzip.cpp \
+	$(CORE_DIR)/ioapi.cpp \
+	$(CORE_DIR)/libretro/libretro.cpp
+
+ifeq ($(DRZ80),1)
+	FLAGS += -DDRZ80
+else
+	FLAGS += -DCZ80
+	SOURCES_CXX += $(CORE_DIR)/cz80.cpp \
+	$(CORE_DIR)/cz80_support.cpp
+endif
+
+
+FLAGS += -D__LIBRETRO__ -D_MAX_PATH=2048 -DHOST_FPS=60
