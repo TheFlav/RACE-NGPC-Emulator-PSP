@@ -332,14 +332,6 @@ bool retro_load_game(const struct retro_game_info *info)
 
    environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, desc);
 
-   if (!race_initialize_system(info->path))
-      return false;
-
-   if (!race_initialize_sound())
-      return false;
-
-   check_variables();
-
    screen = (ngp_screen*)calloc(1, sizeof(*screen));
    
    if (!screen)
@@ -355,6 +347,14 @@ bool retro_load_game(const struct retro_game_info *info)
       free(screen);
       return false;
    }
+
+   if (!race_initialize_system(info->path))
+      return false;
+
+   if (!race_initialize_sound())
+      return false;
+
+   check_variables();
 
    initialized = true;
    return true;
