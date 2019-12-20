@@ -1,10 +1,29 @@
 LIBRETRO_COMM_DIR  = $(CORE_DIR)/libretro-common
+DEPS_DIR          = $(CORE_DIR)/deps
 
 INCFLAGS = -I$(CORE_DIR)/ \
 			  -I$(CORE_DIR)/libretro
 
 ifneq (,$(findstring msvc2003,$(platform)))
 INCFLAGS += -I$(LIBRETRO_COMM_DIR)/include/compat/msvc
+endif
+
+SOURCES_C := $(CORE_DIR)/unzip.c \
+	$(CORE_DIR)/ioapi.c
+
+ifneq ($(STATIC_LINKING), 1)
+SOURCES_C += $(DEPS_DIR)/zlib-1.2.8/adler32.c \
+	$(DEPS_DIR)/zlib-1.2.8/crc32.c \
+	$(DEPS_DIR)/zlib-1.2.8/inflate.c \
+	$(DEPS_DIR)/zlib-1.2.8/inftrees.c \
+	$(DEPS_DIR)/zlib-1.2.8/inffast.c \
+	$(DEPS_DIR)/zlib-1.2.8/zutil.c \
+	$(DEPS_DIR)/zlib-1.2.8/deflate.c \
+	$(DEPS_DIR)/zlib-1.2.8/gzclose.c \
+	$(DEPS_DIR)/zlib-1.2.8/gzlib.c \
+	$(DEPS_DIR)/zlib-1.2.8/gzread.c \
+	$(DEPS_DIR)/zlib-1.2.8/gzwrite.c \
+	$(DEPS_DIR)/zlib-1.2.8/trees.c 
 endif
 
 SOURCES_CXX := $(CORE_DIR)/input.cpp \
@@ -17,8 +36,6 @@ SOURCES_CXX := $(CORE_DIR)/input.cpp \
     $(CORE_DIR)/main.cpp \
 	$(CORE_DIR)/state.cpp \
 	$(CORE_DIR)/sound.cpp \
-	$(CORE_DIR)/unzip.cpp \
-	$(CORE_DIR)/ioapi.cpp \
 	$(CORE_DIR)/libretro/libretro.cpp
 
 ifeq ($(DRZ80),1)
@@ -30,4 +47,5 @@ else
 endif
 
 
-FLAGS += -D__LIBRETRO__ -D_MAX_PATH=2048 -DHOST_FPS=60
+FLAGS += -D__LIBRETRO__ -D_MAX_PATH=2048 -DHOST_FPS=60 
+CXXFLAGS += -fpermissive
