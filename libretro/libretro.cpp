@@ -27,7 +27,7 @@ static retro_input_state_t input_state_cb;
 #define RACE_GEOMETRY_BASE_H 152
 #define RACE_GEOMETRY_MAX_W 160
 #define RACE_GEOMETRY_MAX_H 152
-#define RACE_GEOMETRY_ASPECT_RATIO (20.0 / 19.0)
+#define RACE_GEOMETRY_ASPECT_RATIO 1.05
 
 #define FB_WIDTH 160
 #define FB_HEIGHT 152
@@ -36,7 +36,7 @@ static retro_input_state_t input_state_cb;
 static int RETRO_SAMPLE_RATE = 44100;
 
 static int RETRO_PIX_BYTES = 2;
-static int RETRO_PIX_DEPTH = 15;
+static int RETRO_PIX_DEPTH = 16;
 
 ngp_screen* screen;
 int setting_ngp_language;
@@ -180,8 +180,7 @@ void retro_deinit(void)
 void retro_set_environment(retro_environment_t cb)
 {
    static const struct retro_variable vars[] = {
-      { "handy_rot", "Display rotation; None|90|270" },
-      { "handy_gfx_colors", "Color Depth (Restart); 16bit|24bit" },
+      { "ngp_language", "Language; japanese|english" },
       { NULL, NULL },
    };
 
@@ -292,6 +291,27 @@ void retro_run(void)
    race_input();
 
    tlcs_execute((6*1024*1024) / HOST_FPS);
+
+   static int16_t sampleBuffer[2048];
+   static int16_t stereoBuffer[2048];
+   /* Get the number of samples in a frame */
+   uint16_t samplesPerFrame = RETRO_SAMPLE_RATE
+      / HOST_FPS;
+
+   memset(sampleBuffer, 0, samplesPerFrame * sizeof(int16_t));
+
+   sound_update(sampleBuffer, samplesPerFrame * sizeof(int16_t)); //Get sound data
+   dac_update(sampleBuffer, samplesPerFrame * sizeof(int16_t));
+
+   int16_t        *p        = stereoBuffer;
+   for (int i = 0; i < samplesPerFrame; i++)
+   {
+      p[0] = sampleBuffer[i];
+      p[1] = sampleBuffer[i];
+      p += 2;
+   }
+   
+   audio_batch_cb(stereoBuffer, samplesPerFrame);
 
    bool updated = false;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
