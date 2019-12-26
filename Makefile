@@ -157,7 +157,14 @@ else ifeq ($(platform),vita)
 	CC = arm-vita-eabi-gcc$(EXE_EXT)
 	CXX = arm-vita-eabi-g++$(EXE_EXT)
 	AR = arm-vita-eabi-ar$(EXE_EXT)
+	AS = arm-vita-eabi-as$(EXE_EXT)
 	FLAGS += -DVITA -DLSB_FIRST
+	FLAGS += -marm -mcpu=cortex-a9 -mfloat-abi=hard
+	FLAGS += -Wall -mword-relocations
+	FLAGS += -fomit-frame-pointer -ffast-math
+	FLAGS += -mword-relocations -fno-unwind-tables -fno-asynchronous-unwind-tables 
+	FLAGS += -ftree-vectorize -fno-optimize-sibling-calls
+	ASFLAGS += -mcpu=cortex-a9
 	STATIC_LINKING := 1
 	LIBS :=
 
@@ -515,7 +522,7 @@ CORE_DIR := .
 
 include Makefile.common
 
-OBJECTS := $(SOURCES_CXX:.cpp=.o) $(SOURCES_C:.c=.o)
+OBJECTS := $(SOURCES_CXX:.cpp=.o) $(SOURCES_C:.c=.o) $(SOURCES_ASM:.s=.o)
 
 ifeq ($(DEBUG),1)
 FLAGS += -O0
