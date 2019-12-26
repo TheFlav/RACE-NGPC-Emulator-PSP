@@ -715,8 +715,8 @@ void printTlcs900hProfile()
 // XWA3, XBC3, XDE3, XHL3,    12,13,14,15
 // XIX,  XIY,  XIZ,  XSP      16,17,18,19 XNSP = Normal Stack Pointer
 // PC,   SR,   XSSP, XNSP     20,21,22,23 XSSP = System Stack Pointer, XSP = current stack pointer
-//unsigned long gen_regs[24];
-unsigned long gen_regsXWA0, gen_regsXBC0, gen_regsXDE0, gen_regsXHL0, gen_regsXWA1,
+//uint32_t gen_regs[24];
+uint32_t gen_regsXWA0, gen_regsXBC0, gen_regsXDE0, gen_regsXHL0, gen_regsXWA1,
 gen_regsXBC1, gen_regsXDE1, gen_regsXHL1, gen_regsXWA2, gen_regsXBC2,
 gen_regsXDE2, gen_regsXHL2, gen_regsXWA3, gen_regsXBC3, gen_regsXDE3,
 gen_regsXHL3, gen_regsXIX, gen_regsXIY, gen_regsXIZ, gen_regsXSP,
@@ -725,13 +725,13 @@ gen_regsSP, gen_regsXSSP, gen_regsXNSP;
 #ifdef TARGET_GP2X
 //it's defined in StdAfx.h
 #ifndef GENREGSPC_AS_REG
-unsigned long gen_regsPC;
+uint32_t gen_regsPC;
 #endif
 #ifndef GENREGSSR_AS_REG
-unsigned long gen_regsSR;
+uint32_t gen_regsSR;
 #endif
 #else
-unsigned long gen_regsPC, gen_regsSR;
+uint32_t gen_regsPC, gen_regsSR;
 //#define gen_regsSRb ((unsigned char *)&gen_regsSR)[0]//lsbyte of gen_regsSR
 #endif
 
@@ -740,18 +740,18 @@ unsigned char __attribute__ ((__aligned__(4))) ldcRegs[64];
 
 // declare struct for easy access to flags of flag register
 //struct SR0 {
-// unsigned long C0:1;
-// unsigned long N0:1;
-// unsigned long V0:1;
-// unsigned long dummy0:1;
-// unsigned long H0:1;
-// unsigned long dummy1:1;
-// unsigned long Z0:1;
-// unsigned long S0:1;
-// unsigned long RFP0:3;
-// unsigned long MAXM0:1;
-// unsigned long IFF0:3;
-// unsigned long SYSM0:1;
+// uint32_t C0:1;
+// uint32_t N0:1;
+// uint32_t V0:1;
+// uint32_t dummy0:1;
+// uint32_t H0:1;
+// uint32_t dummy1:1;
+// uint32_t Z0:1;
+// uint32_t S0:1;
+// uint32_t RFP0:3;
+// uint32_t MAXM0:1;
+// uint32_t IFF0:3;
+// uint32_t SYSM0:1;
 //};
 // lower byte of SR: F
 //#define C ((*(struct SR0 *)(&gen_regsSR)).C0)
@@ -792,8 +792,8 @@ unsigned char *cregsB[8];
 unsigned short *allregsW[256];
 unsigned short *cregsW[8];
 // pointers to all register(parts) that could be accessed in long mode
-unsigned long *allregsL[256];
-unsigned long *cregsL[8];
+uint32_t *allregsL[256];
+uint32_t *cregsL[8];
 
 // number of states passed and the number of states until a new interrupt should occur
 // 1 state = 100ns at 20 MHz
@@ -815,10 +815,10 @@ unsigned char interruptPendingLevel;
 unsigned char pendingInterrupts[7][INT_QUEUE_MAX];
 
 // used during decoding of instructions, will hold the arguments for the operands
-unsigned long mem;
+uint32_t mem;
 unsigned char *regB, memB;
 unsigned short *regW, memW;
-unsigned long *regL, memL;
+uint32_t *regL, memL;
 
 // used during instruction decode
 // lastbyte - to keep track of the last read byte; used when extra information is stored in the
@@ -837,44 +837,44 @@ int  debugIndex, debugCount;
 int  memoryCycles;
 
 
-inline unsigned char mem_readB(unsigned long addr)
+inline unsigned char mem_readB(uint32_t addr)
 {
     if (addr > 0x200000)
         memoryCycles++;
     return tlcsMemReadB(addr);
 }
 
-inline unsigned short mem_readW(unsigned long addr)
+inline unsigned short mem_readW(uint32_t addr)
 {
     if (addr > 0x200000)
         memoryCycles+=2;
     return tlcsMemReadW(addr);
 }
 
-inline unsigned long mem_readL(unsigned long addr)
+inline uint32_t mem_readL(uint32_t addr)
 {
     if (addr > 0x200000)
         memoryCycles+=4;
     return tlcsMemReadL(addr);
 }
 
-inline void mem_writeB(unsigned long addr, unsigned char data)
+inline void mem_writeB(uint32_t addr, unsigned char data)
 {
     // if (addr > 0x200000) memoryCycles++;
     tlcsMemWriteB(addr, data);
 }
 
-inline void tlcsFastMemWriteB(unsigned long addr,unsigned char data)
+inline void tlcsFastMemWriteB(uint32_t addr,unsigned char data)
 {
     //Flavor:  I think we're getting carried away with this addr&0xFFFFFF junk.  It's all over, now.  :(
 	mainram[((addr&0xFFFFFF)-0x00004000)] = data;
 }
 
-inline void tlcsFastMemWriteW(unsigned long addr, unsigned short data)
+inline void tlcsFastMemWriteW(uint32_t addr, unsigned short data)
 {
     //Flavor:  I think we're getting carried away with this addr&0xFFFFFF junk.  It's all over, now.  :(
     unsigned char*ram = mainram+((addr&0xFFFFFF)-0x00004000);
-    if (((unsigned long)ram)&0x1)
+    if (((uint32_t)ram)&0x1)
     {
         *(ram++) = data;
         *(ram) = data>>8;
@@ -883,11 +883,11 @@ inline void tlcsFastMemWriteW(unsigned long addr, unsigned short data)
         *((unsigned short*)ram) = data;
 }
 
-inline void tlcsFastMemWriteL(unsigned long addr, unsigned long data)
+inline void tlcsFastMemWriteL(uint32_t addr, uint32_t data)
 {
     //Flavor:  I think we're getting carried away with this addr&0xFFFFFF junk.  It's all over, now.  :(
     unsigned char*ram = mainram+((addr&0xFFFFFF)-0x00004000);
-    if (((unsigned long)ram)&0x3)
+    if (((uint32_t)ram)&0x3)
     {
         *(ram++) = data;
         *(ram++) = data>>8;
@@ -895,7 +895,7 @@ inline void tlcsFastMemWriteL(unsigned long addr, unsigned long data)
         *ram     = data>>24;
     }
     else
-        *((unsigned long*)ram) = data;
+        *((uint32_t*)ram) = data;
 }
 
 
@@ -956,7 +956,7 @@ inline void tlcsMemWriteBaddrB(unsigned char addr, unsigned char data)
 
 
 // write a word (data) to a memory address (addr)
-inline void tlcsMemWriteW(unsigned long addr, unsigned short data)
+inline void tlcsMemWriteW(uint32_t addr, unsigned short data)
 {
     //Flavor:  I think we're getting carried away with this addr&0xFFFFFF junk.  It's all over, now.  :(
     if ((addr&0xFFFFFF)>0x00003fff && (addr&0xFFFFFF)<0x00018000)
@@ -971,7 +971,7 @@ inline void tlcsMemWriteW(unsigned long addr, unsigned short data)
 }
 
 // write a word (data) to a memory address (addr)
-inline void tlcsMemWriteWaddrB(unsigned long addr, unsigned short data)
+inline void tlcsMemWriteWaddrB(uint32_t addr, unsigned short data)
 {
     tlcsMemWriteBaddrB(addr, data & 0xFF);
     tlcsMemWriteBaddrB(addr+1, data >> 8);
@@ -979,13 +979,13 @@ inline void tlcsMemWriteWaddrB(unsigned long addr, unsigned short data)
 
 
 #define mem_writeW tlcsMemWriteW
-/*inline void mem_writeW(unsigned long addr, unsigned short data) {
+/*inline void mem_writeW(uint32_t addr, unsigned short data) {
 // if (addr > 0x200000) memoryCycles+= 2;
  tlcsMemWriteW(addr, data);
 }*/
 
 // write a long word (data) to a memory address (addr)
-inline void tlcsMemWriteL(unsigned long addr, unsigned long data)
+inline void tlcsMemWriteL(uint32_t addr, uint32_t data)
 {
     //Flavor:  I think we're getting carried away with this addr&0xFFFFFF junk.  It's all over, now.  :(
     addr&=0xFFFFFF;
@@ -1003,7 +1003,7 @@ inline void tlcsMemWriteL(unsigned long addr, unsigned long data)
 }
 
 #define mem_writeL tlcsMemWriteL
-/*inline void mem_writeL(unsigned long addr, unsigned long data) {
+/*inline void mem_writeL(uint32_t addr, uint32_t data) {
 // if (addr > 0x200000) memoryCycles+= 4;
  tlcsMemWriteL(addr, data);
 }*/
@@ -1074,7 +1074,7 @@ inline unsigned char readbyteSetLastbyte()
     register unsigned short j;
 
     gen_regsPC+= 2;
-    if((unsigned long)my_pc & 0x01)   //not word aligned
+    if((uint32_t)my_pc & 0x01)   //not word aligned
     {
         i=*(my_pc++);
         lastbyte = *(my_pc++);
@@ -1127,7 +1127,7 @@ inline unsigned short readword()
 
     gen_regsPC+= 2;
 
-    if((unsigned long)my_pc & 0x01)   //not word aligned
+    if((uint32_t)my_pc & 0x01)   //not word aligned
     {
         i = *(my_pc++);
         i |= (*(my_pc++) << 8);
@@ -1179,10 +1179,10 @@ inline unsigned short readwordSetLastbyte()
 #else
 
     register unsigned short i;
-    register unsigned long j;
+    register uint32_t j;
 
     gen_regsPC+= 3;
-    if((unsigned long)my_pc & 0x03)   //not dword aligned
+    if((uint32_t)my_pc & 0x03)   //not dword aligned
     {
         i = *(my_pc++);
         i |= (*(my_pc++) << 8);
@@ -1192,7 +1192,7 @@ inline unsigned short readwordSetLastbyte()
     }
     else
     {
-        j = *((unsigned long *)my_pc);
+        j = *((uint32_t *)my_pc);
 
         lastbyte = j>>16;//let "them" do the &0xFF
 
@@ -1211,10 +1211,10 @@ if it's 1, we read a byte and then a word
 
 Or, we could just read a dword and forget about the MSB
 */
-inline unsigned long read24()
+inline uint32_t read24()
 {
 #ifdef TARGET_GP2X
-    register unsigned long __val asm("r0");//%0 and r0 are the same, now
+    register uint32_t __val asm("r0");//%0 and r0 are the same, now
 
 #ifdef GENREGSPC_AS_REG
 
@@ -1255,10 +1255,10 @@ inline unsigned long read24()
     return __val;
 #else
 
-    register unsigned long i;
+    register uint32_t i;
 
     gen_regsPC+= 3;
-    if((unsigned long)my_pc & 0x03)   //not dword aligned
+    if((uint32_t)my_pc & 0x03)   //not dword aligned
     {
         i = *(my_pc++);
         i |= (*(my_pc++) << 8);
@@ -1267,7 +1267,7 @@ inline unsigned long read24()
     }
     else
     {
-        i = *((unsigned long*)my_pc) & 0x00FFFFFF;
+        i = *((uint32_t*)my_pc) & 0x00FFFFFF;
         my_pc+=3;
         return i;
     }
@@ -1276,10 +1276,10 @@ inline unsigned long read24()
 #endif
 }
 
-inline unsigned long read24SetLastbyte()
+inline uint32_t read24SetLastbyte()
 {
 #ifdef TARGET_GP2X
-    register unsigned long __val asm("r0");//%0 and r0 are the same, now
+    register uint32_t __val asm("r0");//%0 and r0 are the same, now
 
 #ifdef GENREGSPC_AS_REG
 
@@ -1324,10 +1324,10 @@ inline unsigned long read24SetLastbyte()
     return __val;
 #else
 
-    register unsigned long i;
+    register uint32_t i;
 
     gen_regsPC+= 4;
-    if((unsigned long)my_pc & 0x03)   //not dword aligned
+    if((uint32_t)my_pc & 0x03)   //not dword aligned
     {
         i = *(my_pc++);
         i |= (*(my_pc++) << 8);
@@ -1337,7 +1337,7 @@ inline unsigned long read24SetLastbyte()
     }
     else
     {
-        i = *((unsigned long*)my_pc);
+        i = *((uint32_t*)my_pc);
         lastbyte = i >> 24;
         i &= 0x00FFFFFF;
 
@@ -1349,10 +1349,10 @@ inline unsigned long read24SetLastbyte()
 #endif
 }
 
-inline unsigned long readlong()
+inline uint32_t readlong()
 {
 #ifdef TARGET_GP2X
-    register unsigned long __val asm("r0");//%0 and r0 are the same, now
+    register uint32_t __val asm("r0");//%0 and r0 are the same, now
 
 #ifdef GENREGSPC_AS_REG
 
@@ -1391,10 +1391,10 @@ inline unsigned long readlong()
     return __val;
 #else
 
-    register unsigned long i;
+    register uint32_t i;
 
     gen_regsPC+= 4;
-    if((unsigned long)my_pc & 0x03)   //not dword aligned
+    if((uint32_t)my_pc & 0x03)   //not dword aligned
     {
         i = *(my_pc++);
         i |= (*(my_pc++) << 8);
@@ -1404,7 +1404,7 @@ inline unsigned long readlong()
     }
     else
     {
-        i = *((unsigned long*)my_pc);
+        i = *((uint32_t*)my_pc);
         my_pc+=4;
         return i;
     }
@@ -1787,13 +1787,13 @@ int ldMR30L()
 }
 int ld8I()
 {
-    unsigned long num8 = readbyte();
+    uint32_t num8 = readbyte();
     tlcsMemWriteBaddrB(num8,readbyte());
     return 5;
 }
 int ldw8I()
 {
-    unsigned long num8 = readbyte();
+    uint32_t num8 = readbyte();
     tlcsMemWriteWaddrB(num8,readword());
     return 6;
 }
@@ -2589,9 +2589,9 @@ inline unsigned short MyAddW(unsigned short i, unsigned short j)
     return i;
 }
 
-inline unsigned long MyAddL(unsigned long i, unsigned long j)
+inline uint32_t MyAddL(uint32_t i, uint32_t j)
 {
-    unsigned long oldi = i;
+    uint32_t oldi = i;
 
     i+= j;
     gen_regsSR = gen_regsSR & ~(SF|ZF|HF|VF|NF|CF);
@@ -2711,10 +2711,10 @@ inline unsigned short MyAdcW(unsigned short i, unsigned short j)
     return i;
 }
 
-inline unsigned long MyAdcL(unsigned long i, unsigned long j)
+inline uint32_t MyAdcL(uint32_t i, uint32_t j)
 {
-    unsigned long oldi = i;
-    unsigned long oldC = gen_regsSR & CF;
+    uint32_t oldi = i;
+    uint32_t oldC = gen_regsSR & CF;
 
     i+= j + oldC;
     gen_regsSR = gen_regsSR & ~(SF|ZF|HF|VF|NF|CF);
@@ -2855,10 +2855,10 @@ inline unsigned short MySubW(unsigned short i, unsigned short j)
 #endif
 }
 
-inline unsigned long MySubL(unsigned long i, unsigned long j)
+inline uint32_t MySubL(uint32_t i, uint32_t j)
 {
 #if 1//speed hack
-    unsigned long oldi = i;
+    uint32_t oldi = i;
 
     i-= j;
 	gen_regsSR &= ~(SF|ZF|HF|VF|NF|CF);
@@ -2869,7 +2869,7 @@ inline unsigned long MySubL(unsigned long i, unsigned long j)
 				 NF;
     return i;
 #else
-    unsigned long oldi = i;
+    uint32_t oldi = i;
 
     i-= j;
     gen_regsSR = gen_regsSR & ~(SF|ZF|HF|VF|NF|CF);
@@ -2989,10 +2989,10 @@ inline unsigned short MySbcW(unsigned short i, unsigned short j)
     return i;
 }
 
-inline unsigned long MySbcL(unsigned long i, unsigned long j)
+inline uint32_t MySbcL(uint32_t i, uint32_t j)
 {
-    unsigned long oldi = i;
-    unsigned long oldC = gen_regsSR & CF;
+    uint32_t oldi = i;
+    uint32_t oldC = gen_regsSR & CF;
 
     i = i - j - oldC;
     gen_regsSR = gen_regsSR & ~(SF|ZF|HF|VF|NF|CF);
@@ -3166,7 +3166,7 @@ int cpwMI10()
 
 int inc3rB() // INC #3,r    11001rrr 01100xxx
 {
-    unsigned long oldC = gen_regsSR & CF;
+    uint32_t oldC = gen_regsSR & CF;
 
     *regB = MyAddB(*regB,((lastbyte&7) ? (lastbyte&7) : 8));
     gen_regsSR = (gen_regsSR & ~CF) | oldC;
@@ -3187,7 +3187,7 @@ int inc3rL() // INC #3,r    11101rrr 01100xxx
 
 int inc3M00() // INC #3,(mem)   10000mmm 01100xxx
 {
-    unsigned long oldC = gen_regsSR & CF;
+    uint32_t oldC = gen_regsSR & CF;
 
     mem_writeB(mem,MyAddB(memB,((lastbyte&7) ? (lastbyte&7) : 8)));
     gen_regsSR = (gen_regsSR & ~CF) | oldC;
@@ -3196,7 +3196,7 @@ int inc3M00() // INC #3,(mem)   10000mmm 01100xxx
 
 int incw3M10() // INCW #3,(mem)  10010mmm 01100xxx
 {
-    unsigned long oldC = gen_regsSR & CF;
+    uint32_t oldC = gen_regsSR & CF;
 
     mem_writeW(mem,MyAddW(memW,((lastbyte&7) ? (lastbyte&7) : 8)));
     gen_regsSR = (gen_regsSR & ~CF) | oldC;
@@ -3209,7 +3209,7 @@ int incw3M10() // INCW #3,(mem)  10010mmm 01100xxx
 
 int dec3rB() // DEC #3,r    11001rrr 01101xxx
 {
-    unsigned long oldC = gen_regsSR & CF;
+    uint32_t oldC = gen_regsSR & CF;
 
     *regB = MySubB(*regB,((lastbyte&7) ? (lastbyte&7) : 8));
     gen_regsSR = (gen_regsSR & ~CF) | oldC;
@@ -3230,7 +3230,7 @@ int dec3rL() // DEC #3,r    11101rrr 01101xxx
 
 int dec3M00() // DEC #3,(mem)   10000mmm 01101xxx
 {
-    unsigned long oldC = gen_regsSR & CF;
+    uint32_t oldC = gen_regsSR & CF;
 
     mem_writeB(mem,MySubB(memB,((lastbyte&7) ? (lastbyte&7) : 8)));
     gen_regsSR = (gen_regsSR & ~CF) | oldC;
@@ -3239,7 +3239,7 @@ int dec3M00() // DEC #3,(mem)   10000mmm 01101xxx
 
 int decw3M10() // DECW #3,(mem)  10010mmm 01101xxx
 {
-    unsigned long oldC = gen_regsSR & CF;
+    uint32_t oldC = gen_regsSR & CF;
 
     mem_writeW(mem,MySubW(memW,((lastbyte&7) ? (lastbyte&7) : 8)));
     gen_regsSR = (gen_regsSR & ~CF) | oldC;
@@ -3336,7 +3336,7 @@ inline void parityW(unsigned short j)
 #endif
 }
 
-inline void parityL(unsigned long j)
+inline void parityL(uint32_t j)
 {
 #ifdef USE_PARITY_TABLE //speed hack
     gen_regsSR = (gen_regsSR & ~VF) | (parityVtable[(j>>24)&0xFF] ^ parityVtable[(j>>16)&0xFF] ^ parityVtable[(j>>8)&0xFF] ^ parityVtable[j&0xFF]);
@@ -3484,7 +3484,7 @@ int mulrIB() // MUL rr,#    11001rrr 00001000 xxxxxxxx
 
 int mulrIW() // MUL rr,#    11011rrr 00001000 xxxxxxxx xxxxxxxx
 {
-    *((unsigned long *)regW) = (*regW) * readword();
+    *((uint32_t *)regW) = (*regW) * readword();
     return 26;
 }
 
@@ -3531,7 +3531,7 @@ int mulsrIB() // MULS rr,#    11001rrr 00001001 xxxxxxxx
 
 int mulsrIW() // MULS rr,#    11011rrr 00001001 xxxxxxxx xxxxxxxx
 {
-    *((unsigned long *)regW) = (signed short)(*regW) * (signed short)readword();
+    *((uint32_t *)regW) = (signed short)(*regW) * (signed short)readword();
     return 26;
 }
 
@@ -3643,7 +3643,7 @@ int divrIW() // DIV rr,#    11011rrr 00001010 xxxxxxxx xxxxxxxx
 {
     unsigned short i = readword();
 
-    *((unsigned long *)regW) = myDivW(*(unsigned long *)regW, i);
+    *((uint32_t *)regW) = myDivW(*(uint32_t *)regW, i);
     return 30;
 }
 
@@ -3710,7 +3710,7 @@ int divsRrB() // DIVS RR,r    11001rrr 01011RRR
 
 int divsRrW() // DIVS RR,r    11011rrr 01011RRR
 {
-    *cregsL[lastbyte&7] = myDivsW((signed long)(*cregsL[lastbyte&7]), (signed short)(*regW));
+    *cregsL[lastbyte&7] = myDivsW((int32_t)(*cregsL[lastbyte&7]), (signed short)(*regW));
     return 32;
 }
 
@@ -3733,7 +3733,7 @@ int divsrIW() // DIVS rr,#    11011rrr 00001011 xxxxxxxx xxxxxxxx
 {
     signed short i = readword();
 
-    *((unsigned long *)regW) = myDivsW((*(signed long *)regW), i);
+    *((uint32_t *)regW) = myDivsW((*(int32_t *)regW), i);
     return 32;
 }
 
@@ -3749,7 +3749,7 @@ int divsRMW10() // DIVS RR,(mem)  10010mmm 01011RRR
 {
     signed short i = memW;
 
-    *cregsL[lastbyte&7] = myDivsW((signed long)(*cregsL[lastbyte&7]), i);
+    *cregsL[lastbyte&7] = myDivsW((int32_t)(*cregsL[lastbyte&7]), i);
     return 32;
 }
 
@@ -3759,10 +3759,10 @@ int divsRMW10() // DIVS RR,(mem)  10010mmm 01011RRR
 
 int mular() // MULA rr     11011rrr 00011001
 {
-    unsigned long *p;
+    uint32_t *p;
 
     p = cregsL[opcode&7];
-    *p+= (signed long)(((signed short)mem_readW(*cregsL[2]))*((signed short)mem_readW(*cregsL[3])));
+    *p+= (int32_t)(((signed short)mem_readW(*cregsL[2]))*((signed short)mem_readW(*cregsL[3])));
     *cregsL[3]-=2; // XHL
     gen_regsSR = gen_regsSR & ~(SF|ZF|VF);
     gen_regsSR = gen_regsSR |
@@ -3865,7 +3865,7 @@ unsigned short MyAndW(unsigned short i, unsigned short j)
     return i;
 }
 
-unsigned long MyAndL(unsigned long i, unsigned long j)
+uint32_t MyAndL(uint32_t i, uint32_t j)
 {
     i&= j;
     gen_regsSR = gen_regsSR & ~(SF|ZF|HF|VF|NF|CF);
@@ -3979,7 +3979,7 @@ inline unsigned short MyOrW(unsigned short i, unsigned short j)
     return i;
 }
 
-inline unsigned long MyOrL(unsigned long i, unsigned long j)
+inline uint32_t MyOrL(uint32_t i, uint32_t j)
 {
     i|= j;
     gen_regsSR = gen_regsSR & ~(SF|ZF|HF|VF|NF|CF);
@@ -4093,7 +4093,7 @@ inline unsigned short MyXorW(unsigned short i, unsigned short j)
     return i;
 }
 
-inline unsigned long MyXorL(unsigned long i, unsigned long j)
+inline uint32_t MyXorL(uint32_t i, uint32_t j)
 {
     i^= j;
     gen_regsSR = gen_regsSR & ~(SF|ZF|HF|VF|NF|CF);
@@ -4674,7 +4674,7 @@ int ldf() // LDF #3     00010111 00000xxx
 
 int incf() // INCF      00001100
 {
-    unsigned long i = gen_regsSR & 0x0700;
+    uint32_t i = gen_regsSR & 0x0700;
 
     i = (i + 0x0100) & 0x0700;
     // for MAX mode
@@ -4686,7 +4686,7 @@ int incf() // INCF      00001100
 
 int decf() // DECF      00001101
 {
-    unsigned long i = gen_regsSR & 0x0700;
+    uint32_t i = gen_regsSR & 0x0700;
 
     i = (i - 0x0100) & 0x0700;
     // for MAX mode
@@ -4874,7 +4874,7 @@ int ldccrW()
 }
 int ldccrL()
 {
-    *((unsigned long *)&ldcRegs[readbyte()]) = *regL;
+    *((uint32_t *)&ldcRegs[readbyte()]) = *regL;
     return 8;
 }
 int ldcrcB()
@@ -4889,7 +4889,7 @@ int ldcrcW()
 }
 int ldcrcL()
 {
-    *regL = *((unsigned long *)&ldcRegs[readbyte()]);
+    *regL = *((uint32_t *)&ldcRegs[readbyte()]);
     return 8;
 }
 int ldx()  // LDX (#8),#   11110111 00000000 xxxxxxxx 00000000 xxxxxxxx 00000000
@@ -4960,7 +4960,7 @@ inline unsigned short MyRlcW(unsigned short i, unsigned char nr)
     return i;
 }
 
-inline unsigned long MyRlcL(unsigned long i, unsigned char nr)
+inline uint32_t MyRlcL(uint32_t i, unsigned char nr)
 {
     nr = ((nr) ? nr : 16);
     for(;nr>0;nr--)
@@ -5079,7 +5079,7 @@ unsigned short MyRrcW(unsigned short i, unsigned char nr)
     return i;
 }
 
-unsigned long MyRrcL(unsigned long i, unsigned char nr)
+uint32_t MyRrcL(uint32_t i, unsigned char nr)
 {
     nr = ((nr) ? nr : 16);
     for(;nr>0;nr--)
@@ -5201,7 +5201,7 @@ unsigned short MyRlW(unsigned short i, unsigned char nr)
     return i;
 }
 
-unsigned long MyRlL(unsigned long i, unsigned char nr)
+uint32_t MyRlL(uint32_t i, unsigned char nr)
 {
     nr = ((nr) ? nr : 16);
     for(;nr>0;nr--)
@@ -5325,7 +5325,7 @@ unsigned short MyRrW(unsigned short i, unsigned char nr)
     return i;
 }
 
-unsigned long MyRrL(unsigned long i, unsigned char nr)
+uint32_t MyRrL(uint32_t i, unsigned char nr)
 {
     nr = ((nr) ? nr : 16);
     for(;nr>0;nr--)
@@ -5439,7 +5439,7 @@ unsigned short MySlaW(unsigned short i, unsigned char nr)
     return i;
 }
 
-unsigned long MySlaL(unsigned long i, unsigned char nr)
+uint32_t MySlaL(uint32_t i, unsigned char nr)
 {
     nr = ((nr) ? nr : 16);
     for(;nr>0;nr--)
@@ -5548,7 +5548,7 @@ inline unsigned short MySraW(unsigned short i, unsigned char nr)
     return i;
 }
 
-inline unsigned long MySraL(unsigned long i, unsigned char nr)
+inline uint32_t MySraL(uint32_t i, unsigned char nr)
 {
     nr = ((nr) ? nr : 16);
     for(;nr>0;nr--)
@@ -5696,7 +5696,7 @@ inline unsigned short MySrlW(unsigned short i, unsigned char nr)
     return i;
 }
 
-inline unsigned long MySrlL(unsigned long i, unsigned char nr)
+inline uint32_t MySrlL(uint32_t i, unsigned char nr)
 {
     nr = ((nr) ? nr : 16);
     for(;nr>0;nr--)
@@ -6411,7 +6411,7 @@ int jpccM30F() // JP cc,mem
 
 int call16() // CALL #16    00011100 xxxxxxxx xxxxxxxx
 {
-    unsigned long address = readword();
+    uint32_t address = readword();
 
     tlcsFastMemWriteL(gen_regsXSP-=4,gen_regsPC);
     my_pc = get_address(gen_regsPC = address);
@@ -6420,7 +6420,7 @@ int call16() // CALL #16    00011100 xxxxxxxx xxxxxxxx
 
 int call24() // CALL #24    00011101 xxxxxxxx xxxxxxxx xxxxxxxx
 {
-    unsigned long address = read24();
+    uint32_t address = read24();
 
     tlcsFastMemWriteL(gen_regsXSP-=4,gen_regsPC);
     my_pc = get_address(gen_regsPC = address);
@@ -6890,7 +6890,7 @@ int reti()  // RETI     00000111
 {
 #ifdef TARGET_GP2X
     register byte *gA asm("r4");
-    register unsigned long localXSP = gen_regsXSP;
+    register uint32_t localXSP = gen_regsXSP;
 
     gA = get_address(localXSP);
     localXSP += 6;
@@ -8641,7 +8641,7 @@ void tlcs_reinit()
     //saved_my_pc = my_pc;
 }
 
-/*int check_pc(unsigned long addr)
+/*int check_pc(uint32_t addr)
 {
  if (gen_regsPC==addr) return 1;
  else     return 0;
@@ -8732,14 +8732,14 @@ void tlcs_interrupt_wrapper(int irq)
     tlcs_interrupt(irq);
 }
 
-#define DMAS0 ((unsigned long *)&ldcRegs[0x00])
-#define DMAS1 ((unsigned long *)&ldcRegs[0x04])
-#define DMAS2 ((unsigned long *)&ldcRegs[0x08])
-#define DMAS3 ((unsigned long *)&ldcRegs[0x0C])
-#define DMAD0 ((unsigned long *)&ldcRegs[0x10])
-#define DMAD1 ((unsigned long *)&ldcRegs[0x14])
-#define DMAD2 ((unsigned long *)&ldcRegs[0x18])
-#define DMAD3 ((unsigned long *)&ldcRegs[0x1C])
+#define DMAS0 ((uint32_t *)&ldcRegs[0x00])
+#define DMAS1 ((uint32_t *)&ldcRegs[0x04])
+#define DMAS2 ((uint32_t *)&ldcRegs[0x08])
+#define DMAS3 ((uint32_t *)&ldcRegs[0x0C])
+#define DMAD0 ((uint32_t *)&ldcRegs[0x10])
+#define DMAD1 ((uint32_t *)&ldcRegs[0x14])
+#define DMAD2 ((uint32_t *)&ldcRegs[0x18])
+#define DMAD3 ((uint32_t *)&ldcRegs[0x1C])
 #define DMAC0 ((unsigned short *)&ldcRegs[0x20])
 #define DMAC1 ((unsigned short *)&ldcRegs[0x24])
 #define DMAC2 ((unsigned short *)&ldcRegs[0x28])
@@ -8754,7 +8754,7 @@ void tlcs_interrupt_wrapper(int irq)
 #define DMA3V cpuram[0x7F]
 
 // handle DMA
-inline void tlcsDMAchannel(unsigned char *mode, unsigned long *src, unsigned long *dest, unsigned short *count, unsigned char *vector, int channel)
+inline void tlcsDMAchannel(unsigned char *mode, uint32_t *src, uint32_t *dest, unsigned short *count, unsigned char *vector, int channel)
 {
     switch (*mode)
     {

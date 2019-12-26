@@ -42,9 +42,9 @@ Other
 unsigned char manufID = 0x98;   //we're always Toshiba!
 unsigned char deviceID = 0x2F;
 unsigned char cartSize = 32;
-unsigned long bootBlockStartAddr = 0x1F0000;
+uint32_t bootBlockStartAddr = 0x1F0000;
 unsigned char bootBlockStartNum = 31;
-//unsigned long cartAddrMask = 0x3FFFFF;
+//uint32_t cartAddrMask = 0x3FFFFF;
 
 //with selector, I get
 //writeSaveGameFile: Couldn't open Battery//mnt/sd/Games/race/ChryMast.ngf file
@@ -63,13 +63,13 @@ typedef struct NGFheaderStruct
 {
 	unsigned short version;		//always 0x53?
 	unsigned short numBlocks;	//how many blocks are in the file
-	unsigned long fileLen;		//length of the file
+	uint32_t fileLen;		//length of the file
 } ;
 
 typedef struct blockStruct
 {
-	unsigned long NGPCaddr;  //where this block starts (in NGPC memory map)
-	unsigned long len;  // length of following data
+	uint32_t NGPCaddr;  //where this block starts (in NGPC memory map)
+	uint32_t len;  // length of following data
 } ;
 
 #define MAX_BLOCKS 35 //a 16m chip has 35 blocks (SA0-SA34)
@@ -121,13 +121,13 @@ void setupFlashParams()
     }
 }
 
-unsigned char blockNumFromAddr(unsigned long addr)
+unsigned char blockNumFromAddr(uint32_t addr)
 {
     addr &= 0x1FFFFF/* & cartAddrMask*/;
 
     if(addr >= bootBlockStartAddr)
     {
-        unsigned long bootAddr = addr-bootBlockStartAddr;
+        uint32_t bootAddr = addr-bootBlockStartAddr;
         //boot block is 32k, 8k, 8k, 16k (0x8000,0x2000,0x2000,0x4000)
         if(bootAddr < 0x8000)
             return (bootBlockStartAddr / 0x10000);
@@ -146,9 +146,9 @@ unsigned char blockNumFromAddr(unsigned long addr)
     return addr / 0x10000;
 }
 
-unsigned long blockNumToAddr(unsigned char chip, unsigned char blockNum)
+uint32_t blockNumToAddr(unsigned char chip, unsigned char blockNum)
 {
-    unsigned long addr;
+    uint32_t addr;
 
     if(blockNum >= bootBlockStartNum)
     {
@@ -175,7 +175,7 @@ unsigned long blockNumToAddr(unsigned char chip, unsigned char blockNum)
 	return addr;
 }
 
-unsigned long blockSize(unsigned char blockNum)
+uint32_t blockSize(unsigned char blockNum)
 {
     if(blockNum >= bootBlockStartNum)
     {
@@ -423,7 +423,7 @@ void loadSaveGameFile()
 	/*
 	unsigned short version;		//always 0x53?
 	unsigned short numBlocks;	//how many blocks are in the file
-	unsigned long fileLen;		//length of the file
+	uint32_t fileLen;		//length of the file
 	*/
 
 	if(NGFheader.version != 0x53)
@@ -498,7 +498,7 @@ void loadSaveGameFile()
 #endif
 }
 
-void flashWriteByte(unsigned long addr, unsigned char data, unsigned char operation)
+void flashWriteByte(uint32_t addr, unsigned char data, unsigned char operation)
 {
     //addr &= cartAddrMask;  //the stuff gets mirrored to the higher slots.
 
@@ -535,7 +535,7 @@ void flashWriteByte(unsigned long addr, unsigned char data, unsigned char operat
 		mainrom[addr] &= data;		//actually writing data
 }
 
-unsigned char flashReadInfo(unsigned long addr)
+unsigned char flashReadInfo(uint32_t addr)
 {
     currentWriteCycle = 1;
     currentCommand = COMMAND_INFO_READ;
@@ -554,7 +554,7 @@ unsigned char flashReadInfo(unsigned long addr)
     }
 }
 
-void flashChipWrite(unsigned long addr, unsigned char data)
+void flashChipWrite(uint32_t addr, unsigned char data)
 {
 #ifdef DEBUG_FLASH
     if(debugFile != NULL)
@@ -739,8 +739,8 @@ void vectFlashErase(unsigned char chip, unsigned char blockNum)
         blockNum = totalBlocks-1;*/
 
     //this needs to be modified to take into account boot block areas (less than 64k)
-    unsigned long blockAddr = blockNumToAddr(chip, blockNum);
-	unsigned long numBytes = blockSize(blockNum);
+    uint32_t blockAddr = blockNumToAddr(chip, blockNum);
+	uint32_t numBytes = blockSize(blockNum);
 
 #ifdef DEBUG_FLASH
     if(debugFile != NULL)
@@ -768,7 +768,7 @@ void vectFlashChipErase(unsigned char chip)
 #endif
 }
 
-void setFlashSize(unsigned long romSize)
+void setFlashSize(uint32_t romSize)
 {
     //add individual hacks here.
     if(strncmp((const char *)&mainrom[0x24], "DELTA WARP ", 11)==0)//delta warp

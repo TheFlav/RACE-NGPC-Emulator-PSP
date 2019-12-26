@@ -17,9 +17,9 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-extern unsigned long gen_regsPC, gen_regsSR;
+extern uint32_t gen_regsPC, gen_regsSR;
 extern unsigned char F2;
-extern unsigned long
+extern uint32_t
   gen_regsXWA0, gen_regsXBC0, gen_regsXDE0, gen_regsXHL0,
   gen_regsXWA1, gen_regsXBC1, gen_regsXDE1, gen_regsXHL1,
   gen_regsXWA2, gen_regsXBC2, gen_regsXDE2, gen_regsXHL2,
@@ -64,7 +64,7 @@ int tlcs_step();
 // execute interrupt
 void tlcs_interrupt_wrapper(int irq);
 // check PC
-//int check_pc(unsigned long addr);
+//int check_pc(uint32_t addr);
 // input from TI0
 void tlcsTI0();
 //

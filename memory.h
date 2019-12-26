@@ -34,22 +34,22 @@
 extern unsigned char mainram[];			// All RAM areas
 extern unsigned char mainrom[];			// ROM image area
 extern unsigned char cpurom[];			// Bios ROM image area
-//extern unsigned long cartAddrMask;					// Mask for reading/writing mainrom
+//extern uint32_t cartAddrMask;					// Mask for reading/writing mainrom
 
 /// tlcs 900h memory
 //extern unsigned char	cpuram[];		// 900h cpu core needs this..
 extern unsigned char *cpuram;
-unsigned char tlcsMemReadB(unsigned long addr);
-unsigned short tlcsMemReadW(unsigned long addr);
-unsigned long tlcsMemReadL(unsigned long addr);
-void tlcsMemWriteB(unsigned long addr, unsigned char data);
-void tlcsMemWriteW(unsigned long addr, unsigned short data);
-void tlcsMemWriteL(unsigned long addr, unsigned long data);
+unsigned char tlcsMemReadB(uint32_t addr);
+unsigned short tlcsMemReadW(uint32_t addr);
+uint32_t tlcsMemReadL(uint32_t addr);
+void tlcsMemWriteB(uint32_t addr, unsigned char data);
+void tlcsMemWriteW(uint32_t addr, unsigned short data);
+void tlcsMemWriteL(uint32_t addr, uint32_t data);
 void mem_init();
 void mem_dump_ram(FILE *output);
 
-//unsigned char *get_address(unsigned long addr);
-//unsigned char *get_addressW(unsigned long addr);
+//unsigned char *get_address(uint32_t addr);
+//unsigned char *get_addressW(uint32_t addr);
 
 /// gameboy memory
 
@@ -155,20 +155,20 @@ extern void (*sm85MemWriteB)(unsigned short addr, unsigned char data);
 
 extern unsigned char realBIOSloaded;
 
-inline unsigned char *get_address(unsigned long addr)
+inline unsigned char *get_address(uint32_t addr)
 {
 	addr&= 0x00FFFFFF;
 	if (addr<0x00200000)
 	{
 		if (addr<0x000008a0)
 		{
-		    //if(((unsigned long)&cpuram[addr] >> 24) == 0xFF)
+		    //if(((uint32_t)&cpuram[addr] >> 24) == 0xFF)
             //    dbg_print("1) addr=0x%X returning=0x%X\n", addr, &cpuram[addr]);
 			return &cpuram[addr];
 		}
 		if (addr>0x00003fff && addr<0x00018000)
         {
-            //if((unsigned long)&mainram[addr-0x00004000] >> 24 == 0xFF)
+            //if((uint32_t)&mainram[addr-0x00004000] >> 24 == 0xFF)
             //    dbg_print("2) addr=0x%X returning=0x%X\n", addr, &mainram[addr-0x00004000]);
 
             switch (addr)  //Thanks Koyote
@@ -211,7 +211,7 @@ inline unsigned char *get_address(unsigned long addr)
             return 0;
 		}
 
-        //if((unsigned long)&cpurom[addr-0x00ff0000] >> 24 == 0xFF)
+        //if((uint32_t)&cpurom[addr-0x00ff0000] >> 24 == 0xFF)
         //   dbg_print("5) addr=0x%X returning=0x%X\n", addr, &cpurom[addr-0x00ff0000]);
 
         return &cpurom[addr-0x00ff0000];
@@ -221,7 +221,7 @@ inline unsigned char *get_address(unsigned long addr)
 	return 0;  //Flavor ERROR
 }
 
-/*inline unsigned char *get_addressW(unsigned long addr)
+/*inline unsigned char *get_addressW(uint32_t addr)
 {
 	addr&= 0x00FFFFFF;
 	if (addr<0x00200000)
@@ -243,7 +243,7 @@ inline unsigned char *get_address(unsigned long addr)
 }*/
 
 // read a byte from a memory address (addr)
-inline unsigned char tlcsMemReadB(unsigned long addr)
+inline unsigned char tlcsMemReadB(uint32_t addr)
 {
 	addr&= 0x00FFFFFF;
 
@@ -301,7 +301,7 @@ inline unsigned char tlcsMemReadB(unsigned long addr)
 }
 
 // read a word from a memory address (addr)
-inline unsigned short tlcsMemReadW(unsigned long addr)
+inline unsigned short tlcsMemReadW(uint32_t addr)
 {
 #ifdef TARGET_GP2X
 	register unsigned short i asm("r0");
@@ -339,10 +339,10 @@ inline unsigned short tlcsMemReadW(unsigned long addr)
 
 
 // read a long word from a memory address (addr)
-inline unsigned long tlcsMemReadL(unsigned long addr)
+inline uint32_t tlcsMemReadL(uint32_t addr)
 {
 #ifdef TARGET_GP2X
-	register unsigned long i asm("r0");
+	register uint32_t i asm("r0");
 	register byte *gA asm("r4");
 
 	gA = get_address(addr);
@@ -364,7 +364,7 @@ inline unsigned long tlcsMemReadL(unsigned long addr)
 
     return i;
 #else
-	unsigned long i;
+	uint32_t i;
 	byte *gA = get_address(addr);
 
     if(gA == 0)
@@ -381,7 +381,7 @@ inline unsigned long tlcsMemReadL(unsigned long addr)
 }
 
 // write a byte (data) to a memory address (addr)
-inline void tlcsMemWriteB(unsigned long addr, unsigned char data)
+inline void tlcsMemWriteB(uint32_t addr, unsigned char data)
 {
 	addr&= 0x00FFFFFF;
     if (addr<0x000008a0)

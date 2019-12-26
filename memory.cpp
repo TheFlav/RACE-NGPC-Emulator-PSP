@@ -330,7 +330,7 @@ const unsigned char ngpInterruptCode[] = {
 	0x0E,					// RET
 };
 
-const unsigned long ngpVectors[0x21] = {
+const uint32_t ngpVectors[0x21] = {
 	0x00FFF800, 0x00FFF000, 0x00FFF800, 0x00FFF801,	// 00, 04, 08, 0C
 	0x00FFF80A, 0x00FFF813, 0x00FFF81C, 0x00FFF800,	// 10, 14, 18, 1C
 	0x00FFF800, 0x00FFF800, 0x00FFF825, 0x00FFF82E, // 20, 24, 28, 2C
@@ -390,7 +390,7 @@ void mem_init()
                 cpurom[0xe001 + 0x40 * i] = 0x1a;
                 cpurom[0xe002 + 0x40 * i] = i;
                 cpurom[0xe003 + 0x40 * i] = 0x0e;
-                *((unsigned long *)(&cpurom[0xfe00 + 4*i])) = (unsigned long)0x00ffe000 + 0x40 * i;
+                *((uint32_t *)(&cpurom[0xfe00 + 4*i])) = (uint32_t)0x00ffe000 + 0x40 * i;
             }
 
             // setup SWI 1 code & vector
@@ -410,14 +410,14 @@ void mem_init()
             cpurom[x] = 0xB4; x++; cpurom[x] = 0xE8; x++;		// call XIX
             cpurom[x] = 0x5C; x++;								// pop XIX
             cpurom[x] = 0x07; x++;								// reti
-            *((unsigned long *)(&cpurom[0xff04])) = (unsigned long)0x00fff000;
+            *((uint32_t *)(&cpurom[0xff04])) = (uint32_t)0x00fff000;
             // setup interrupt code
             for(i=0; i<sizeof(ngpInterruptCode); i++) {
                 cpurom[0xf800+i] = ngpInterruptCode[i];
             }
             // setup interrupt vectors
             for(i=0; i<sizeof(ngpVectors)/4; i++) {
-                *((unsigned long *)(&cpurom[0xff00+4*i])) = ngpVectors[i];
+                *((uint32_t *)(&cpurom[0xff00+4*i])) = ngpVectors[i];
             }
 
             // setup the additional CPU ram
@@ -433,7 +433,7 @@ void mem_init()
 
 			// setup interrupt vectors in RAM
 			for(i=0; i<18; i++) {
-				*((unsigned long *)(&mainram[0x2FB8+4*i])) = (unsigned long)0x00FFF800;
+				*((uint32_t *)(&mainram[0x2FB8+4*i])) = (uint32_t)0x00FFF800;
 			}
             mainram[0x6F80-0x4000] = 0xFF; //Lots of battery power!
             mainram[0x6F81-0x4000] = 0x03;
@@ -466,7 +466,7 @@ void mem_init()
 			{
 				// setup interrupt vectors in RAM
 				for(i=0; i<18; i++) {
-					*((unsigned long *)(&mainram[0x2FB8+4*i])) = (unsigned long)0x00FFF800;
+					*((uint32_t *)(&mainram[0x2FB8+4*i])) = (uint32_t)0x00FFF800;
 				}
 			}*/
 

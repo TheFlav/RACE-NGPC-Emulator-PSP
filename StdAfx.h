@@ -39,12 +39,12 @@
 #define GENREGSSR_AS_REG  //comment out to do it as a regular mem loc
 
 register unsigned char *my_pc asm ("r9");
-register unsigned long opcode asm ("r6");
+register uint32_t opcode asm ("r6");
 #ifdef GENREGSPC_AS_REG
-register unsigned long gen_regsPC asm("r8");
+register uint32_t gen_regsPC asm("r8");
 #endif
 #ifdef GENREGSSR_AS_REG
-register unsigned long gen_regsSR asm("r7");
+register uint32_t gen_regsSR asm("r7");
 #endif
 #endif
 
