@@ -23,7 +23,7 @@ extern "C" {
 #endif
 
 #ifndef s8
-#define s8              char
+#define s8              signed char
 #endif
 
 #ifndef u16
@@ -31,7 +31,7 @@ extern "C" {
 #endif
 
 #ifndef s16
-#define s16             short
+#define s16             signed short
 #endif
 
 #ifndef u32
@@ -39,7 +39,7 @@ extern "C" {
 #endif
 
 #ifndef s32
-#define s32             int
+#define s32             signed int
 #endif
 
 //#define CZ80_FASTCALL   __fastcall
