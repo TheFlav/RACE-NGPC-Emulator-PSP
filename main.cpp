@@ -83,8 +83,10 @@ void mainemuinit()
     // initialize the TLCS-900H cpu
     tlcs_init();
 
-#if defined(DRZ80) || defined(CZ80)
+#if defined(CZ80)
 	Z80_Init();
+#endif
+#if defined(DRZ80) || defined(CZ80)
     Z80_Reset();
 #else
     z80Init();

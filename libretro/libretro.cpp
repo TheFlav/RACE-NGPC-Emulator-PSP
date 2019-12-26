@@ -1,4 +1,5 @@
 #include "libretro.h"
+#include "log.h"
 #include <string.h>
 #include <fstream>
 
@@ -137,10 +138,8 @@ static void check_variables(void)
 }
 void retro_init(void)
 {
-   struct retro_log_callback log;
-   environ_cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &log);
-   if (log.log)
-      log_cb = log.log;
+   /* set up some logging */
+   init_log(environ_cb);
 
    check_variables();
 
@@ -250,8 +249,10 @@ static bool race_initialize_system(const char* gamepath)
 {
    mainemuinit();
 
-   if(!handleInputFile((char *)gamepath))
-    return false;
+   if(!handleInputFile((char *)gamepath)){
+      handle_error("ERROR handleInputFile");
+      return false;
+   }
 
    return true;
 }
