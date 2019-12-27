@@ -1653,7 +1653,7 @@ BOOL graphics_init(HWND phWnd)
 
 #ifdef __LIBRETRO__
     palette_init = palette_init16;
-    palette_init(0xf800,0x07c0,0x003e);
+    palette_init(0xf800,0x7e0,0x1f);
     drawBuffer = (unsigned short*)screen->pixels;
 #elif __GP32__
     palette_init = palette_init16;
