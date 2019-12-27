@@ -21,13 +21,13 @@
 
 extern unsigned char currentCommand;//what command are we currently on (if any)
 
-void flashChipWrite(uint32_t addr, unsigned char data);
+void flashChipWrite(unsigned int addr, unsigned char data);
 void vectFlashWrite(unsigned char chip, unsigned int to, unsigned char *fromAddr, unsigned int numBytes);
 void vectFlashErase(unsigned char chip, unsigned char blockNum);
 void vectFlashChipErase(unsigned char chip);
-void setFlashSize(uint32_t romSize);
+void setFlashSize(unsigned int romSize);
 void flashShutdown();
-unsigned char flashReadInfo(uint32_t addr);
+unsigned char flashReadInfo(unsigned int addr);
 
 
 extern unsigned char needToWriteFile;
