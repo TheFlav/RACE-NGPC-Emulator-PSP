@@ -52,8 +52,8 @@ char retro_save_directory[2048];
 struct map { unsigned retro; unsigned ngp; };
 
 static map btn_map[] = {
-   { RETRO_DEVICE_ID_JOYPAD_A, 0x10 },
-   { RETRO_DEVICE_ID_JOYPAD_B, 0x20 },
+   { RETRO_DEVICE_ID_JOYPAD_A, 0x20 },
+   { RETRO_DEVICE_ID_JOYPAD_B, 0x10 },
    { RETRO_DEVICE_ID_JOYPAD_RIGHT, 0x08 },
    { RETRO_DEVICE_ID_JOYPAD_LEFT, 0x04 },
    { RETRO_DEVICE_ID_JOYPAD_UP, 0x01 },
