@@ -47,6 +47,8 @@ int tipo_consola;
 static bool newFrame = false;
 static bool initialized = false;
 
+char retro_save_directory[2048];
+
 struct map { unsigned retro; unsigned ngp; };
 
 static map btn_map[] = {
@@ -140,6 +142,12 @@ void retro_init(void)
 {
    /* set up some logging */
    init_log(environ_cb);
+
+   char *dir = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY, &dir) && dir)
+      sprintf(retro_save_directory, "%s%c", dir, path_default_slash_c());
+
+   printf("%s\n",retro_save_directory);
 
    check_variables();
 
@@ -321,17 +329,17 @@ void retro_run(void)
 
 size_t retro_serialize_size(void)
 {
-   return 0;
+   return state_get_size();
 }
 
 bool retro_serialize(void *data, size_t size)
 {
-   return false;
+   return state_store_mem(data);
 }
 
 bool retro_unserialize(const void *data, size_t size)
 {
-   return false;
+   return state_restore_mem(data);
 }
 
 bool retro_load_game(const struct retro_game_info *info)

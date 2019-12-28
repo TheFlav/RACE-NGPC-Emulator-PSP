@@ -48,10 +48,15 @@ unsigned char bootBlockStartNum = 31;
 
 //with selector, I get
 //writeSaveGameFile: Couldn't open Battery//mnt/sd/Games/race/ChryMast.ngf file
-#ifdef __GP32__
-#define SAVEGAME_DIR "dev0:\\GPMM\\NGPC\\BATTERY\\"
+#ifdef __LIBRETRO__
+extern char retro_save_directory[2048];
+#define SAVEGAME_DIR retro_save_directory
 #else
-#define SAVEGAME_DIR "states/"
+ #ifdef __GP32__
+  #define SAVEGAME_DIR "dev0:\\GPMM\\NGPC\\BATTERY\\"
+ #else
+  #define SAVEGAME_DIR "states/"
+ #endif
 #endif
 
 unsigned char currentWriteCycle = 1;  //can be 1 through 6
@@ -212,7 +217,7 @@ void setupNGFfilename()
 
     while(pos>=0)
     {
-        if(m_emuInfo.RomFileName[pos] == '/')
+        if(m_emuInfo.RomFileName[pos] == path_default_slash_c())
         {
             slashSpot = pos;
             break;

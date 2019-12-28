@@ -12,6 +12,7 @@
 #ifdef __LIBRETRO__
 
 #include <stdio.h>
+#include <stdint.h>
 
 #define DWORD unsigned int
 #define byte unsigned char
@@ -26,7 +27,18 @@
 #define TRUE  (!0)
 #define HWND void*
 
+#ifdef _WIN32
+#define path_default_slash() "\\"
+#define path_default_slash_c() '\\'
+#else
+#define path_default_slash() "/"
+#define path_default_slash_c() '/'
+#endif
+
 #else /* ifdef __LIBRETRO__ */
+
+#define path_default_slash() "/"
+#define path_default_slash_c() '/'
 
 #ifdef TARGET_GP2X
 
