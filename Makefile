@@ -167,6 +167,7 @@ else ifeq ($(platform),vita)
 	ASFLAGS += -mcpu=cortex-a9
 	STATIC_LINKING := 1
 	LIBS :=
+	DRZ80:=1
 
 # Nintendo Game Cube
 else ifeq ($(platform), ngc)

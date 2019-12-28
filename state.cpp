@@ -15,6 +15,9 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "cz80.h"
+#ifdef DRZ80
+#include "DrZ80_support.h"
+#endif
 #include "neopopsound.h"
 
 #include <string.h>
@@ -47,10 +50,13 @@ struct race_state_0x11
 	u32 gpr[23];
 
   /* Z80 Registers */
+#ifdef CZ80
   cz80_struc RACE_cz80_struc;
   u32 PC_offset;
   s32 Z80_ICount;
-
+#elif DRZ80
+  Z80_Regs Z80;
+#endif
   /* Sound */
   int sndCycles;
   SoundChip toneChip;
@@ -80,10 +86,14 @@ struct race_state_0x10 /* Older state format */
 	u8 f_dash;
 	u32 gpr[23];
  
-  //Z80 Registers
+   //Z80 Registers
+#ifdef CZ80
   cz80_struc RACE_cz80_struc;
   u32 PC_offset;
   s32 Z80_ICount;
+#elif DRZ80
+  Z80_Regs Z80;
+#endif
  
   //Sound Chips
   int sndCycles;
@@ -157,6 +167,7 @@ static int state_store(race_state_t *rs)
   rs->gpr[i++] = gen_regsXNSP;
 
   /* Z80 Registers */
+  #ifdef CZ80
   extern cz80_struc *RACE_cz80_struc;
   extern s32 Z80_ICount;
   int size_of_z80 = 
@@ -164,6 +175,10 @@ static int state_store(race_state_t *rs)
   memcpy(&rs->RACE_cz80_struc, RACE_cz80_struc, size_of_z80);
   rs->Z80_ICount = Z80_ICount;
   rs->PC_offset = Cz80_Get_PC(RACE_cz80_struc);
+  #elif DRZ80
+  extern Z80_Regs Z80;
+  memcpy(&rs->Z80, &Z80, sizeof(Z80));
+  #endif
 
   /* Sound */
   extern int sndCycles;
@@ -226,6 +241,7 @@ static int state_restore(race_state_t *rs)
   gen_regsXNSP = rs->gpr[i++];
 
   /* Z80 Registers */
+#ifdef CZ80
   extern cz80_struc *RACE_cz80_struc;
   extern s32 Z80_ICount;
   int size_of_z80 = 
@@ -234,6 +250,10 @@ static int state_restore(race_state_t *rs)
   memcpy(RACE_cz80_struc, &rs->RACE_cz80_struc, size_of_z80);
   Z80_ICount = rs->Z80_ICount;
   Cz80_Set_PC(RACE_cz80_struc, rs->PC_offset);
+#elif DRZ80
+  extern Z80_Regs Z80;
+  memcpy(&Z80, &rs->Z80, sizeof(Z80));
+#endif
 
   /* Sound */
   extern int sndCycles;
@@ -385,17 +405,22 @@ static int state_restore_0x10(FILE *stream)
   gen_regsSP = rs.gpr[i++];
   gen_regsXSSP = rs.gpr[i++];
   gen_regsXNSP = rs.gpr[i++];
- 
+
   //Z80 Registers
+  #ifdef CZ80
   extern cz80_struc *RACE_cz80_struc;
   extern s32 Z80_ICount;
   int size_of_z80 = 
     (u32)(&(RACE_cz80_struc->CycleSup)) - (u32)(&(RACE_cz80_struc->BC));
- 
+  
   memcpy(RACE_cz80_struc, &rs.RACE_cz80_struc, size_of_z80);
   Z80_ICount = rs.Z80_ICount;
   Cz80_Set_PC(RACE_cz80_struc, rs.PC_offset);
- 
+  #elif DRZ80
+  extern Z80_Regs Z80;
+  memcpy(&Z80, &rs.Z80, sizeof(Z80));
+  #endif
+
   //Sound Chips
   extern int sndCycles;
   sndCycles = rs.sndCycles;
