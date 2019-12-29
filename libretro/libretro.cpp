@@ -86,7 +86,7 @@ static void check_variables(void)
 {
    struct retro_variable var = {0};
 
-   var.key = "ngp_language";
+   var.key = "race_language";
    var.value = NULL;
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -98,7 +98,7 @@ static void check_variables(void)
          setting_ngp_language = 1;
    }
 
-   var.key = "ngp_sound_sample_rate";
+   var.key = "race_sound_sample_rate";
    var.value = NULL;
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -187,7 +187,7 @@ void retro_deinit(void)
 void retro_set_environment(retro_environment_t cb)
 {
    static const struct retro_variable vars[] = {
-      { "ngp_language", "Language; japanese|english" },
+      { "race_language", "Language; japanese|english" },
       { NULL, NULL },
    };
 
