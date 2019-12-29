@@ -11,6 +11,7 @@
 #include "../tlcs900h.h"
 #include "../memory.h"
 #include "../graphics.h"
+#include "../neopopsound.h"
 
 static retro_log_printf_t log_cb;
 static retro_video_refresh_t video_cb;
