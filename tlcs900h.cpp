@@ -874,7 +874,7 @@ inline void tlcsFastMemWriteW(unsigned int addr, unsigned short data)
 {
     //Flavor:  I think we're getting carried away with this addr&0xFFFFFF junk.  It's all over, now.  :(
     unsigned char*ram = mainram+((addr&0xFFFFFF)-0x00004000);
-    if (((unsigned int)ram)&0x1)
+    if ((*(unsigned int*)ram)&0x1)
     {
         *(ram++) = data;
         *(ram) = data>>8;
@@ -887,7 +887,7 @@ inline void tlcsFastMemWriteL(unsigned int addr, unsigned int data)
 {
     //Flavor:  I think we're getting carried away with this addr&0xFFFFFF junk.  It's all over, now.  :(
     unsigned char*ram = mainram+((addr&0xFFFFFF)-0x00004000);
-    if (((unsigned int)ram)&0x3)
+    if ((*(unsigned int*)ram)&0x3)
     {
         *(ram++) = data;
         *(ram++) = data>>8;
@@ -1074,7 +1074,7 @@ inline unsigned char readbyteSetLastbyte()
     register unsigned short j;
 
     gen_regsPC+= 2;
-    if((unsigned int)my_pc & 0x01)   //not word aligned
+    if(*(unsigned int*)my_pc & 0x01)   //not word aligned
     {
         i=*(my_pc++);
         lastbyte = *(my_pc++);
@@ -1127,7 +1127,7 @@ inline unsigned short readword()
 
     gen_regsPC+= 2;
 
-    if((unsigned int)my_pc & 0x01)   //not word aligned
+    if(*(unsigned int*)my_pc & 0x01)   //not word aligned
     {
         i = *(my_pc++);
         i |= (*(my_pc++) << 8);
@@ -1182,7 +1182,7 @@ inline unsigned short readwordSetLastbyte()
     register unsigned int j;
 
     gen_regsPC+= 3;
-    if((unsigned int)my_pc & 0x03)   //not dword aligned
+    if(*(unsigned int*)my_pc & 0x03)   //not dword aligned
     {
         i = *(my_pc++);
         i |= (*(my_pc++) << 8);
@@ -1258,7 +1258,7 @@ inline unsigned int read24()
     register unsigned int i;
 
     gen_regsPC+= 3;
-    if((unsigned int)my_pc & 0x03)   //not dword aligned
+    if(*(unsigned int*)my_pc & 0x03)   //not dword aligned
     {
         i = *(my_pc++);
         i |= (*(my_pc++) << 8);
@@ -1327,7 +1327,7 @@ inline unsigned int read24SetLastbyte()
     register unsigned int i;
 
     gen_regsPC+= 4;
-    if((unsigned int)my_pc & 0x03)   //not dword aligned
+    if(*(unsigned int*)my_pc & 0x03)   //not dword aligned
     {
         i = *(my_pc++);
         i |= (*(my_pc++) << 8);
@@ -1394,7 +1394,7 @@ inline unsigned int readlong()
     register unsigned int i;
 
     gen_regsPC+= 4;
-    if((unsigned int)my_pc & 0x03)   //not dword aligned
+    if(*(unsigned int*)my_pc & 0x03)   //not dword aligned
     {
         i = *(my_pc++);
         i |= (*(my_pc++) << 8);
