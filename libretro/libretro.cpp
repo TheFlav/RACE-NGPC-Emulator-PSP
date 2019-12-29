@@ -311,8 +311,8 @@ void retro_run(void)
 
    memset(sampleBuffer, 0, samplesPerFrame * sizeof(int16_t));
 
-   sound_update(sampleBuffer, samplesPerFrame * sizeof(int16_t)); //Get sound data
-   dac_update(sampleBuffer, samplesPerFrame * sizeof(int16_t));
+   sound_update((unsigned short*)sampleBuffer, samplesPerFrame * sizeof(int16_t)); //Get sound data
+   dac_update((unsigned short*)sampleBuffer, samplesPerFrame * sizeof(int16_t));
 
    int16_t        *p        = stereoBuffer;
    for (int i = 0; i < samplesPerFrame; i++)
@@ -341,7 +341,8 @@ bool retro_serialize(void *data, size_t size)
 
 bool retro_unserialize(const void *data, size_t size)
 {
-   return state_restore_mem(data);
+   int ret = state_restore_mem((void*)data);
+   return (ret == 1);
 }
 
 bool retro_load_game(const struct retro_game_info *info)
