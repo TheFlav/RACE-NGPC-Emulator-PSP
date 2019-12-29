@@ -64,14 +64,14 @@ unsigned char currentCommand = NO_COMMAND;
 
 #define FLASH_VALID_ID  0x0053
 
-typedef struct NGFheaderStruct
+struct NGFheaderStruct
 {
 	unsigned short version;		//always 0x53?
 	unsigned short numBlocks;	//how many blocks are in the file
 	unsigned int fileLen;		//length of the file
 } ;
 
-typedef struct blockStruct
+struct blockStruct
 {
 	unsigned int NGPCaddr;  //where this block starts (in NGPC memory map)
 	unsigned int len;  // length of following data

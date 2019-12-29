@@ -1,7 +1,6 @@
 #include "libretro.h"
 #include "log.h"
 #include <string.h>
-#include <fstream>
 
 #include "../StdAfx.h"
 #include "../state.h"
