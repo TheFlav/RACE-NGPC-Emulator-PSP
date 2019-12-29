@@ -83,7 +83,7 @@ void cpu_writeport(int Port,int Value);
 #define zhSP            CPU->SP.B.H
 
 #define zPC             PC
-#define zRealPC         ((u32)(PC) - ((u32)mame4all_cz80_rom))
+#define zRealPC         ((u32*)(PC) - ((u32*)mame4all_cz80_rom))
 
 #define zI              CPU->I
 #define zIM             CPU->IM
@@ -120,20 +120,20 @@ void cpu_writeport(int Port,int Value);
     ((s8)(*zPC++))
 
 #define FETCH_BYTE(A)		\
-   A = (mame4all_cz80_ram[((unsigned)zPC)-((unsigned)mame4all_cz80_rom)]); \
+   A = (mame4all_cz80_ram[((unsigned*)zPC)-((unsigned*)mame4all_cz80_rom)]); \
    zPC++
 
 #define FETCH_BYTE_S(A)		\
-   A = ((s8)(mame4all_cz80_ram[((unsigned)zPC)-((unsigned)mame4all_cz80_rom)])); \
+   A = ((s8)(mame4all_cz80_ram[((unsigned*)zPC)-((unsigned*)mame4all_cz80_rom)])); \
    zPC++
 
 #if CZ80_LITTLE_ENDIAN
 #define FETCH_WORD(A) \
-    A= ((unsigned short)(mame4all_cz80_ram[((unsigned)zPC)-((unsigned)mame4all_cz80_rom)])) | (((unsigned short)(mame4all_cz80_ram[1+((unsigned)zPC)-((unsigned)mame4all_cz80_rom)])) << 8); 	\
+    A= ((unsigned short)(mame4all_cz80_ram[((unsigned*)zPC)-((unsigned*)mame4all_cz80_rom)])) | (((unsigned short)(mame4all_cz80_ram[1+((unsigned*)zPC)-((unsigned*)mame4all_cz80_rom)])) << 8); 	\
     zPC += 2
 #else
 #define FETCH_WORD(A) \
-    A= ((unsigned short)(mame4all_cz80_ram[1+((unsigned)zPC)-((unsigned)mame4all_cz80_rom)])) | (((unsigned short)(mame4all_cz80_ram[((unsigned)zPC)-((unsigned)mame4all_cz80_rom)])) << 8); 	\
+    A= ((unsigned short)(mame4all_cz80_ram[1+((unsigned*)zPC)-((unsigned*)mame4all_cz80_rom)])) | (((unsigned short)(mame4all_cz80_ram[((unsigned*)zPC)-((unsigned*)mame4all_cz80_rom)])) << 8); 	\
     zPC += 2
 #endif
 
