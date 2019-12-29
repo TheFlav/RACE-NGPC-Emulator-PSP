@@ -12,6 +12,7 @@ SOURCES_C := $(CORE_DIR)/unzip.c \
 	$(CORE_DIR)/ioapi.c
 
 ifneq ($(STATIC_LINKING), 1)
+INCFLAGS += -I$(DEPS_DIR)/zlib-1.2.8
 SOURCES_C += $(DEPS_DIR)/zlib-1.2.8/adler32.c \
 	$(DEPS_DIR)/zlib-1.2.8/crc32.c \
 	$(DEPS_DIR)/zlib-1.2.8/inflate.c \
@@ -26,14 +27,15 @@ SOURCES_C += $(DEPS_DIR)/zlib-1.2.8/adler32.c \
 	$(DEPS_DIR)/zlib-1.2.8/trees.c 
 endif
 
-SOURCES_CXX := $(CORE_DIR)/input.cpp \
+SOURCES_CXX := \
+	$(CORE_DIR)/input.cpp \
 	$(CORE_DIR)/neopopsound.cpp \
-    $(CORE_DIR)/ngpBios.cpp \
+	$(CORE_DIR)/ngpBios.cpp \
 	$(CORE_DIR)/tlcs900h.cpp \
 	$(CORE_DIR)/memory.cpp \
 	$(CORE_DIR)/flash.cpp \
 	$(CORE_DIR)/graphics.cpp \
-    $(CORE_DIR)/main.cpp \
+	$(CORE_DIR)/main.cpp \
 	$(CORE_DIR)/state.cpp \
 	$(CORE_DIR)/sound.cpp \
 	$(CORE_DIR)/libretro/libretro.cpp \
@@ -47,7 +49,7 @@ ifeq ($(DRZ80),1)
 else
 	FLAGS += -DCZ80
 	SOURCES_CXX += $(CORE_DIR)/cz80.cpp \
-	$(CORE_DIR)/cz80_support.cpp
+						$(CORE_DIR)/cz80_support.cpp
 endif
 
 
