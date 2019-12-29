@@ -20,7 +20,7 @@ static retro_input_poll_t input_poll_cb;
 static retro_input_state_t input_state_cb;
 
 #define RACE_NAME_MODULE "race"
-#define RACE_NAME "RACE!"
+#define RACE_NAME "RACE"
 #define RACE_VERSION "v2.16"
 #define RACE_EXTENSIONS "ngp|ngc|ngpc|npc"
 #define RACE_TIMING_FPS 60.25
