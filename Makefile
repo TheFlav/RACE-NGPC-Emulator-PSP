@@ -534,7 +534,7 @@ FLAGS += -O2 -DNDEBUG
 endif
 
 ifeq ($(WANT_ZIP),1)
-FLAGS += -DWANT_ZLIB
+FLAGS += -DWANT_ZIP
 endif
 
 ifeq (,$(findstring msvc,$(platform)))
