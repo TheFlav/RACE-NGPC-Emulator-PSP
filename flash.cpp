@@ -18,7 +18,11 @@
 #include "memory.h"
 #include "flash.h"
 #include <string.h>
+#ifdef _WIN32
+#include <direct.h>
+#else
 #include <unistd.h>
+#endif
 
 //#define DEBUG_FLASH
 #ifdef DEBUG_FLASH

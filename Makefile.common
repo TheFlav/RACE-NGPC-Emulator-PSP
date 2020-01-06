@@ -58,4 +58,6 @@ endif
 
 
 FLAGS += -D__LIBRETRO__ -D_MAX_PATH=2048 -DHOST_FPS=60 
+ifeq (,$(findstring msvc,$(platform)))
 CXXFLAGS += -fpermissive
+endif
