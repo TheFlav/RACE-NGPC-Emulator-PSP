@@ -41,6 +41,7 @@ ngp_screen* screen;
 int setting_ngp_language; // 0x6F87 - language
 int gfx_hacks;
 int tipo_consola; // 0x6F91 - OS version
+static bool libretro_supports_input_bitmasks;
 
 char retro_save_directory[2048];
 
@@ -100,6 +101,9 @@ void retro_init(void)
    enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_RGB565;
    if(!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt) && log_cb)
       log_cb(RETRO_LOG_ERROR, "[could not set RGB565]\n");
+   
+   if (environ_cb(RETRO_ENVIRONMENT_GET_INPUT_BITMASKS, NULL))
+      libretro_supports_input_bitmasks = true;
 }
 
 void retro_reset(void)
@@ -112,6 +116,7 @@ void retro_reset(void)
 void retro_deinit(void)
 {
     flashShutdown();
+    libretro_supports_input_bitmasks = false;
 }
 
 void retro_set_environment(retro_environment_t cb)
@@ -150,10 +155,21 @@ void retro_set_video_refresh(retro_video_refresh_t cb)
    video_cb = cb;
 }
 
+static unsigned get_race_input_bitmasks(void)
+{
+   unsigned i = 0;
+   unsigned res = 0;
+   unsigned ret = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_MASK);
+   for (i = 0; i < sizeof(btn_map) / sizeof(map); i++)
+      res |= (ret & (1 << btn_map[i].retro)) ? btn_map[i].ngp : 0;
+   return res;
+}
+
 static unsigned get_race_input(void)
 {
-   unsigned i, res = 0;
-   for (i = 0; i < sizeof(btn_map) / sizeof(map); ++i)
+   unsigned i = 0;
+   unsigned res = 0;
+   for (i = 0; i < sizeof(btn_map) / sizeof(map); i++)
       res |= input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, btn_map[i].retro) ? btn_map[i].ngp : 0;
    return res;
 }
@@ -162,7 +178,10 @@ static void race_input(void)
 {
    ngpInputState = 0;
    input_poll_cb();
-   ngpInputState = get_race_input();
+   if (libretro_supports_input_bitmasks)
+      ngpInputState = get_race_input_bitmasks();
+   else
+      ngpInputState = get_race_input();
 }
 
 static bool race_initialize_sound(void)
