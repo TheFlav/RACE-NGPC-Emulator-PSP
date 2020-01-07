@@ -16,9 +16,7 @@
 #include "main.h"
 
 
-//#include "msounds.h"
 #include "memory.h"
-//#include "mainemu.h"
 #include "tlcs900h.h"
 #include "input.h"
 
@@ -42,54 +40,55 @@ extern int language;
 extern int tipo_consola;
 
 BOOL		m_bIsActive;
-int		exitNow=0;
 EMUINFO		m_emuInfo;
 SYSTEMINFO	m_sysInfo[NR_OF_SYSTEMS];
-
-FILE	*errorLog = NULL;
-FILE	*outputRam = NULL;
 
 #define numberof(a)		(sizeof(a)/sizeof(*(a)))
 
 void mainemuinit(void)
 {
-	// initialize cpu memory
-	mem_init();
-	graphics_init();
+   // initialize cpu memory
+   mem_init();
+   graphics_init();
 
-    // initialize the TLCS-900H cpu
-    tlcs_init();
+   // initialize the TLCS-900H cpu
+   tlcs_init();
 
 #if defined(CZ80)
-	Z80_Init();
+   Z80_Init();
 #endif
 #if defined(DRZ80) || defined(CZ80)
-    Z80_Reset();
+   Z80_Reset();
 #else
-    z80Init();
+   z80Init();
 #endif
 
-    // if neogeo pocket color rom, act if we are a neogeo pocket color
-    tlcsMemWriteB(0x6F91,tlcsMemReadB(0x00200023));
-    if (tipo_consola==1) tlcsMemWriteB(0x6F91,0x00);
-    
-    // pretend we're running in English mode
-    
-    //NOTA setting_ngp_language 00 Ingles - 01 Jap
-    if (setting_ngp_language == 0){
-    tlcsMemWriteB(0x00006F87,0x01);}
-    if (setting_ngp_language == 1){
-    tlcsMemWriteB(0x00006F87,0x00);}    
-    
-    // kludges & fixes
-    switch (tlcsMemReadW(0x00200020))
-    {
-        case 0x0059:	// Sonic
-        case 0x0061:	// Metal SLug 2nd
-            *get_address(0x0020001F) = 0xFF;
-            break;
-    }
-    ngpSoundOff();
+   // if neogeo pocket color rom, act if we are a neogeo pocket color
+   tlcsMemWriteB(0x6F91,tlcsMemReadB(0x00200023));
+   if (tipo_consola==1)
+      tlcsMemWriteB(0x6F91,0x00);
+
+   // pretend we're running in English mode
+
+   //NOTA setting_ngp_language 00 Ingles - 01 Jap
+   if (setting_ngp_language == 0)
+   {
+      tlcsMemWriteB(0x00006F87,0x01);
+   }
+   if (setting_ngp_language == 1)
+   {
+      tlcsMemWriteB(0x00006F87,0x00);
+   }
+
+   // kludges & fixes
+   switch (tlcsMemReadW(0x00200020))
+   {
+      case 0x0059:	// Sonic
+      case 0x0061:	// Metal Slug 2nd
+         *get_address(0x0020001F) = 0xFF;
+         break;
+   }
+   ngpSoundOff();
 }
 
 void	SetActive(BOOL bActive)
@@ -105,71 +104,77 @@ void	SetEmu(int machine)
 
 bool initRom(void)
 {
-	char	*licenseInfo = " BY SNK CORPORATION";
-	char	*ggLicenseInfo = "TMR SEGA";
-	BOOL	romFound = TRUE;
-	int		i, m;
-	
-	finscan=198;
-	
-	if (mainrom[0x000020] == 0x65 || mainrom[0x000020] == 0x93)
-	{
-	finscan=199;
-	}
-	
+   int		i, m;
+   char	*licenseInfo   = " BY SNK CORPORATION";
+   char	*ggLicenseInfo = "TMR SEGA";
+   BOOL	romFound       = TRUE;
 
-	//dbg_print("in openNgp(%s)\n", lpszPathName);
+   finscan=198;
 
-	// first stop the current emulation
-	//dbg_print("openNgp: SetEmu(NONE)\n");
-	SetEmu(NGPC);
-	//dbg_print("openNgp: SetActive(FALSE)\n");
-	SetActive(FALSE);
+   if (mainrom[0x000020] == 0x65 || mainrom[0x000020] == 0x93)
+      finscan=199;
 
-	// check NEOGEO POCKET
-	// check license info
-	for (i=0;i<19;i++)
-	{
-		if (mainrom[0x000009 + i] != licenseInfo[i])
-			romFound = FALSE;
-	}
-	if (romFound)
-	{
-		//dbg_print("openNgp: romFound == TRUE\n");
-		i = mainrom[0x000023];
-		if (i == 0x10 || i == 0x00)
-		{
-			// initiazlie emulation
-			if (i == 0x10) {
-				m = NGPC;
-			} else {
-				// fix for missing Mono/Color setting in Cool Coom Jam SAMPLE rom
-				if (mainrom[0x000020] == 0x34 && mainrom[0x000021] == 0x12)
-					m = NGPC;
-				else m = NGP;
-			}
-			if (tipo_consola==1) m = NGP;
+#if 0
+   dbg_print("in openNgp(%s)\n", lpszPathName);
+#endif
 
-			//dbg_print("openNgp: SetEmu(%d)\n", m);
-			SetEmu(m);
+   // first stop the current emulation
+#if 0
+   dbg_print("openNgp: SetEmu(NONE)\n");
+#endif
+   SetEmu(NGPC);
+#if 0
+   dbg_print("openNgp: SetActive(FALSE)\n");
+#endif
+   SetActive(FALSE);
 
-			//dbg_print("openNgp: Calling mainemuinit(%s)\n", lpszPathName);
-			mainemuinit();
-			// start running the emulation loop
-			//dbg_print("openNgp: SetActive(TRUE)\n");
-			SetActive(TRUE);
+   // check NEOGEO POCKET
+   // check license info
+   for (i=0;i<19;i++)
+   {
+      if (mainrom[0x000009 + i] != licenseInfo[i])
+         romFound = FALSE;
+   }
+   if (romFound)
+   {
+      //dbg_print("openNgp: romFound == TRUE\n");
+      i = mainrom[0x000023];
+      if (i == 0x10 || i == 0x00)
+      {
+         /* initialize emulation */
+         if (i == 0x10)
+            m = NGPC;
+         else
+         {
+            // fix for missing Mono/Color setting in Cool Coom Jam SAMPLE rom
+            if (mainrom[0x000020] == 0x34 && mainrom[0x000021] == 0x12)
+               m = NGPC;
+            else
+               m = NGP;
+         }
+         if (tipo_consola==1)
+            m = NGP;
 
-			// acknowledge opening of the document went fine
-			//dbg_print("openNgp: returning success\n");
-			return TRUE;
-		}
+         //dbg_print("openNgp: SetEmu(%d)\n", m);
+         SetEmu(m);
 
-		fprintf(stderr, "Not a valid or unsupported rom file.\n");
-		return FALSE;
-	}
+         //dbg_print("openNgp: Calling mainemuinit(%s)\n", lpszPathName);
+         mainemuinit();
+         // start running the emulation loop
+         //dbg_print("openNgp: SetActive(TRUE)\n");
+         SetActive(TRUE);
 
-	fprintf(stderr, "Not a valid or unsupported rom file. romFound==FALSE\n");
-	return FALSE;
+         // acknowledge opening of the document went fine
+         //dbg_print("openNgp: returning success\n");
+         return TRUE;
+      }
+
+      fprintf(stderr, "Not a valid or unsupported rom file.\n");
+      return FALSE;
+   }
+
+   fprintf(stderr, "Not a valid or unsupported rom file. romFound==FALSE\n");
+   return FALSE;
 }
 
 void initSysInfo(void)
@@ -180,55 +185,15 @@ void initSysInfo(void)
 	m_emuInfo.drv = &m_sysInfo[m_emuInfo.machine];
 	m_emuInfo.romSize = 0;
 
-/*	strcpy(m_emuInfo.ProgramFolder, "");
-	strcpy(m_emuInfo.SavePath, "");
-	strcpy(m_emuInfo.DebugPath, "");
-	strcpy(m_emuInfo.RomPath, "");
-	strcpy(m_emuInfo.OpenFileName, "");
-	strcpy(m_emuInfo.SaveFileName, "");
-	strcpy(m_emuInfo.OpenFileName, "");
-	strcpy(m_emuInfo.DebugPath, "");;
 	strcpy(m_emuInfo.RomFileName, "");
-	strcpy(m_emuInfo.SaveFileName, "");
-	strcpy(m_emuInfo.ScreenPath, "");*/
-	strcpy(m_emuInfo.RomFileName, "");
-#define NO_SOUND_OUTPUT
-#ifdef NO_SOUND_OUTPUT
-	m_emuInfo.sample_rate = 0;
-#else
-	m_emuInfo.sample_rate = 44100;
-#endif
-	m_emuInfo.stereo = 1;
-	//m_emuInfo.fps = 60;//30;//100;  //Flavor, tweak this!
-
-/*	m_sysInfo[NONE].hSize = 160;
-	m_sysInfo[NONE].vSize = 152;
-	m_sysInfo[NONE].Ticks = 0;
-	//m_sysInfo[NONE].sound[0].sound_type = 0;*/
 
 	m_sysInfo[NGP].hSize = 160;
 	m_sysInfo[NGP].vSize = 152;
 	m_sysInfo[NGP].Ticks = 6*1024*1024;
-/*	m_sysInfo[NGP].sound[0].sound_type = SOUND_SN76496;
-	m_sysInfo[NGP].sound[0].sound_interface = new_SN76496(1, 3*1024*1024, MIXER(50,MIXER_PAN_CENTER));
-	m_sysInfo[NGP].sound[1].sound_type = SOUND_DAC;
-	m_sysInfo[NGP].sound[1].sound_interface = new_DAC(2,MIXER(50,MIXER_PAN_LEFT),MIXER(50,MIXER_PAN_RIGHT));
-	m_sysInfo[NGP].sound[2].sound_type = 0;
-	m_sysInfo[NGP].Back0 = TRUE;
-	m_sysInfo[NGP].Back1 = TRUE;
-	m_sysInfo[NGP].Sprites = TRUE;*/
 
 	m_sysInfo[NGPC].hSize = 160;
 	m_sysInfo[NGPC].vSize = 152;
 	m_sysInfo[NGPC].Ticks = 6*1024*1024;
-/*	m_sysInfo[NGPC].sound[0].sound_type = SOUND_SN76496;
-	m_sysInfo[NGPC].sound[0].sound_interface = new_SN76496(1, 3*1024*1024, 50);
-	m_sysInfo[NGPC].sound[1].sound_type = SOUND_DAC;
-	m_sysInfo[NGPC].sound[1].sound_interface = new_DAC(2,MIXER(50,MIXER_PAN_LEFT),MIXER(50,MIXER_PAN_RIGHT));
-	m_sysInfo[NGPC].sound[2].sound_type = 0;
-	m_sysInfo[NGPC].Back0 = TRUE;
-	m_sysInfo[NGPC].Back1 = TRUE;
-	m_sysInfo[NGPC].Sprites = TRUE;*/
 }
 
 char *getFileNameExtension(char *nom_fichier)
@@ -244,92 +209,92 @@ char *getFileNameExtension(char *nom_fichier)
 }
 
 #ifdef WANT_ZIP
-int loadFromZipByName(unsigned char *buffer, char *archive, char *filename, int *filesize)
+int loadFromZipByName(unsigned char *buffer, char *archive,
+      char *filename, int *filesize)
 {
-    char name[_MAX_PATH];
-    //unsigned char *buffer;
-	int i;
-	const char *recognizedExtensions[] = {
-		".ngp",
-		".npc",
-		".ngc"
-	};
+   char name[_MAX_PATH];
+   int i;
+   const char *recognizedExtensions[] = {
+      ".ngp",
+      ".npc",
+      ".ngc"
+   };
 
-    int zerror = UNZ_OK;
-    unzFile zhandle;
-    unz_file_info zinfo;
+   int zerror = UNZ_OK;
+   unzFile zhandle;
+   unz_file_info zinfo;
 
-    zhandle = unzOpen(archive);
-    if(!zhandle) return (0);
+   zhandle = unzOpen(archive);
+   if(!zhandle) return (0);
 
-    /* Seek to first file in archive */
-    zerror = unzGoToFirstFile(zhandle);
-    if(zerror != UNZ_OK)
-    {
-        unzClose(zhandle);
-        return (0);
-    }
+   /* Seek to first file in archive */
+   zerror = unzGoToFirstFile(zhandle);
+   if(zerror != UNZ_OK)
+   {
+      unzClose(zhandle);
+      return (0);
+   }
 
-	//On scanne tous les fichiers de l'archive et ne prend que ceux qui ont une extension valable, sinon on prend le dernier fichier trouvé...
-	while (zerror == UNZ_OK) {
-		if (unzGetCurrentFileInfo(zhandle, &zinfo, name, 0xff, NULL, 0, NULL, 0) != UNZ_OK) {
-			unzClose(zhandle);
-			return 0;
-		}
+   //On scanne tous les fichiers de l'archive et ne prend que ceux qui ont une extension valable, sinon on prend le dernier fichier trouvé...
+   while (zerror == UNZ_OK) {
+      if (unzGetCurrentFileInfo(zhandle, &zinfo, name, 0xff, NULL, 0, NULL, 0) != UNZ_OK) {
+         unzClose(zhandle);
+         return 0;
+      }
 
-		//Vérifions que c'est la bonne extension
-		char *extension = getFileNameExtension(name);
+      //Vérifions que c'est la bonne extension
+      char *extension = getFileNameExtension(name);
 
-		for (i=0;i<numberof(recognizedExtensions);i++)		{
-			if (!strcmp(extension, recognizedExtensions[i]))
-				break;
-		}
-		if (i < numberof(recognizedExtensions))
-			break;
+      for (i=0;i<numberof(recognizedExtensions);i++)		{
+         if (!strcmp(extension, recognizedExtensions[i]))
+            break;
+      }
+      if (i < numberof(recognizedExtensions))
+         break;
 
-		zerror = unzGoToNextFile(zhandle);
-	}
+      zerror = unzGoToNextFile(zhandle);
+   }
 
-    /* Get information about the file */
-//    unzGetCurrentFileInfo(zhandle, &zinfo, &name[0], 0xff, NULL, 0, NULL, 0);
-    *filesize = zinfo.uncompressed_size;
+   /* Get information about the file */
+   //    unzGetCurrentFileInfo(zhandle, &zinfo, &name[0], 0xff, NULL, 0, NULL, 0);
+   *filesize = zinfo.uncompressed_size;
 
-    /* Error: file size is zero */
-    if(*filesize <= 0 || *filesize > (4*1024*1024))
-    {
-        unzClose(zhandle);
-        return (0);
-    }
+   /* Error: file size is zero */
+   if(*filesize <= 0 || *filesize > (4*1024*1024))
+   {
+      unzClose(zhandle);
+      return (0);
+   }
 
-    /* Open current file */
-    zerror = unzOpenCurrentFile(zhandle);
-    if(zerror != UNZ_OK)
-    {
-        unzClose(zhandle);
-        return (0);
-    }
+   /* Open current file */
+   zerror = unzOpenCurrentFile(zhandle);
+   if(zerror != UNZ_OK)
+   {
+      unzClose(zhandle);
+      return (0);
+   }
 
-    /* Allocate buffer and read in file */
-    //buffer = malloc(*filesize);
-    //if(!buffer) return (NULL);
-    zerror = unzReadCurrentFile(zhandle, buffer, *filesize);
+   /* Allocate buffer and read in file */
+   //buffer = malloc(*filesize);
+   //if(!buffer) return (NULL);
+   zerror = unzReadCurrentFile(zhandle, buffer, *filesize);
 
-    /* Internal error: free buffer and close file */
-    if(zerror < 0 || zerror != *filesize)
-    {
-        //free(buffer);
-        //buffer = NULL;
-        unzCloseCurrentFile(zhandle);
-        unzClose(zhandle);
-        return (0);
-    }
+   /* Internal error: free buffer and close file */
+   if(zerror < 0 || zerror != *filesize)
+   {
+      //free(buffer);
+      //buffer = NULL;
+      unzCloseCurrentFile(zhandle);
+      unzClose(zhandle);
+      return (0);
+   }
 
-    /* Close current file and archive file */
-    unzCloseCurrentFile(zhandle);
-    unzClose(zhandle);
+   /* Close current file and archive file */
+   unzCloseCurrentFile(zhandle);
+   unzClose(zhandle);
 
-    memcpy(filename, name, _MAX_PATH);
-    return 1;
+   memcpy(filename, name, _MAX_PATH);
+   return 1;
 }
 #endif // WANT_ZIP
 

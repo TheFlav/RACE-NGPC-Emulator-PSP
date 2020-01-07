@@ -14,29 +14,18 @@ struct SYSTEMINFO {
 	int		vSize;
 	int		Ticks;
 	int		InputKeys[12];
-	//MachineSound	sound[4];
-	// Dynamic System Info
+	/* Dynamic System Info */
 	BOOL	Back0;
 	BOOL	Back1;
 	BOOL	Sprites;
 };
 
-struct EMUINFO {
-/*	char 	ProgramFolder[_MAX_PATH];	// place holders for filenames
-	char 	SavePath[_MAX_PATH];
-	char 	DebugPath[_MAX_PATH];
-	char 	RomPath[_MAX_PATH];
-	char  ScreenPath[_MAX_PATH];
-
-	char  OpenFileName[_MAX_PATH];	// place holders for filenames
-	char 	SaveFileName[_MAX_PATH];*/
+struct EMUINFO
+{
 	char 	RomFileName[_MAX_PATH];
 
 	int		machine;		// what kind of machine should we emulate
 	int		romSize;		// what is the size of the currently loaded file
-	int		sample_rate;	// what is the current sample rate
-	int		stereo;			// play in stereo?
-	//unsigned int		fps;
 	int		samples;
 	SYSTEMINFO	*drv;
 };
