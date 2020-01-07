@@ -75,14 +75,14 @@ void Z80_Reset(void)
 
 void Z80_Cause_Interrupt(int type)
 {
-    	if (type == Z80_NMI_INT) 
-        {
-	       	z80_nmi();
-    	}
-        else if (type != Z80_IGNORE_INT)
-        {
-        	z80_int();
-    	}
+   if (type == Z80_NMI_INT) 
+   {
+      z80_nmi();
+   }
+   else if (type != Z80_IGNORE_INT)
+   {
+      z80_int();
+   }
 }
 
 void Z80_Clear_Pending_Interrupts(void)

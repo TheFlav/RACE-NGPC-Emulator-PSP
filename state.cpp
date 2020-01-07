@@ -1,18 +1,17 @@
-//---------------------------------------------------------------------------
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version. See also the license.txt file for
-//  additional informations.
-//---------------------------------------------------------------------------
+/*---------------------------------------------------------------------------
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version. See also the license.txt file for
+ *  additional informations.
+ *---------------------------------------------------------------------------
 
-// state.cpp: state saving
-//
-//  01/20/2009 Cleaned up interface, added loading from memory
-//             Moved signature-related stuff out of race_state (A.K.)
-//  09/11/2008 Initial version (Akop Karapetyan)
-//
-//////////////////////////////////////////////////////////////////////
+ * state.cpp: state saving
+ *
+ *  01/20/2009 Cleaned up interface, added loading from memory
+ *             Moved signature-related stuff out of race_state (A.K.)
+ *  09/11/2008 Initial version (Akop Karapetyan)
+ */
 
 #include "cz80.h"
 #ifdef DRZ80
@@ -71,40 +70,40 @@ struct race_state_0x11
 
 struct race_state_0x10 /* Older state format */
 {
-  //Save state version
-  u8 state_version; // = 0x10
- 
-  //Rom signature
-  u8 rom_signature[0x40];
- 
-	//Memory
-	u8 ram[0xc000];
-  u8 cpuram[0x08a0];// 0xC000]; 0x38000 
- 
-	//TLCS-900h Registers
-	u32 pc, sr;
-	u8 f_dash;
-	u32 gpr[23];
- 
-   //Z80 Registers
+   /* Save state version */
+   u8 state_version; /* = 0x10 */
+
+   /* Rom signature */
+   u8 rom_signature[0x40];
+
+   /* Memory */
+   u8 ram[0xc000];
+   u8 cpuram[0x08a0]; /* 0xC000]; 0x38000  */
+
+   /* TLCS-900h Registers */
+   u32 pc, sr;
+   u8 f_dash;
+   u32 gpr[23];
+
+   /* Z80 Registers */
 #ifdef CZ80
-  cz80_struc RACE_cz80_struc;
-  u32 PC_offset;
-  s32 Z80_ICount;
+   cz80_struc RACE_cz80_struc;
+   u32 PC_offset;
+   s32 Z80_ICount;
 #elif DRZ80
-  Z80_Regs Z80;
+   Z80_Regs Z80;
 #endif
- 
-  //Sound Chips
-  int sndCycles;
-  SoundChip toneChip;
-  SoundChip noiseChip;
- 
-	//Timers
-  int timer0, timer1, timer2, timer3;
- 
-	//DMA
-  u8 ldcRegs[64];
+
+   /* Sound Chips */
+   int sndCycles;
+   SoundChip toneChip;
+   SoundChip noiseChip;
+
+   /* Timers */
+   int timer0, timer1, timer2, timer3;
+
+   /* DMA */
+   u8 ldcRegs[64];
 };
 
 typedef struct race_state_0x11 race_state_t;
@@ -363,15 +362,15 @@ static int state_restore_0x10(FILE *stream)
   if (fread(&rs, sizeof(rs), 1, stream) < 1)
     return 0;
  
-  // Verify state version
+  /* Verify state version */
   if (rs.state_version != 0x10)
     return 0;
  
-  // Verify ROM signature
+  /* Verify ROM signature */
   if (memcmp(mainrom, rs.rom_signature, sizeof(rs.rom_signature)) != 0)
     return 0;
  
-  //TLCS-900h Registers
+  /* TLCS-900h Registers */
   gen_regsPC = rs.pc;
   gen_regsSR = rs.sr;
   F2 = rs.f_dash;
@@ -406,37 +405,37 @@ static int state_restore_0x10(FILE *stream)
   gen_regsXSSP = rs.gpr[i++];
   gen_regsXNSP = rs.gpr[i++];
 
-  //Z80 Registers
-  #ifdef CZ80
+  /* Z80 Registers */
+#ifdef CZ80
   extern cz80_struc *RACE_cz80_struc;
   extern s32 Z80_ICount;
   int size_of_z80 = 
-    (u32*)(&(RACE_cz80_struc->CycleSup)) - (u32*)(&(RACE_cz80_struc->BC));
-  
+     (u32*)(&(RACE_cz80_struc->CycleSup)) - (u32*)(&(RACE_cz80_struc->BC));
+
   memcpy(RACE_cz80_struc, &rs.RACE_cz80_struc, size_of_z80);
   Z80_ICount = rs.Z80_ICount;
   Cz80_Set_PC(RACE_cz80_struc, rs.PC_offset);
-  #elif DRZ80
+#elif DRZ80
   extern Z80_Regs Z80;
   memcpy(&Z80, &rs.Z80, sizeof(Z80));
-  #endif
+#endif
 
-  //Sound Chips
+  /* Sound Chips */
   extern int sndCycles;
   sndCycles = rs.sndCycles;
   memcpy(&toneChip, &rs.toneChip, sizeof(SoundChip));
   memcpy(&noiseChip, &rs.noiseChip, sizeof(SoundChip));
  
-  //Timers
+  /* Timers */
   timer0 = rs.timer0;
   timer1 = rs.timer1;
   timer2 = rs.timer2;
   timer3 = rs.timer3;
  
-  //DMA
+  /* DMA */
   memcpy(&ldcRegs, &rs.ldcRegs, sizeof(ldcRegs));
  
-  //Memory
+  /* Memory */
   memcpy(mainram, rs.ram, sizeof(rs.ram));
   memcpy(&mainram[0x20000], rs.cpuram, sizeof(rs.cpuram));
  
