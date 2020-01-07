@@ -12,13 +12,6 @@
 /#include "menu.h"
 #endif
 
-
-#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-#define new DEBUG_NEW
-#endif
-
 /* address where the state of the input device(s) is stored */
 #if 0
 unsigned char	*InputByte = get_address(0x00006F82);
@@ -26,9 +19,6 @@ unsigned char	*InputByte = get_address(0x00006F82);
 unsigned char	ngpInputState = 0;
 unsigned char	*InputByte = &ngpInputState;
 
-#ifndef __LIBRETRO__
-extern SDL_Joystick *joystick;
-#endif
 #ifdef ZOOM_SUPPORT
 extern int zoom;
 #endif
@@ -66,37 +56,11 @@ struct joy_range
 } range;
 
 #ifdef __GP32__
-void InitInput()
+void InitInput(void)
 #else
 BOOL InitInput(HWND hwnd)
 #endif
 {
-#ifndef __LIBRETRO__
-#ifndef __GP32__
-    keystates = PSP_GetKeyStateArray(NULL);
-#endif
-	/* setup standard values for input
-	 * NGP/NGPC: */
-	m_sysInfo[NGP].InputKeys[KEY_UP]			= DIK_UP;
-	m_sysInfo[NGP].InputKeys[KEY_DOWN]		= DIK_DOWN;
-	m_sysInfo[NGP].InputKeys[KEY_LEFT]		= DIK_LEFT;
-	m_sysInfo[NGP].InputKeys[KEY_RIGHT]		= DIK_RIGHT;
-	m_sysInfo[NGP].InputKeys[KEY_BUTTON_A]	= DIK_SPACE;
-	m_sysInfo[NGP].InputKeys[KEY_BUTTON_B]	= DIK_N;
-	m_sysInfo[NGP].InputKeys[KEY_SELECT]		= DIK_O;	/* Option button */
-	m_sysInfo[NGPC].InputKeys[KEY_UP]			= DIK_UP;
-	m_sysInfo[NGPC].InputKeys[KEY_DOWN]		= DIK_DOWN;
-	m_sysInfo[NGPC].InputKeys[KEY_LEFT]		= DIK_LEFT;
-	m_sysInfo[NGPC].InputKeys[KEY_RIGHT]		= DIK_RIGHT;
-	m_sysInfo[NGPC].InputKeys[KEY_BUTTON_A]	= DIK_SPACE;
-	m_sysInfo[NGPC].InputKeys[KEY_BUTTON_B]	= DIK_N;
-	m_sysInfo[NGPC].InputKeys[KEY_SELECT]		= DIK_O;	// Option button
-
-    range.minx = -32767;//INT_MIN;
-    range.maxx = 32767;//INT_MAX;
-    range.miny = -32767;//INT_MIN;
-    range.maxy = 32767;//INT_MAX;
-#endif /* __LIBRETRO__ */
     return TRUE;
 }
 
@@ -109,155 +73,7 @@ extern "C"
 int zoom=0,zoomy=16;
 #endif
 
-#ifndef __LIBRETRO__
-void UpdateInputState()
-{
-#ifdef __GP32__
-	int key = gp_getButton();
-
-	if ((key & BUTTON_R) && (key & BUTTON_L))
-    {
-        m_bIsActive = FALSE;//Flavor exit emulation
-        return;
-    }
-
-	if (key & BUTTON_R) {
-		zoom ^= 1;
-		while ((key=gp_getButton())&BUTTON_R);
-		if (!zoom)
-			clearScreen();
-	}
-
-	if (key & BUTTON_L) {
-		if (key & BUTTON_DOWN) {
-			if (zoomy<32)
-				zoomy+=1;
-			return;
-		}
-		if (key & BUTTON_UP) {
-			if (zoomy>0)
-				zoomy-=1;
-			return;
-		}
-	}
-	if(key & BUTTON_DOWN)
-	    *InputByte = 0x02;
-	else if(key & BUTTON_UP)
-	    *InputByte = 0x01;
-	else
-	    *InputByte = 0;
-
-	if(key & BUTTON_RIGHT)
-	    *InputByte |= 0x08;
-	else if(key & BUTTON_LEFT)
-	    *InputByte |= 0x04;
-
-    if (key & BUTTON_A)
-        *InputByte|= 0x10;
-    if (key & BUTTON_B)
-        *InputByte|= 0x20;
-    if (key & BUTTON_SELECT)
-        *InputByte|= 0x40;
-#else
-    SDL_Event event;
-
-#ifdef __LIBRETRO__
-    while(SDL_PollEvent(&event))
-    {
-    }
-
-    if (SDL_JoystickGetButton(joystick, PSP_BUTTON_R) && SDL_JoystickGetButton(joystick, PSP_BUTTON_L))
-    {
-        m_bIsActive = FALSE;//Flavor exit emulation
-        return;
-    }
-
-    int x_axis = SDL_JoystickGetAxis (joystick, 0);
-    int y_axis = SDL_JoystickGetAxis (joystick, 1);
-
-/*    if (x_axis < range.minx) range.minx = x_axis;
-    if (y_axis < range.miny) range.miny = y_axis;
-    if (x_axis > range.maxx) range.maxx = x_axis;
-    if (y_axis > range.maxy) range.maxy = y_axis;
-
-*/
-
-    *InputByte = 0;
-	if(SDL_JoystickGetButton(joystick, PSP_BUTTON_DOWN) || (y_axis > (range.miny + 2*(range.maxy - range.miny)/3)))
-	{
-	    *InputByte |= 0x02;
-	}
-	if(SDL_JoystickGetButton(joystick, PSP_BUTTON_UP) || (y_axis < (range.miny + (range.maxy - range.miny)/3)))
-	{
-	    *InputByte |= 0x01;
-	}
-	if(SDL_JoystickGetButton(joystick, PSP_BUTTON_RIGHT) || (x_axis > (range.minx + 2*(range.maxx - range.minx)/3)))
-	{
-	    *InputByte |= 0x08;
-	}
-	if(SDL_JoystickGetButton(joystick, PSP_BUTTON_LEFT) || (x_axis < (range.minx + (range.maxx - range.minx)/3)))
-	{
-	    *InputByte |= 0x04;
-	}
-
-    if (SDL_JoystickGetButton(joystick, PSP_BUTTON_X))
-        *InputByte |= 0x10;
-    if (SDL_JoystickGetButton(joystick, PSP_BUTTON_O))
-        *InputByte |= 0x20;
-    if (SDL_JoystickGetButton(joystick, PSP_BUTTON_TRI))
-        *InputByte |= 0x40;
-
-/* no variable zoom for now
-#ifdef ZOOM_SUPPORT
-    if(SDL_JoystickGetButton(joystick, PSP_BUTTON_R) && zoom<60)//272-152=120/2=60
-        zoom++;
-    if(SDL_JoystickGetButton(joystick, PSP_BUTTON_L) && zoom>0)
-        zoom--;
-#endif*/
-
-    /*if (SDL_JoystickGetButton(joystick, PSP_BUTTON_VOLUP))
-        increaseVolume();
-    else if (SDL_JoystickGetButton(joystick, PSP_BUTTON_VOLDOWN))
-        decreaseVolume();*/
-#else
-    SYSTEMINFO *si;
-    PSP_SetKeyStates(); //make sure they're updated
-
-    while(SDL_PollEvent(&event))
-    {
-    }
-
-    if (DOWN(SDLK_r) && DOWN(SDLK_l))
-        m_bIsActive = FALSE;//Flavor exit emulation
-
-
-    si = &m_sysInfo[NGP];
-    *InputByte = 0;
-    if (DOWN(si->InputKeys[KEY_BUTTON_A]))
-        *InputByte|= 0x10;
-    if (DOWN(si->InputKeys[KEY_BUTTON_B]))
-        *InputByte|= 0x20;
-    if (DOWN(si->InputKeys[KEY_SELECT]))
-        *InputByte|= 0x40;
-    if (DOWN(si->InputKeys[KEY_UP]))
-        *InputByte|= 0x01;
-    if (DOWN(si->InputKeys[KEY_DOWN]))
-        *InputByte|= 0x02;
-    if (DOWN(si->InputKeys[KEY_LEFT]))
-        *InputByte|= 0x04;
-    if (DOWN(si->InputKeys[KEY_RIGHT]))
-        *InputByte|= 0x08;
-
-    if (DOWN(SDLK_KP_PLUS))
-        increaseVolume();
-    else if (DOWN(SDLK_KP_MINUS))
-        decreaseVolume();
-#endif
-#endif
-}
-#endif /* __LIBRETRO__ */
-
-void FreeInput()
+void FreeInput(void)
 {
 
 }
