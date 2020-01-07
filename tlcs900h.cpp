@@ -29,9 +29,7 @@
 //////////////////////////////////////////////////////////////////////
 
 
-#ifndef __GP32__
 #include "StdAfx.h"
-#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -9296,37 +9294,6 @@ void ngpc_run()
 
     while(m_bIsActive)  //should be some way to exit
     {
-#ifndef __LIBRETRO__
-#ifndef __GP32__
-        currTick = SDL_GetTicks();
-
-        //if ((currTick - lastTick) >= (1000/m_emuInfo.fps))
-        if((currTick - lastTick) < (ticks_per_sec/HOST_FPS))
-        {
-#ifdef AUTO_FRAMESKIP
-            if(skipFrames)
-            {
-                skipFrames--;
-            }
-#endif /* AUTO_FRAMESKIP */ 
-#ifdef FRAME_RATE_LIMIT
-            while((currTick - lastTick) < (ticks_per_sec/HOST_FPS))
-            {
-                currTick = SDL_GetTicks();
-            }
-#endif /* FRAME_RATE_LIMIT */
-        }
-#ifdef AUTO_FRAMESKIP
-        else
-        {
-            if(skipFrames<MAX_SKIPFRAMES) //cap skipFrames
-                skipFrames++;
-        }
-#endif /* AUTO_FRAMESKIP */
-        lastTick = currTick;
-#endif /* !__GP32 */
-#endif /* !__LIBRETRO__ */
-
 #ifdef AUTO_FRAMESKIP
         tlcs_execute((6*1024*1024) / HOST_FPS, skipFrames);
 #else

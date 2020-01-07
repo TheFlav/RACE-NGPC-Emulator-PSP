@@ -12,10 +12,7 @@
 
 #include "unzip.h"
 
-#ifndef __GP32__
 #include "StdAfx.h"
-#endif
-
 #include "main.h"
 
 
@@ -27,9 +24,6 @@
 
 #include "graphics.h"
 #include "tlcs900h.h"
-#ifndef __GP32__
-//#include "timer.h"
-#endif
 
 #include "neopopsound.h"
 
@@ -41,11 +35,6 @@
 #else
 #include "z80.h"
 #endif
-#endif
-
-#ifdef __GP32__
-#include "fileio.h"
-#include "gfx.h"
 #endif
 
 extern int finscan;
@@ -66,11 +55,7 @@ void mainemuinit()
 {
 	// initialize cpu memory
 	mem_init();
-#ifndef __GP32__
 	graphics_init(NULL);
-#else
-	graphics_init();
-#endif
 
     // initialize the TLCS-900H cpu
     tlcs_init();
@@ -107,23 +92,6 @@ void mainemuinit()
     ngpSoundOff();
     //Flavor sound_start();
 }
-
-#if !defined(__GP32__) && !defined(__LIBRETRO__)
-
-void AfxMessageBox(char *a, int b, int c)
-{
-	dbg_print(a);
-}
-void AfxMessageBox(char *a, int b)
-{
-	dbg_print(a);
-}
-void AfxMessageBox(char *a)
-{
-	dbg_print(a);
-}
-
-#endif
 
 void	SetActive(BOOL bActive)
 {

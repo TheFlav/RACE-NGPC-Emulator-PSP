@@ -9,9 +9,7 @@
 
 /* sound.cpp: implementation of the sound class. */
 
-#ifndef __GP32__
 #include "StdAfx.h"
-#endif
 #include "main.h"
 #include "sound.h"
 #include "memory.h"
@@ -26,9 +24,7 @@
 #endif
 #endif
 
-#ifndef __GP32__
 #include <math.h>
-#endif
 
 #define Machine (&m_emuInfo)
 

@@ -22,9 +22,6 @@
 #define __NEOPOPSOUND__
 //=============================================================================
 
-#ifdef __GP32__
-#include "main.h"
-#endif
 #include "StdAfx.h"
 
 typedef struct
@@ -73,10 +70,8 @@ extern BOOL mute;
 void dac_update(_u16* dac_buffer, int length_bytes);
 void sound_update(_u16* chip_buffer, int length_bytes);
 
-#ifndef __GP32__
-void increaseVolume();
-void decreaseVolume();
-#endif
+void increaseVolume(void);
+void decreaseVolume(void);
 
 //#define dac_writeL dac_write
 //#define dac_writeR dac_write

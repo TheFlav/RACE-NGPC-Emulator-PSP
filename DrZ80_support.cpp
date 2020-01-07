@@ -11,9 +11,7 @@
  * Support functions for interfacing with DrZ80
  */
 
-#ifndef __GP32__
 #include "StdAfx.h"
-#endif
 #include "main.h"
 #include "memory.h"
 

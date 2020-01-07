@@ -10,9 +10,7 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#ifndef __GP32__
 #include "StdAfx.h"
-#endif
 #include "main.h"
 #include "ngpBios.h"
 

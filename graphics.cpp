@@ -47,17 +47,7 @@ int    totalpalette[32*32*32];
  */
 static unsigned dark_filter_level = 0;
 
-#ifdef __GP32__
-
-#define OFFSETX 80
-#define OFFSETY 44
-unsigned short drawBuffer[NGPC_SIZEX*NGPC_SIZEY];
-
-#else
-
 static unsigned short *drawBuffer;
-
-#endif
 
 /* NGP specific
  * precalculated pattern structures */
@@ -171,9 +161,6 @@ unsigned short p2[16] = {
 #endif
 #if defined(DO_FPS_DISPLAY) || defined(DO_PERIODIC_FLASH_SAVES)
 static unsigned int frameCount = 0;
-#ifdef __GP32__
-static char fps[32];
-#endif
 #endif
 
 /* Flavor - For speed testing, you can turn off screen updates */
@@ -557,8 +544,6 @@ static const unsigned short bwTable[8] =
          * B, G,R */
         0x0FFF, 0x0DDD, 0x0BBB, 0x0999, 0x0777, 0x0555, 0x0333, 0x0000
     };
-
-#ifndef __GP32__
 
 /* used for rendering the sprites */
 
@@ -1167,8 +1152,6 @@ void graphicsBlitLine(unsigned char render)
 
 }
 
-#endif /* __GP32__ */
-
 /*
  * THOR'S GRAPHIC CORE
  */
@@ -1488,9 +1471,7 @@ void myGraphicsBlitLine(unsigned char render)  /* NOTA */
     {
         if(render)
         {
-#ifdef __GP32__
-			unsigned short* draw = &drawBuffer[*scanlineY*NGPC_SIZEX];
-#elif __LIBRETRO__
+#if __LIBRETRO__
 			unsigned short* draw = &drawBuffer[(*scanlineY)*(screen->w)];
 #else
 			unsigned short* draw = &drawBuffer[(*scanlineY)*(screen->w+PSP_FUDGE)];/* extra fudge factor for PSP??? */
@@ -1509,11 +1490,7 @@ void myGraphicsBlitLine(unsigned char render)  /* NOTA */
 				for (i=0;i<NGPC_SIZEX;i++)
 					draw[i] = OOWCol;
 			}
-#ifdef __GP32
-			else if (zoom==0 ||( *scanlineY>=zoomy && *scanlineY<zoomy+120))
-#else
 			else
-#endif
 			{
 
 #ifdef __LIBRETRO__
@@ -1605,10 +1582,8 @@ void myGraphicsBlitLine(unsigned char render)  /* NOTA */
         {
             /* start VBlank period */
             tlcsMemWriteB(0x00008010,tlcsMemReadB(0x00008010) | 0x40);
-#ifndef __GP32__
             if (render)
                 graphics_paint();
-#endif
         }
         *scanlineY+= 1;
     }
@@ -1637,19 +1612,12 @@ const char ErrCreateSurface[]  = "CreateSurface Failed";
 
 #define DDOK(x) if (hRet != DD_OK) { LastErr = x; return FALSE; }
 
-#ifdef __GP32__
-BOOL graphics_init(void)
-#else
 BOOL graphics_init(HWND phWnd)
-#endif
 {
 #ifdef __LIBRETRO__
     palette_init = palette_init16;
     palette_init(0xf800,0x7e0,0x1f);
     drawBuffer = (unsigned short*)screen->pixels;
-#elif __GP32__
-    palette_init = palette_init16;
-    palette_init(0xf800,0x07c0,0x003e);
 #else
     dbg_print("in graphics_init\n");
 
@@ -1686,9 +1654,7 @@ BOOL graphics_init(HWND phWnd)
 #if 0
             set_palette = set_paletteBW;
 #endif
-#ifndef __GP32__
             graphicsBlitInit();
-#endif
             *scanlineY = 0;
             break;
         case NGPC:
@@ -1697,9 +1663,7 @@ BOOL graphics_init(HWND phWnd)
 #if 0
          set_palette = set_paletteCol;
 #endif
-#ifndef __GP32__
          graphicsBlitInit();
-#endif
          *scanlineY = 0;
          break;
     }

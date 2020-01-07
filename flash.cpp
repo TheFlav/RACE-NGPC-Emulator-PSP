@@ -13,9 +13,7 @@
  * for emulation of NGPC carts
  */
 
-#ifndef __GP32__
 #include "StdAfx.h"
-#endif
 #include "memory.h"
 #include "flash.h"
 #include <string.h>
@@ -63,11 +61,7 @@ unsigned int cartAddrMask = 0x3FFFFF;
 extern char retro_save_directory[2048];
 #define SAVEGAME_DIR retro_save_directory
 #else
- #ifdef __GP32__
-  #define SAVEGAME_DIR "dev0:\\GPMM\\NGPC\\BATTERY\\"
- #else
   #define SAVEGAME_DIR "states/"
- #endif
 #endif
 
 unsigned char currentWriteCycle = 1;  /* can be 1 through 6 */
@@ -398,12 +392,10 @@ void writeSaveGameFile(void)
 	sprintf(msg, "Saved File %s", ngfFilename);
 	printTTF(msg, 0, 100, yellow, 1, actualScreen, 1);*/
 	needToWriteFile = 0;
-#ifndef __GP32__
 #ifdef TARGET_GP2X
 	sync();
 #if 0
    system("sync");
-#endif
 #endif
 #endif
 

@@ -14,18 +14,11 @@
  * TODO:
  */
 
-#ifndef __GP32__
 #include "StdAfx.h"
-#endif
 #include "main.h"
 #include "memory.h"
 #include "input.h"		/* for Gameboy Input */
 #include "graphics.h"	/* for i/o ports of the game gear */
-#if 0
-#include "mainemu.h"
-#include "sound.h"
-#include "z80.h"
-#endif
 #include "tlcs900h.h"
 #include "koyote_bin.h"
 

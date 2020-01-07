@@ -18,11 +18,7 @@
 
 extern unsigned char	ngpInputState;
 
-#ifndef __GP32__
 BOOL InitInput(HWND hWnd);
-#else
-void InitInput(void);
-#endif
 void UpdateInputState(void);
 void FreeInput(void);
 

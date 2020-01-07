@@ -16,17 +16,13 @@
 #pragma once
 #endif /* _MSC_VER > 1000 */
 
-#ifndef __GP32__
 #include "StdAfx.h"
-#endif
 #include "main.h"
 
 int initSound();
 void soundCleanup();
 
-#ifndef __GP32__
 void setHwnd(HWND hWnd);
-#endif
 
 /* stolen MAME things */
 int osd_start_audio_stream(int stereo);
@@ -40,9 +36,6 @@ void soundStep(int cycles);
 void soundOutput(void);
 
 #define NUM_CHANNELS 32
-#if !defined(__GP32__) && !defined(__LIBRETRO__)
-extern Mix_Chunk *chunks[NUM_CHANNELS];
-#endif
 
 /* Gameboy sound system */
 void gbSoundInit(void);

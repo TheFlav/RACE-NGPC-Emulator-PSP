@@ -26,9 +26,7 @@
  *                                                                      *
  ************************************************************************/
 
-#ifndef __GP32__
 #include "StdAfx.h"
-#endif
 
 #include "neopopsound.h"
 
@@ -459,10 +457,6 @@ void dac_update(_u16* dac_buffer, int length_bytes)
 
 //=============================================================================
 
-#ifdef __GP32__
-volatile int soundON = 0;
-#endif
-
 //Resets the sound chips, also used whenever sound options are changed
 void sound_init(int SampleRate)
 {
@@ -519,10 +513,6 @@ void sound_init(int SampleRate)
 	dacLBufferCount = 0;
 	dacLBufferRead = 0;
 	dacLBufferWrite = 0;
-
-#ifdef __GP32__
-	soundON = 1;
-#endif
 }
 
 //=============================================================================
@@ -560,40 +550,14 @@ void system_sound_chipreset(void)
 	sound_init(chip_freq);
 }
 
-#ifdef __GP32__
-
-int audioCallback(unsigned short* sndBuf,int len) {
-	int i,smp;
-	if (soundON==0)
-		return 0;
-	for (i=0;i<len;i++)
-	{
-		smp = (sample_chip_tone() + sample_chip_noise()) >> 1;
-		smp = (smp + dacBufferL[dacLBufferRead]) >> 1;
-
-		*(sndBuf++) = smp;
-		*(sndBuf++) = smp; // stereo ?
-		dacBufferL[dacLBufferRead] = 0;  //silence?
-		if (dacLBufferCount > 0)
-		{
-			dacLBufferCount--;
-			if (++dacLBufferRead == DAC_BUFFERSIZE)
-				dacLBufferRead = 0;
-		}
-	}
-	return 1;
-}
-
-#endif
-
 int sound_system_init(void)
 {
-   system_sound_chipreset();	//Resets chips
+   system_sound_chipreset();	/* Resets chips */
    return 1;
 }
 
 
-//call this every so often to update the sound output
+/* call this every so often to update the sound output */
 void system_sound_update(int nframes)
 {
 }

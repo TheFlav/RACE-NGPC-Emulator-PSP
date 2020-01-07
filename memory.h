@@ -10,9 +10,7 @@
 #ifndef _MEMORYH_
 #define _MEMORYH_
 
-#ifndef __GP32__
 #include "StdAfx.h"
-#endif
 #include "neopopsound.h"
 #include "sound.h"
 #include "input.h"

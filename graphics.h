@@ -37,11 +37,7 @@
 //extern unsigned char *drawBuffer;
 //extern BITMAP myBitmap;
 
-#ifndef __GP32__
 BOOL graphics_init(HWND phWnd);
-#else
-BOOL graphics_init();
-#endif
 void graphics_blit(void);
 void graphics_paint();
 void graphics_cleanup();
