@@ -79,14 +79,10 @@ extern int    totalpalette[32*32*32];
 
 extern unsigned char *scanlineY;
 
-#ifdef __LIBRETRO__
 struct ngp_screen
 {
    int w, h;                 
    void *pixels;
 };
-
-
-#endif
 
 #endif // !defined(AFX_GRAPHICS_H__EE4B1FE1_8EB2_11D3_8644_00A0241D2A65__INCLUDED_)

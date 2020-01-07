@@ -9,8 +9,6 @@
 
 /* sound.cpp: implementation of the sound class. */
 
-/* Flavor - Convert from DirectSound to SDL */
-
 #ifndef __GP32__
 #include "StdAfx.h"
 #endif

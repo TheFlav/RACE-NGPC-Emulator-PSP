@@ -35,13 +35,13 @@ static retro_input_state_t input_state_cb;
 #define FB_WIDTH 160
 #define FB_HEIGHT 152
 
-// core options
+/* core options */
 static int RETRO_SAMPLE_RATE = 44100;
 
 ngp_screen* screen;
-int setting_ngp_language; // 0x6F87 - language
+int setting_ngp_language; /* 0x6F87 - language */
 int gfx_hacks;
-int tipo_consola; // 0x6F91 - OS version
+int tipo_consola; /* 0x6F91 - OS version */
 static bool libretro_supports_input_bitmasks;
 
 char retro_save_directory[2048];
@@ -78,9 +78,10 @@ static void check_variables(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      // user must manually restart core for change to happen
-      // > 0: English
-      // > 1: Japanese
+      /* user must manually restart core for change to happen
+       * > 0: English
+       * > 1: Japanese
+       */
       if (!strcmp(var.value, "japanese"))
          setting_ngp_language = 1;
       else if (!strcmp(var.value, "english"))
@@ -253,7 +254,7 @@ void retro_run(void)
 
    memset(sampleBuffer, 0, samplesPerFrame * sizeof(int16_t));
 
-   sound_update((uint16_t*)sampleBuffer, samplesPerFrame * sizeof(int16_t)); //Get sound data
+   sound_update((uint16_t*)sampleBuffer, samplesPerFrame * sizeof(int16_t)); /* Get sound data */
    dac_update((uint16_t*)sampleBuffer, samplesPerFrame * sizeof(int16_t));
 
    int16_t *p = stereoBuffer;
@@ -331,8 +332,8 @@ bool retro_load_game(const struct retro_game_info *info)
 
    check_variables();
 
-   // TODO: Mappings might need updating
-   // Size is based on what is exposed in Mednafen NGP
+   /* TODO: Mappings might need updating
+    * Size is based on what is exposed in Mednafen NGP */
    struct retro_memory_descriptor descs = {
       RETRO_MEMDESC_SYSTEM_RAM, mainram, 0, 0, 0, 0, 16384, "RAM"
    };
@@ -368,7 +369,7 @@ void retro_cheat_set(unsigned index, bool enabled, const char *code)
 {
 }
 
-unsigned retro_get_region()
+unsigned retro_get_region(void)
 {
    return RETRO_REGION_NTSC;
 }

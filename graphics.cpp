@@ -33,12 +33,6 @@ extern int gfx_hacks;
 int zoom=0;
 #endif
 
-
-#if 0
-SDL_Color SDLpalette[256];
-#endif
-
-
 /*
  * 16 bit graphics buffers
  * At the moment there's no system which uses more than 16 bit
@@ -202,105 +196,7 @@ void graphicsBlitEnd(void)
 }
 
 
-#ifdef __LIBRETRO__
-void graphics_paint();
-#else
-
-/* blit the display buffer, if necessary, and put it to the screen */
-inline void graphics_paint(void)
-{
-#ifndef NO_SCREEN_OUTPUT
-
-#ifndef __GP32__
-   /* should update only what changed, but test with one that updates entire screen */
-#ifndef ZOOM_SUPPORT
-        SDL_UpdateRect(screen, SCREEN_X_OFFSET, SCREEN_Y_OFFSET, BLIT_WIDTH, BLIT_HEIGHT);
-#else
-/*        static int prevZoom=0;
-        if(prevZoom!=zoom)
-            SDL_FillRect(actualScreen, NULL, SDL_MapRGB(screen->format,0,0,0)); /* fill black */
-
-        if(zoom<=0)
-        {
-            SDL_Rect scrRect  = {SCREEN_X_OFFSET, SCREEN_Y_OFFSET, BLIT_WIDTH, BLIT_HEIGHT};
-            SDL_BlitSurface(screen, &scrRect, actualScreen, &scrRect);
-
-            if(prevZoom==zoom)
-                SDL_UpdateRects(actualScreen, 1, &scrRect);
-            else
-                SDL_Flip(actualScreen);
-        }
-        else /* if(zoom>0) */
-        {
-            SDL_Rect scrRect  = {SCREEN_X_OFFSET, SCREEN_Y_OFFSET, BLIT_WIDTH, BLIT_HEIGHT};
-            SDL_Rect ascrRect = {scrRect.x-zoom, scrRect.y-zoom, scrRect.w+(zoom*2), scrRect.h+(zoom*2)};
-
-            SDL_SoftStretch(screen, &scrRect, actualScreen, &ascrRect);
-            if(prevZoom==zoom)
-                SDL_UpdateRects(actualScreen, 1, &ascrRect);
-            else
-                SDL_Flip(actualScreen);
-        }
-        prevZoom=zoom;*/
-
-        /* For now, no variable zooming */
-        SDL_Rect scrRect  = {SCREEN_X_OFFSET, SCREEN_Y_OFFSET, BLIT_WIDTH, BLIT_HEIGHT};
-        SDL_BlitSurface(screen, &scrRect, actualScreen, &scrRect);
-        SDL_UpdateRects(actualScreen, 1, &scrRect);
-#endif
-#if 0
-        SDL_UpdateRect(screen, 0, 0, screen->w, screen->h); */
-#endif
-#endif
-#if 0
-        SDL_Flip(screen);
-    }
-#endif
-#endif
-
-#if defined(DO_FPS_DISPLAY) || defined(DO_PERIODIC_FLASH_SAVES)
-    static unsigned int startTime = 0;
-    unsigned int currTime;
-
-    if(startTime == 0)
-        startTime = SDL_GetTicks();
-
-    currTime = SDL_GetTicks();
-
-    if((currTime - startTime) >= 1000)
-    {
-#ifdef DO_PERIODIC_FLASH_SAVES
-		/* WRITE_SAVEGAME_IF_DIRTY; */
-        if(needToWriteFile && options[PERIODIC_SAVES_OPTION])
-        {
-            if(options[FPS_OPTION])
-                printTTF("S", 10, 10, red, 1, actualScreen, 1);
-            writeSaveGameFile(); /* we found a dirty one, so write the file */
-            if(options[FPS_OPTION])
-                printTTF("S", 10, 10, green, 1, actualScreen, 1);
-        }
-        else
-        {
-#endif
-#ifdef DO_FPS_DISPLAY
-            /* SDL_Rect numRect = */
-            if(options[FPS_OPTION])
-                drawNumber(frameCount, 10, 10);
-#if 0
-            SDL_UpdateRect(screen, numRect.x, numRect.y, numRect.w, numRect.h);
-#endif
-#endif
-#ifdef DO_PERIODIC_FLASH_SAVES
-        }
-#endif
-
-        startTime = currTime;
-        frameCount = 0;
-    }
-
-#endif
-}
-#endif
+void graphics_paint(void);
 
 #if defined(DO_FPS_DISPLAY) || defined(DO_PERIODIC_FLASH_SAVES)
 inline void incFrameCount()
@@ -604,26 +500,7 @@ void graphicsSetDarkFilterLevel(unsigned filterLevel)
 
 void palette_init8(DWORD dwRBitMask, DWORD dwGBitMask, DWORD dwBBitMask)
 {
-/*
-    dbg_print("in palette_init8(0x%X, 0x%X, 0x%X)\n", dwRBitMask, dwGBitMask, dwBBitMask);
-    SDL_Color SDLcolors[256];
-    unsigned char r, g, b;
-
-    // Generic 332 RGB palette
-    for (b=0; b<0x3; b++)
-        for (g=0; g<0x7; g++)
-            for (r=0; r<0x7; r++)
-            {
-                SDLcolors[b+(g<<2)+(r<<5)].r = r<<5;
-                SDLcolors[b+(g<<2)+(r<<5)].g = g<<5;
-                SDLcolors[b+(g<<2)+(r<<5)].b = b<<6;
-            }
-
-    if(!SDL_SetColors(screen, SDLcolors, 0, 256))
-        dbg_print("palette_init8: SDL_SetPalette failed\n");
-*/
 }
-
 
 void pngpalette_init(void)
 {
@@ -747,64 +624,39 @@ inline void set_paletteCol(unsigned short *palette_table,
                     unsigned short *front,
                     unsigned short *back)
 {
-    int i;
-    /* initialize palette table
-     *
-     * initialize back plane palette table
+   int i;
+   /* initialize palette table
+    *
+    * initialize back plane palette table
 
-     * these should actually be setting the SDL palette
-     */
+    * these should actually be setting the SDL palette
+    */
 
-    for(i=0;i<16*4;i++)
-    {
+   for(i=0;i<16*4;i++)
+   {
 #if 0
-        sprite[i] = *palette_table & 0x0FFF;
+      sprite[i] = *palette_table & 0x0FFF;
 #endif
-        sprite[i] = NGPC_TO_SDL16(palette_table[i]);
-#if 0
-        SDLpalette[i].r=(palette_table[i]&0xF)<<4;
-        SDLpalette[i].g=(palette_table[i]&0xF0);
-        SDLpalette[i].b=((palette_table[i]>>4)&0xF0);
-#endif
-    }
+      sprite[i] = NGPC_TO_SDL16(palette_table[i]);
+   }
 
-    /* initialize front plane palette table */
-    for(i=0;i<16*4;i++)
-    {
+   /* initialize front plane palette table */
+   for(i=0;i<16*4;i++)
+   {
 #if 0
-        front[i] = *palette_table & 0x0FFF;
+      front[i] = *palette_table & 0x0FFF;
 #endif
-        front[i] = NGPC_TO_SDL16(palette_table[i+16*4]);
-#if 0
-        SDLpalette[i].r=(palette_table[i+16*4]&0xF)<<4;
-        SDLpalette[i].g=(palette_table[i+16*4]&0xF0);
-        SDLpalette[i].b=((palette_table[i+16*4]>>4)&0xF0);
-#endif
-    }
+      front[i] = NGPC_TO_SDL16(palette_table[i+16*4]);
+   }
 
-    /* initialize sprite palette table (?) */
-    for(i=0;i<16*4;i++)
-    {
+   /* initialize sprite palette table (?) */
+   for(i=0;i<16*4;i++)
+   {
 #if 0
-        back[i] = *palette_table & 0x0FFF;
+      back[i] = *palette_table & 0x0FFF;
 #endif
-        back[i] = NGPC_TO_SDL16(palette_table[i+16*4*2]);
-#if 0
-        SDLpalette[i].r=(palette_table[i+16*4*2]&0xF)<<4;
-        SDLpalette[i].g=(palette_table[i+16*4*2]&0xF0);
-        SDLpalette[i].b=((palette_table[i+16*4*2]>>4)&0xF0);
-#endif
-    }
-
-#if 0
-    if(!SDL_SetColors(screen, SDLpalette, 16*4*2, 16*4))
-        dbg_print("set_paletteCol: SDL_SetPalette failed\n");
-#endif
-
-    /* Flavor
-     * I could take all the colors from sprite, front, back , BGCol, OOWCol, and set the SDL palette
-     *or, just take palette_table and set it
-     */
+      back[i] = NGPC_TO_SDL16(palette_table[i+16*4*2]);
+   }
 }
 
 inline void set_paletteBW(unsigned short *palette_table,
@@ -1216,9 +1068,6 @@ void graphicsBlitLine(unsigned char render)
             unsigned int bw = (m_emuInfo.machine == NGP);
             unsigned short OOWCol = NGPC_TO_SDL16(oowTable[*oowSelect & 0x07]);
 
-#ifndef __LIBRETRO__
-            SDL_LockSurface(screen);
-#endif
             if(*scanlineY == 0)
             {
                 if(bw)
@@ -1283,9 +1132,6 @@ void graphicsBlitLine(unsigned char render)
                 tCBack.gbp  += SIZEX;  /* Flavor, I don't get why these were here */
 #endif
             }
-#ifndef __LIBRETRO__
-            SDL_UnlockSurface(screen);
-#endif
         }
 
         /* increase scanline count */
@@ -1659,10 +1505,6 @@ void myGraphicsBlitLine(unsigned char render)  /* NOTA */
             unsigned short* pal;
             unsigned short* mempal;
 
-#if !defined(__GP32__) && !defined(__LIBRETRO__)
-            SDL_LockSurface(screen);
-#endif
-
 			if (*scanlineY==0)
 				sortSprites(bw);
 			if (*scanlineY<*wndTopLeftY || *scanlineY>*wndTopLeftY+*wndSizeY || *wndSizeX==0 || *wndSizeY==0)
@@ -1762,9 +1604,6 @@ void myGraphicsBlitLine(unsigned char render)  /* NOTA */
 					draw[i] = OOWCol;
 
 	        }
-#if !defined(__GP32__) && !defined(__LIBRETRO__)
-            SDL_UnlockSurface(screen);
-#endif
         }
         if (*scanlineY == 151)
         {
@@ -1803,14 +1642,11 @@ const char ErrCreateSurface[]  = "CreateSurface Failed";
 #define DDOK(x) if (hRet != DD_OK) { LastErr = x; return FALSE; }
 
 #ifdef __GP32__
-BOOL graphics_init()
+BOOL graphics_init(void)
 #else
 BOOL graphics_init(HWND phWnd)
 #endif
 {
-    /* put SDL setup stuff here
-     * Flavor */
-
 #ifdef __LIBRETRO__
     palette_init = palette_init16;
     palette_init(0xf800,0x7e0,0x1f);
@@ -1871,17 +1707,10 @@ BOOL graphics_init(HWND phWnd)
          *scanlineY = 0;
          break;
     }
-#ifndef __GP32__
-    /*SDL_Surface *skin = IMG_Load("skin.jpg");
-    if(skin)
-    {
-        SDL_BlitSurface(skin, NULL, screen, NULL);
-        SDL_Flip(screen);
-    }*/
-#endif
     return TRUE;
 }
 
-void graphics_cleanup()
-{}
+void graphics_cleanup(void)
+{
+}
 

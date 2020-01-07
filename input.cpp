@@ -1,16 +1,11 @@
 /* input.cpp: implementation of the input class. */
 
-/* Flavor - Convert from DirectInput to SDL/GP2X */
-
 #ifndef __GP32__
 #include "StdAfx.h"
 #endif
 #include "main.h"
 #include "input.h"
 #include "memory.h"
-#if 0
-/#include "menu.h"
-#endif
 
 /* address where the state of the input device(s) is stored */
 #if 0

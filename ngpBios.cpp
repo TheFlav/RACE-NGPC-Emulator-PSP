@@ -186,29 +186,31 @@ unsigned char sysfont[8*256] =
 	0x00, 0x00, 0x00, 0x00, 0x0a, 0x05, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x05, 0x02, 0x00,
 };
 
-// set system font
+/* set system font */
 void ngpBiosSYSFONTSET(unsigned char *pt, char trans, char font)
 {
-	int				i,j;
-	unsigned char	data, line;
+   int				i,j;
+   unsigned char	data, line;
 
-	for(i = 0; i < 8*256; i++) {
-		data = 0;
-		line = sysfont[i];
-		for(j = 0; j < 4; j++) {
-			data = data<<2;
-			data|= ((line&0x80) ? font : trans);
-			line = line<<1;
-		}
-		pt[1] = data;
-		data = 0;
-		for(j = 0; j < 4; j++) {
-			data = data<<2;
-			data|= ((line&0x80) ? font : trans);
-			line = line<<1;
-		}
-		pt[0] = data;
-		pt+= 2;
-	}
+   for(i = 0; i < 8*256; i++)
+   {
+      data = 0;
+      line = sysfont[i];
+      for(j = 0; j < 4; j++)
+      {
+         data = data<<2;
+         data|= ((line&0x80) ? font : trans);
+         line = line<<1;
+      }
+      pt[1] = data;
+      data = 0;
+      for(j = 0; j < 4; j++)
+      {
+         data = data<<2;
+         data|= ((line&0x80) ? font : trans);
+         line = line<<1;
+      }
+      pt[0] = data;
+      pt+= 2;
+   }
 }
-

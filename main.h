@@ -67,16 +67,9 @@ extern SYSTEMINFO	m_sysInfo[NR_OF_SYSTEMS];
 extern int romSize;
 
 int handleInputFile(char *romName);
-void mainemuinit();
+void mainemuinit(void);
 
-#ifdef __GP32__
-#define HOST_FPS 60  //100 was what it was, originally
-#else
-#ifdef __LIBRETRO__   //to call these FPS is a bit of a misnomer
-#define HOST_FPS 60  //the number of frames we want to draw to the host's screen every second
-#else
-#define HOST_FPS 60  //100 was what it was, originally
-#endif
-#endif
+/* to call these FPS is a bit of a misnomer */
+#define HOST_FPS 60  /* the number of frames we want to draw to the host's screen every second */
 
 #endif

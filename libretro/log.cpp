@@ -19,7 +19,8 @@ void init_log(retro_environment_t environ_cb)
 void handle_error( const char* error )
 {
 	char str [256];
-	if(error) {
+	if(error)
+   {
 		sprintf( str, "Error: %s", error );
 		log_cb(RETRO_LOG_ERROR, str );
 	}
@@ -28,7 +29,8 @@ void handle_error( const char* error )
 void handle_info( const char* info )
 {
 	char str [256];
-	if(info) {
+	if(info)
+   {
 		sprintf( str, "Info: %s\n", info );
 		log_cb(RETRO_LOG_INFO, str );
 	}
