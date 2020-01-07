@@ -9,10 +9,6 @@
 
 /* graphics.cpp: implementation of the graphics class. */
 
-/* Flavor - Convert from DirectDraw to SDL */
-
-/* Flavor #define WIN32_LEAN_AND_MEAN */
-
 #include "StdAfx.h"
 #include "main.h"
 #include "graphics.h"
@@ -20,8 +16,6 @@
 
 extern ngp_screen* screen;
 extern int gfx_hacks;
-
-#define INITGUID
 
 /*
  * 16 bit graphics buffers
@@ -149,13 +143,6 @@ unsigned short p2[16] = {
 /* extra fudge factor for PSP? */
 #define SCREEN_OFFET (SCREEN_X_OFFSET + (SCREEN_Y_OFFSET*(screen->w+PSP_FUDGE)))
 
-#ifndef __LIBRETRO__
-#define DO_PERIODIC_FLASH_SAVES
-#endif
-#if defined(DO_PERIODIC_FLASH_SAVES)
-static unsigned int frameCount = 0;
-#endif
-
 /* Flavor - For speed testing, you can turn off screen updates */
 
 #if 0
@@ -173,13 +160,6 @@ void graphicsBlitEnd(void)
 
 
 void graphics_paint(void);
-
-#if defined(DO_PERIODIC_FLASH_SAVES)
-static inline void incFrameCount(void)
-{
-    frameCount++;
-}
-#endif
 
 void write_screenshot(FILE *f)
 {
@@ -601,8 +581,6 @@ static inline void set_paletteCol(
    /* initialize palette table
     *
     * initialize back plane palette table
-
-    * these should actually be setting the SDL palette
     */
 
    for(i=0;i<16*4;i++)
@@ -1134,10 +1112,6 @@ void graphicsBlitLine(unsigned char render)
         tlcsMemWriteB(0x00008010,tlcsMemReadB(0x00008010) & ~0x40);
         graphicsBlitInit();
 
-#if defined(DO_PERIODIC_FLASH_SAVES)
-        incFrameCount();
-#endif
-
         *scanlineY = 0;
     }
     else
@@ -1485,12 +1459,7 @@ void myGraphicsBlitLine(unsigned char render)  /* NOTA */
 			}
 			else
 			{
-
-#ifdef __LIBRETRO__
 				if (((*scanlineY)&7) == 0)
-#else
-				if (options[HICOLOR_OPTION] || (!options[HICOLOR_OPTION] && ((*scanlineY)&7)==0))
-#endif
 				{
 		            if (bw)
     		        {
@@ -1598,13 +1567,6 @@ void myGraphicsBlitLine(unsigned char render)  /* NOTA */
  *
  */
 
-const char ErrDirectDrawCreate[] = "DirectDrawCreate Failed";
-const char ErrQueryInterface[]  = "QueryInterface Failed";
-const char ErrSetCooperativeLevel[] = "SetCooperativeLevel Failed";
-const char ErrCreateSurface[]  = "CreateSurface Failed";
-
-#define DDOK(x) if (hRet != DD_OK) { LastErr = x; return FALSE; }
-
 BOOL graphics_init(void)
 {
 #ifdef __LIBRETRO__
@@ -1613,7 +1575,6 @@ BOOL graphics_init(void)
     drawBuffer = (unsigned short*)screen->pixels;
 #else
     dbg_print("in graphics_init\n");
-
 
     switch (screen->format->BitsPerPixel)
     {
@@ -1628,9 +1589,6 @@ BOOL graphics_init(void)
         break;
     }
 
-#if 0
-    palettes = palette_table;
-#endif
     drawBuffer = ((unsigned short*) screen->pixels) + SCREEN_OFFET;
 
     palette_init(screen->format->Rmask,
@@ -1666,4 +1624,3 @@ BOOL graphics_init(void)
 void graphics_cleanup(void)
 {
 }
-

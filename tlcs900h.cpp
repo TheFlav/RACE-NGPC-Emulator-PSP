@@ -9183,8 +9183,12 @@ void tlcs_execute(int cycles)
     while(cycles > 0)
     {
         /* AKTODO */
-//        if(options[TURBO_OPTION])
+#if 0
+        if(options[TURBO_OPTION])
+#else
+        /* TODO/FIXME - perhaps this is too fast as a default? */
         if (1)
+#endif
         {
             //call a bunch of steps
             for (elapsed = tlcs_step();elapsed<(515>>(tlcsClockMulti-1)); elapsed += tlcs_step());
@@ -9199,7 +9203,9 @@ void tlcs_execute(int cycles)
         soundStep(elapsed);
 
         hCounter-= elapsed;
-        //        *ngpScX = hCounter>>2;
+#if 0
+        *ngpScX = hCounter>>2;
+#endif
 
 #ifdef TCLS900H_PROFILING
 
@@ -9214,16 +9220,12 @@ void tlcs_execute(int cycles)
         {
             // time equivalent to 1 horizontal line has passed
 #ifdef FRAMESKIP
-            //graphicsBlitLine(frame == 0);
             myGraphicsBlitLine(frame==0);
 #else
-
-            //graphicsBlitLine(true);
             myGraphicsBlitLine(true);
 #endif
 
-
- //NOTA     
+            //NOTA     
             
             hCounter+= 515;
             // now check what needs to be done at the
