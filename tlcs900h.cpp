@@ -2159,11 +2159,6 @@ int ldir()  // LDIR (XDE+),(XHL+) 10000011 00010001
 	}
 	else
 	{
-#ifdef TARGET_WIN
-	    //dbg_print("ldir: invalid dst=0x%06X or src=0x%06X addr cnt=0x%04X\n", dst, src, cnt);
-		//dbg_print("ldir: XIX=0x%06X XIY=0x%06X\n", gen_regsXIX, gen_regsXIY);
-		//dbg_print("ldir: *cregsL[4]=0x%06X *cregsL[5]=0x%06X\n", *cregsL[4], *cregsL[5]);
-#endif
 		if(dst)
 			memset(dst, 0xFF, cnt);
 	}
@@ -2237,11 +2232,6 @@ int ldirw() // LDIRW (XDE+),(XHL+) 10010011 00010001
 	}
 	else
 	{
-#ifdef TARGET_WIN
-	    //dbg_print("ldirw: invalid dst=0x%06X or src=0x%06X addr cnt=0x%04X\n", dst, src, cnt);
-		//dbg_print("ldirw: XIX=0x%06X XIY=0x%06X\n", gen_regsXIX, gen_regsXIY);
-		//dbg_print("ldirw: *cregsL[4]=0x%06X *cregsL[5]=0x%06X\n", *cregsL[4], *cregsL[5]);
-#endif
 		if(dst)
 			memset(dst, 0xFF, cnt*2);
 	}

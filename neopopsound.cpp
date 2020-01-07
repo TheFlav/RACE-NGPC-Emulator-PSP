@@ -42,11 +42,7 @@ SoundChip toneChip;
 SoundChip noiseChip;
 
 /* ==== DAC */
-#ifdef TARGET_WIN
-#define DAC_BUFFERSIZE		(2560 * 1024) /* at (256 * 1024) the PC version will crash on MS2 intro */
-#else
 #define DAC_BUFFERSIZE		(256 * 1024) /* at (256 * 1024) the PC version will crash on MS2 intro */
-#endif
 
 int dacLBufferRead, dacLBufferWrite, dacLBufferCount;
 _u16 dacBufferL[DAC_BUFFERSIZE];
