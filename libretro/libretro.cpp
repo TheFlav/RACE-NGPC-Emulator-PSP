@@ -63,7 +63,7 @@ unsigned retro_api_version(void)
    return RETRO_API_VERSION;
 }
 
-void graphics_paint()
+void graphics_paint(void)
 {
    video_cb(screen->pixels, screen->w, screen->h, FB_WIDTH << 1);
 }
@@ -92,9 +92,7 @@ static void check_variables(void)
    var.value = NULL;
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
       dark_filter_level = static_cast<unsigned>(atoi(var.value));
-   }
    graphicsSetDarkFilterLevel(dark_filter_level);
 }
 void retro_init(void)
@@ -243,23 +241,28 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
 
 void retro_run(void)
 {
+   unsigned i;
+   bool updated = false;
+   static int16_t sampleBuffer[2048];
+   static int16_t stereoBuffer[2048];
+   int16_t *p = NULL;
+   uint16_t samplesPerFrame;
+
    race_input();
 
    tlcs_execute(CPU_FREQ / HOST_FPS);
 
-   static int16_t sampleBuffer[2048];
-   static int16_t stereoBuffer[2048];
    /* Get the number of samples in a frame */
-   uint16_t samplesPerFrame = RETRO_SAMPLE_RATE / HOST_FPS;
+   samplesPerFrame = RETRO_SAMPLE_RATE / HOST_FPS;
 
    memset(sampleBuffer, 0, samplesPerFrame * sizeof(int16_t));
 
    sound_update((uint16_t*)sampleBuffer, samplesPerFrame * sizeof(int16_t)); /* Get sound data */
    dac_update((uint16_t*)sampleBuffer, samplesPerFrame * sizeof(int16_t));
 
-   int16_t *p = stereoBuffer;
+   p = stereoBuffer;
    
-   for (int i = 0; i < samplesPerFrame; i++)
+   for (i = 0; i < samplesPerFrame; i++)
    {
       p[0] = sampleBuffer[i];
       p[1] = sampleBuffer[i];
@@ -268,7 +271,7 @@ void retro_run(void)
 
    audio_batch_cb(stereoBuffer, samplesPerFrame);
 
-   bool updated = false;
+   /* TODO/FIXME - shouldn't we check this at the top of this function? */
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
       check_variables();
 }
@@ -308,13 +311,13 @@ bool retro_load_game(const struct retro_game_info *info)
 
    environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, desc);
 
-   screen = (ngp_screen*)calloc(1, sizeof(*screen));
+   screen         = (ngp_screen*)calloc(1, sizeof(*screen));
 
    if (!screen)
       return false;
 
-   screen->w = FB_WIDTH;
-   screen->h = FB_HEIGHT;
+   screen->w      = FB_WIDTH;
+   screen->h      = FB_HEIGHT;
 
    screen->pixels = calloc(1, FB_WIDTH * FB_HEIGHT * 2);
 
