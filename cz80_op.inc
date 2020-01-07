@@ -13,9 +13,9 @@ switch (Opcode)
 {
 #endif
 
-    // 8 BITS LOAD
+    /* 8 BITS LOAD */
     
-    OP(0x00):   // NOP
+    OP(0x00):   /* NOP */
 
     OP(0x40):   // LD   B,B
     OP(0x49):   // LD   C,C

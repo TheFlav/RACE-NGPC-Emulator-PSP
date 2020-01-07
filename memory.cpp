@@ -1,29 +1,31 @@
-//---------------------------------------------------------------------------
-//	This program is free software; you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License as published by
-//	the Free Software Foundation; either version 2 of the License, or
-//	(at your option) any later version. See also the license.txt file for
-//	additional informations.
-//---------------------------------------------------------------------------
+/*---------------------------------------------------------------------------
+ *	This program is free software; you can redistribute it and/or modify
+ *	it under the terms of the GNU General Public License as published by
+ *	the Free Software Foundation; either version 2 of the License, or
+ *	(at your option) any later version. See also the license.txt file for
+ *	additional informations.
+ *---------------------------------------------------------------------------
+ */
 
-// memory.cpp: implementation of the memory class.
-//
-// Quick & dirty implementation; no rom protection etc.
-//
-// TODO:
-//
-//////////////////////////////////////////////////////////////////////
+/* memory.cpp: implementation of the memory class.
+ *
+ * Quick & dirty implementation; no rom protection etc.
+ *
+ * TODO:
+ */
 
 #ifndef __GP32__
 #include "StdAfx.h"
 #endif
 #include "main.h"
 #include "memory.h"
-#include "input.h"		// for Gameboy Input
-#include "graphics.h"	// for i/o ports of the game gear
-//#include "mainemu.h"
+#include "input.h"		/* for Gameboy Input */
+#include "graphics.h"	/* for i/o ports of the game gear */
+#if 0
+#include "mainemu.h"
 #include "sound.h"
-//#include "z80.h"
+#include "z80.h"
+#endif
 #include "tlcs900h.h"
 #include "koyote_bin.h"
 
@@ -44,12 +46,17 @@ static char THIS_FILE[]=__FILE__;
 #endif
 
 
-// define work memory for neogeo pocket color
-//
-// internal cpu ram and internal I/O register (2KB + 160 bytes)
-//unsigned char cpuram[0x08a0];
-// regular work ram (32 kbytes?)
-// on the gameboy maximum of 128kbyte of RAM is possible, plus some internal ram (64KB)
+/* define work memory for neogeo pocket color
+ *
+ * internal cpu ram and internal I/O register (2KB + 160 bytes)
+ */
+
+#if 0
+unsigned char cpuram[0x08a0];
+#endif
+
+/* regular work ram (32 kbytes?)
+ * on the gameboy maximum of 128kbyte of RAM is possible, plus some internal ram (64KB) */
 unsigned char __attribute__ ((__aligned__(4))) mainram[(64+32+128)*1024];
 // rom area for roms (4 Megabyte)
 unsigned char __attribute__ ((__aligned__(4))) mainrom[4*1024*1024];
@@ -525,4 +532,3 @@ void mem_dump_ram(FILE *output)
 {
 	fwrite(mainram,1,sizeof(mainram),output);
 }
-

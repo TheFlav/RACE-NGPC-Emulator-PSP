@@ -1,18 +1,17 @@
-//---------------------------------------------------------------------------
-//	This program is free software; you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License as published by
-//	the Free Software Foundation; either version 2 of the License, or
-//	(at your option) any later version. See also the license.txt file for
-//	additional informations.
-//---------------------------------------------------------------------------
+/*---------------------------------------------------------------------------
+ *	This program is free software; you can redistribute it and/or modify
+ *	it under the terms of the GNU General Public License as published by
+ *	the Free Software Foundation; either version 2 of the License, or
+ *	(at your option) any later version. See also the license.txt file for
+ *	additional informations.
+ *---------------------------------------------------------------------------
+ */
 
-// graphics.cpp: implementation of the graphics class.
-//
-//////////////////////////////////////////////////////////////////////
+/* graphics.cpp: implementation of the graphics class. */
 
-//Flavor - Convert from DirectDraw to SDL
+/* Flavor - Convert from DirectDraw to SDL */
 
-//Flavor #define WIN32_LEAN_AND_MEAN
+/* Flavor #define WIN32_LEAN_AND_MEAN */
 
 #include "StdAfx.h"
 #include "main.h"
@@ -35,24 +34,27 @@ int zoom=0;
 #endif
 
 
-//SDL_Color SDLpalette[256];
+#if 0
+SDL_Color SDLpalette[256];
+#endif
 
 
-//
-// 16 bit graphics buffers
-// At the moment there's no system which uses more than 16 bit
-// colors.
-// A grpaphics buffer holds number referencing to the color from
-// the "total palette" for that system.
-//
+/*
+ * 16 bit graphics buffers
+ * At the moment there's no system which uses more than 16 bit
+ * colors.
+ * A graphics buffer holds number referencing to the color from
+ * the "total palette" for that system.
+ */
 int    totalpalette[32*32*32];
 
-// Allows application of a 'dark filter' to reduce the
-// glare of white backgrounds when viewing NGP content
-// on a backlit screen
-// Note: This code has no consistency regarding variable
-// names - so we just use the normal libretro standard of
-// delimiter-separated words...
+/* Allows application of a 'dark filter' to reduce the
+ * glare of white backgrounds when viewing NGP content
+ * on a backlit screen
+ * Note: This code has no consistency regarding variable
+ * names - so we just use the normal libretro standard of
+ * delimiter-separated words...
+ */
 static unsigned dark_filter_level = 0;
 
 #ifdef __GP32__
@@ -67,8 +69,8 @@ static unsigned short *drawBuffer;
 
 #endif
 
-// NGP specific
-// precalculated pattern structures
+/* NGP specific
+ * precalculated pattern structures */
 const unsigned char mypatterns[256*4] =
     {
         0,0,0,0, 0,0,0,1, 0,0,0,2, 0,0,0,3, 0,0,1,0, 0,0,1,1, 0,0,1,2, 0,0,1,3,
@@ -105,7 +107,7 @@ const unsigned char mypatterns[256*4] =
         3,3,2,0, 3,3,2,1, 3,3,2,2, 3,3,2,3, 3,3,3,0, 3,3,3,1, 3,3,3,2, 3,3,3,3,
     };
 
-// standard VRAM table adresses
+/* standard VRAM table adresses */
 unsigned char *sprite_table   = get_address(0x00008800);
 unsigned char *pattern_table   = get_address(0x0000A000);
 unsigned short*patterns = (unsigned short*)pattern_table;
@@ -114,41 +116,45 @@ unsigned short *tile_table_back  = (unsigned short *)get_address(0x00009800);
 unsigned short *palette_table   = (unsigned short *)get_address(0x00008200);
 unsigned char *bw_palette_table  = get_address(0x00008100);
 unsigned char *sprite_palette_numbers = get_address(0x00008C00);
-// VDP registers
-//
-// wher is the vdp rendering now on the lcd display?
-//unsigned char *scanlineX  = get_address(0x00008008);
+
+/* VDP registers
+ *
+ * where is the vdp rendering now on the lcd display?
+ */
+
+#if 0
+unsigned char *scanlineX  = get_address(0x00008008);
+#endif
 unsigned char *scanlineY  = get_address(0x00008009);
-// frame 0/1 priority registers
+/* frame 0/1 priority registers */
 unsigned char *frame0Pri  = get_address(0x00008000);
 unsigned char *frame1Pri  = get_address(0x00008030);
-// windowing registers
+/* windowing registers */
 unsigned char *wndTopLeftX = get_address(0x00008002);
 unsigned char *wndTopLeftY = get_address(0x00008003);
 unsigned char *wndSizeX  = get_address(0x00008004);
 unsigned char *wndSizeY  = get_address(0x00008005);
-// scrolling registers
+/* scrolling registers */
 unsigned char *scrollSpriteX = get_address(0x00008020);
 unsigned char *scrollSpriteY = get_address(0x00008021);
 unsigned char *scrollFrontX = get_address(0x00008032);
 unsigned char *scrollFrontY = get_address(0x00008033);
 unsigned char *scrollBackX = get_address(0x00008034);
 unsigned char *scrollBackY = get_address(0x00008035);
-// background color selection register and table
+/* background color selection register and table */
 unsigned char *bgSelect  = get_address(0x00008118);
 unsigned short *bgTable  = (unsigned short *)get_address(0x000083E0);
 unsigned char *oowSelect  = get_address(0x00008012);
 unsigned short *oowTable  = (unsigned short *)get_address(0x000083F0);
-// machine constants
+/* machine constants */
 unsigned char *color_switch = get_address(0x00006F91);
 
-
-// Defines
+/* Defines */
 #define ZeroStruct(x) ZeroMemory(&x, sizeof(x)); x.dwSize = sizeof(x);
 #define SafeRelease(x) if(x) { x->Release(); x = NULL; }
 
 
-// target window
+/* target window */
 /*
 unsigned short p2[16] = {
                             0x0001, 0x0002, 0x0004, 0x0008, 0x0010, 0x0020, 0x0040, 0x0080,
@@ -164,8 +170,10 @@ unsigned short p2[16] = {
 #define SCREEN_X_OFFSET ((screen->w - BLIT_WIDTH)/2)
 #define SCREEN_Y_OFFSET ((screen->h - BLIT_HEIGHT)/2)
 
-#define PSP_FUDGE 0//(32)  //32 is good for 480x272  -64 is for 320x240 (squish)
-#define SCREEN_OFFET (SCREEN_X_OFFSET + (SCREEN_Y_OFFSET*(screen->w+PSP_FUDGE)))//extra fudge factor for PSP?
+/* (32)  32 is good for 480x272  -64 is for 320x240 (squish) */
+#define PSP_FUDGE 0
+/* extra fudge factor for PSP? */
+#define SCREEN_OFFET (SCREEN_X_OFFSET + (SCREEN_Y_OFFSET*(screen->w+PSP_FUDGE)))
 
 #ifndef __LIBRETRO__
 #define DO_PERIODIC_FLASH_SAVES
@@ -178,14 +186,19 @@ static char fps[32];
 #endif
 #endif
 
-//Flavor - For speed testing, you can turn off screen updates
-//#define NO_SCREEN_OUTPUT  //seems to give about 4-6FPS on GP2X
+/* Flavor - For speed testing, you can turn off screen updates */
 
-// flip buffers and indicate that one of the buffers is ready
-// for blitting to the screen.
-void graphicsBlitEnd()
+#if 0
+#define NO_SCREEN_OUTPUT  /* seems to give about 4-6FPS on GP2X */
+#endif
+
+/* flip buffers and indicate that one of the buffers is ready
+ * for blitting to the screen. */
+void graphicsBlitEnd(void)
 {
-    //displayDirty=1;
+#if 0
+    displayDirty=1;
+#endif
 }
 
 
@@ -193,19 +206,19 @@ void graphicsBlitEnd()
 void graphics_paint();
 #else
 
-// blit the display buffer, if necessary, and put it to the screen
-inline void graphics_paint()
+/* blit the display buffer, if necessary, and put it to the screen */
+inline void graphics_paint(void)
 {
 #ifndef NO_SCREEN_OUTPUT
 
 #ifndef __GP32__
-        //should update only what changed, but test with one that updates entire screen
+   /* should update only what changed, but test with one that updates entire screen */
 #ifndef ZOOM_SUPPORT
         SDL_UpdateRect(screen, SCREEN_X_OFFSET, SCREEN_Y_OFFSET, BLIT_WIDTH, BLIT_HEIGHT);
 #else
 /*        static int prevZoom=0;
         if(prevZoom!=zoom)
-            SDL_FillRect(actualScreen, NULL, SDL_MapRGB(screen->format,0,0,0));//fill black
+            SDL_FillRect(actualScreen, NULL, SDL_MapRGB(screen->format,0,0,0)); /* fill black */
 
         if(zoom<=0)
         {
@@ -217,7 +230,7 @@ inline void graphics_paint()
             else
                 SDL_Flip(actualScreen);
         }
-        else //if(zoom>0)
+        else /* if(zoom>0) */
         {
             SDL_Rect scrRect  = {SCREEN_X_OFFSET, SCREEN_Y_OFFSET, BLIT_WIDTH, BLIT_HEIGHT};
             SDL_Rect ascrRect = {scrRect.x-zoom, scrRect.y-zoom, scrRect.w+(zoom*2), scrRect.h+(zoom*2)};
@@ -230,15 +243,19 @@ inline void graphics_paint()
         }
         prevZoom=zoom;*/
 
-//For now, no variable zooming
+        /* For now, no variable zooming */
         SDL_Rect scrRect  = {SCREEN_X_OFFSET, SCREEN_Y_OFFSET, BLIT_WIDTH, BLIT_HEIGHT};
         SDL_BlitSurface(screen, &scrRect, actualScreen, &scrRect);
         SDL_UpdateRects(actualScreen, 1, &scrRect);
 #endif
-        //SDL_UpdateRect(screen, 0, 0, screen->w, screen->h);
+#if 0
+        SDL_UpdateRect(screen, 0, 0, screen->w, screen->h); */
 #endif
-        //SDL_Flip(screen);
-    //}
+#endif
+#if 0
+        SDL_Flip(screen);
+    }
+#endif
 #endif
 
 #if defined(DO_FPS_DISPLAY) || defined(DO_PERIODIC_FLASH_SAVES)
@@ -253,12 +270,12 @@ inline void graphics_paint()
     if((currTime - startTime) >= 1000)
     {
 #ifdef DO_PERIODIC_FLASH_SAVES
-		//WRITE_SAVEGAME_IF_DIRTY;
+		/* WRITE_SAVEGAME_IF_DIRTY; */
         if(needToWriteFile && options[PERIODIC_SAVES_OPTION])
         {
             if(options[FPS_OPTION])
                 printTTF("S", 10, 10, red, 1, actualScreen, 1);
-            writeSaveGameFile();//we found a dirty one, so write the file
+            writeSaveGameFile(); /* we found a dirty one, so write the file */
             if(options[FPS_OPTION])
                 printTTF("S", 10, 10, green, 1, actualScreen, 1);
         }
@@ -266,10 +283,12 @@ inline void graphics_paint()
         {
 #endif
 #ifdef DO_FPS_DISPLAY
-            //SDL_Rect numRect =
+            /* SDL_Rect numRect = */
             if(options[FPS_OPTION])
                 drawNumber(frameCount, 10, 10);
-            //SDL_UpdateRect(screen, numRect.x, numRect.y, numRect.w, numRect.h);
+#if 0
+            SDL_UpdateRect(screen, numRect.x, numRect.y, numRect.w, numRect.h);
+#endif
 #endif
 #ifdef DO_PERIODIC_FLASH_SAVES
         }
@@ -346,14 +365,14 @@ void write_screenshot(FILE *f)
     png_write_end(png_ptr, info_ptr);
     png_destroy_write_struct(&png_ptr, &info_ptr);
     return;
-#endif //#if 0
+#endif /* #if 0 */
 }
 
-//////////////////////////////////////////////////////////////////////////////
-//
-// Palette Initialization
-//
-//////////////////////////////////////////////////////////////////////////////
+/*
+ *
+ * Palette Initialization
+ *
+ */
 
 void (*palette_init)(DWORD dwRBitMask, DWORD dwGBitMask, DWORD dwBBitMask);
 
@@ -433,36 +452,38 @@ void palette_init32(DWORD dwRBitMask, DWORD dwGBitMask, DWORD dwBBitMask)
     }*/
 }
 
-// RGB range: [0,1]
+/* RGB range: [0,1] */
 void darken_rgb(float &r, float &g, float &b)
 {
-    // Note: This is *very* approximate...
-    // - Should be done in linear colour space. It isn't.
-    // - Should alter brightness by performing an RGB->HSL->RGB
-    //   conversion. We just do simple linear scaling instead.
-    // Basically, this is intended for use on devices that are
-    // too weak to run shaders (i.e. why would you want a 'dark filter'
-    // if your device supports proper LCD shaders?). We therefore
-    // cut corners for the sake of performance...
-    //
-    // Constants
-    // > Luminosity factors: photometric/digital ITU BT.709
-    //static const float luma_r = 0.2126f;
-    //static const float luma_g = 0.7152f;
-    //static const float luma_b = 0.0722f;
-    // > Luminosity factors: Digital ITU BT.601
-    //   (seems to produce better results than ITU BT.709)
+    /* Note: This is *very* approximate...
+     * - Should be done in linear colour space. It isn't.
+     * - Should alter brightness by performing an RGB->HSL->RGB
+     *   conversion. We just do simple linear scaling instead.
+     * Basically, this is intended for use on devices that are
+     8 too weak to run shaders (i.e. why would you want a 'dark filter'
+     * if your device supports proper LCD shaders?). We therefore
+     * cut corners for the sake of performance...
+     *
+     * Constants
+     * > Luminosity factors: photometric/digital ITU BT.709
+     *static const float luma_r = 0.2126f;
+     *static const float luma_g = 0.7152f;
+     *static const float luma_b = 0.0722f;
+     * > Luminosity factors: Digital ITU BT.601
+     *   (seems to produce better results than ITU BT.709)
+     */
     static const float luma_r = 0.299f;
     static const float luma_g = 0.587f;
     static const float luma_b = 0.114f;
-    // Calculate luminosity
+    /* Calculate luminosity */
     float luma = (luma_r * r) + (luma_g * g) + (luma_b * b);
-    // Get 'darkness' scaling factor
-    // > User set 'dark filter' level scaled by current luminosity
-    //   (i.e. lighter colours affected more than darker colours)
+    /* Get 'darkness' scaling factor
+     * > User set 'dark filter' level scaled by current luminosity
+     *   (i.e. lighter colours affected more than darker colours)
+     */
     float dark_factor = 1.0f - ((static_cast<float>(dark_filter_level) * 0.01f) * luma);
     dark_factor = dark_factor < 0.0f ? 0.0f : dark_factor;
-    // Perform scaling...
+    /* Perform scaling... */
     r = r * dark_factor;
     g = g * dark_factor;
     b = b * dark_factor;
@@ -470,7 +491,9 @@ void darken_rgb(float &r, float &g, float &b)
 
 void palette_init16(DWORD dwRBitMask, DWORD dwGBitMask, DWORD dwBBitMask)
 {
-    //dbg_print("in palette_init16(0x%X, 0x%X, 0x%X)\n", dwRBitMask, dwGBitMask, dwBBitMask);
+#if 0
+    dbg_print("in palette_init16(0x%X, 0x%X, 0x%X)\n", dwRBitMask, dwGBitMask, dwBBitMask);
+#endif
 
     char RShiftCount = 0, GShiftCount = 0, BShiftCount = 0;
     char RBitCount = 0, GBitCount = 0, BBitCount = 0;
@@ -521,20 +544,20 @@ void palette_init16(DWORD dwRBitMask, DWORD dwGBitMask, DWORD dwBBitMask)
                 float r_float, g_float, b_float;
                 int r_final, g_final, b_final;
 
-                // Perform RGB assignment with colour conversion
+                /* Perform RGB assignment with colour conversion */
                 for (b=0; b<16; b++)
                 {
                     for (g=0; g<16; g++)
                     {
                         for (r=0; r<16; r++)
                         {
-                            // Convert colour range from [0,0xF] to [0,1]
+                            /* Convert colour range from [0,0xF] to [0,1] */
                             r_float = static_cast<float>(r) * rgb_max_inv;
                             g_float = static_cast<float>(g) * rgb_max_inv;
                             b_float = static_cast<float>(b) * rgb_max_inv;
-                            // Perform image darkening
+                            /* Perform image darkening */
                             darken_rgb(r_float, g_float, b_float);
-                            // Convert back to 4bit unsigned
+                            /* Convert back to 4bit unsigned */
                             r_final = static_cast<int>((r_float * rgb_max) + 0.5f) & 0xF;
                             g_final = static_cast<int>((g_float * rgb_max) + 0.5f) & 0xF;
                             b_final = static_cast<int>((b_float * rgb_max) + 0.5f) & 0xF;
@@ -549,7 +572,7 @@ void palette_init16(DWORD dwRBitMask, DWORD dwGBitMask, DWORD dwBBitMask)
             }
             else
             {
-                // Use fast RGB assignment
+                /* Use fast RGB assignment */
                 for (b=0; b<16; b++)
                     for (g=0; g<16; g++)
                         for (r=0; r<16; r++)
@@ -562,9 +585,10 @@ void palette_init16(DWORD dwRBitMask, DWORD dwGBitMask, DWORD dwBBitMask)
     }
 }
 
-// Again, there is no consistency in naming...
-// Most interface functions seem to use camel case,
-// so do the same here...
+/* Again, there is no consistency in naming...
+ * Most interface functions seem to use camel case,
+ * so do the same here...
+ */
 void graphicsSetDarkFilterLevel(unsigned filterLevel)
 {
 #ifdef __LIBRETRO__
@@ -585,7 +609,7 @@ void palette_init8(DWORD dwRBitMask, DWORD dwGBitMask, DWORD dwBBitMask)
     SDL_Color SDLcolors[256];
     unsigned char r, g, b;
 
-    //Generic 332 RGB palette
+    // Generic 332 RGB palette
     for (b=0; b<0x3; b++)
         for (g=0; g<0x7; g++)
             for (r=0; r<0x7; r++)
@@ -643,74 +667,80 @@ void pngpalette_init(void)
     }*/
 }
 
-//////////////////////////////////////////////////////////////////////////////
-//
-// Neogeo Pocket & Neogeo Pocket color rendering
-//
-//////////////////////////////////////////////////////////////////////////////
+/*
+ *
+ * Neogeo Pocket & Neogeo Pocket color rendering
+ *
+ */
 
-//static const bwTable[8] = { 0x0000, 0x0333, 0x0555, 0x0777, 0x0999, 0x0BBB, 0x0DDD, 0x0FFF };
-//NOTA Color para juegos b/n
+#if 0
+static const bwTable[8] = { 0x0000, 0x0333, 0x0555, 0x0777, 0x0999, 0x0BBB, 0x0DDD, 0x0FFF };
+#endif
+
+/* NOTA Color para juegos b/n */
 static const unsigned short bwTable[8] =
     {
-        //NOTA  nose,nose,window,nose,nose,nose,nose,nose
-        // B, G,R
+        /* NOTA  nose,nose,window,nose,nose,nose,nose,nose
+         * B, G,R */
         0x0FFF, 0x0DDD, 0x0BBB, 0x0999, 0x0777, 0x0555, 0x0333, 0x0000
     };
 
 #ifndef __GP32__
 
-// used for rendering the sprites
+/* used for rendering the sprites */
 
 typedef struct
 {
-    unsigned short offset;    // offset in graphics buffer to blit, Flavor hopes 16bits is good enough
-    unsigned short pattern;   // pattern code including palette number
-    unsigned short *tilept;   // pointer into the tile description
-    unsigned short *palette;   // palette used to render this sprite
+    unsigned short offset;    /* offset in graphics buffer to blit, Flavor hopes 16bits is good enough */
+    unsigned short pattern;   /* pattern code including palette number */
+    unsigned short *tilept;   /* pointer into the tile description */
+    unsigned short *palette;  /* palette used to render this sprite */
 }
 SPRITE;
 
 typedef struct
 {
-    unsigned short *gbp;    // (0,x) base for drawing
+    unsigned short *gbp;    /* (0,x) base for drawing */
     unsigned char count[152];
     SPRITE   sprite[152][64];
 }
 SPRITEDEFS;
 
-//unsigned int spritesDirty = true;
+#if 0
+unsigned int spritesDirty = true;
+#endif
 
-SPRITEDEFS spriteDefs[3];    // 4 priority levels
+SPRITEDEFS spriteDefs[3];    /* 4 priority levels */
 
-// definitions of types and variables that are used internally during
-// rendering of a screen
+/* definitions of types and variables that are used internally during
+ * rendering of a screen */
 
 typedef struct
 {
-    unsigned short *gbp;     // pointer into graphics buffer
-    unsigned char oldScrollX;    // keep an eye on the old and previous values
-    unsigned char *newScrollX;   // of the scroll values
+    unsigned short *gbp;     /* pointer into graphics buffer */
+    unsigned char oldScrollX;    /* keep an eye on the old and previous values */
+    unsigned char *newScrollX;   /* of the scroll values */
     unsigned char oldScrollY;
     unsigned char *newScrollY;
-    unsigned short *tileBase;    // start address of the tile table this structure represents
-    short   tile[21];    // the tile code
-    unsigned short *palettes[21];   // palettes associated with tiles
-    unsigned short *tilept[21];   // tile lines to render
-    unsigned short *palette;    // palette for the tiles this VSYNC
+    unsigned short *tileBase;    /* start address of the tile table this structure represents */
+    short   tile[21];    /* the tile code */
+    unsigned short *palettes[21];   /* palettes associated with tiles */
+    unsigned short *tilept[21];   /* tile lines to render */
+    unsigned short *palette;    /* palette for the tiles this VSYNC */
 }
 TILECACHE;
 
-unsigned short palettes[16*4+16*4+16*4]; // placeholder for the converted palette
+unsigned short palettes[16*4+16*4+16*4]; /* placeholder for the converted palette */
 
 
-TILECACHE  tCBack;      // tile pointer cache for the back buffer
-TILECACHE  tCFront;     // tile pointer cache for the front buffer
+TILECACHE  tCBack;      /* tile pointer cache for the back buffer */
+TILECACHE  tCFront;     /* tile pointer cache for the front buffer */
 
-//int    BGCol;      // placeholder for the background color this VSYNC
-//int    OOWCol;      // placeholder for the outside window color this VSYNC
-//unsigned char SprPriLo, SprPriHi, SprPri = 0;
-
+#if 0
+int    BGCol;      /* placeholder for the background color this VSYNC */
+int    OOWCol;      /* placeholder for the outside window color this VSYNC */
+unsigned char SprPriLo, SprPriHi, SprPri = 0;
+#endif
 
 inline void set_paletteCol(unsigned short *palette_table,
                     unsigned short *sprite,
@@ -718,47 +748,63 @@ inline void set_paletteCol(unsigned short *palette_table,
                     unsigned short *back)
 {
     int i;
-    // initialize palette table
-    //
-    // initialize back plane palette table
+    /* initialize palette table
+     *
+     * initialize back plane palette table
 
-    //these should actually be setting the SDL palette
+     * these should actually be setting the SDL palette
+     */
 
     for(i=0;i<16*4;i++)
     {
-        //sprite[i] = *palette_table & 0x0FFF;
+#if 0
+        sprite[i] = *palette_table & 0x0FFF;
+#endif
         sprite[i] = NGPC_TO_SDL16(palette_table[i]);
-        //SDLpalette[i].r=(palette_table[i]&0xF)<<4;
-        //SDLpalette[i].g=(palette_table[i]&0xF0);
-        //SDLpalette[i].b=((palette_table[i]>>4)&0xF0);
+#if 0
+        SDLpalette[i].r=(palette_table[i]&0xF)<<4;
+        SDLpalette[i].g=(palette_table[i]&0xF0);
+        SDLpalette[i].b=((palette_table[i]>>4)&0xF0);
+#endif
     }
 
-    // initialize front plane palette table
+    /* initialize front plane palette table */
     for(i=0;i<16*4;i++)
     {
-        //front[i] = *palette_table & 0x0FFF;
+#if 0
+        front[i] = *palette_table & 0x0FFF;
+#endif
         front[i] = NGPC_TO_SDL16(palette_table[i+16*4]);
-        //SDLpalette[i].r=(palette_table[i+16*4]&0xF)<<4;
-        //SDLpalette[i].g=(palette_table[i+16*4]&0xF0);
-        //SDLpalette[i].b=((palette_table[i+16*4]>>4)&0xF0);
+#if 0
+        SDLpalette[i].r=(palette_table[i+16*4]&0xF)<<4;
+        SDLpalette[i].g=(palette_table[i+16*4]&0xF0);
+        SDLpalette[i].b=((palette_table[i+16*4]>>4)&0xF0);
+#endif
     }
 
-    // initialize sprite palette table (?)
+    /* initialize sprite palette table (?) */
     for(i=0;i<16*4;i++)
     {
-        //back[i] = *palette_table & 0x0FFF;
+#if 0
+        back[i] = *palette_table & 0x0FFF;
+#endif
         back[i] = NGPC_TO_SDL16(palette_table[i+16*4*2]);
-        //SDLpalette[i].r=(palette_table[i+16*4*2]&0xF)<<4;
-        //SDLpalette[i].g=(palette_table[i+16*4*2]&0xF0);
-        //SDLpalette[i].b=((palette_table[i+16*4*2]>>4)&0xF0);
+#if 0
+        SDLpalette[i].r=(palette_table[i+16*4*2]&0xF)<<4;
+        SDLpalette[i].g=(palette_table[i+16*4*2]&0xF0);
+        SDLpalette[i].b=((palette_table[i+16*4*2]>>4)&0xF0);
+#endif
     }
 
-    //if(!SDL_SetColors(screen, SDLpalette, 16*4*2, 16*4))
-    //    dbg_print("set_paletteCol: SDL_SetPalette failed\n");
+#if 0
+    if(!SDL_SetColors(screen, SDLpalette, 16*4*2, 16*4))
+        dbg_print("set_paletteCol: SDL_SetPalette failed\n");
+#endif
 
-    //Flavor
-    //I could take all the colors from sprite, front, back , BGCol, OOWCol, and set the SDL palette
-    //or, just take palette_table and set it
+    /* Flavor
+     * I could take all the colors from sprite, front, back , BGCol, OOWCol, and set the SDL palette
+     *or, just take palette_table and set it
+     */
 }
 
 inline void set_paletteBW(unsigned short *palette_table,
@@ -767,30 +813,28 @@ inline void set_paletteBW(unsigned short *palette_table,
                    unsigned short *back)
 {
     int i;
-    unsigned char *pt = ((unsigned char *)palette_table)-0x0100; // get b/w color table
-    // initialize palette table
-    //
+    unsigned char *pt = ((unsigned char *)palette_table)-0x0100; /* get b/w color table */
+
+    /* initialize palette table */
     for(i=0;i<4;i++)
     {
-        // initialize sprite palette table
+        /* initialize sprite palette table */
         sprite[i] = NGPC_TO_SDL16(bwTable[pt[i] & 0x07]);
         sprite[4+i] = NGPC_TO_SDL16(bwTable[pt[4+i] & 0x07]);
-        // initialize front plane palette table
+        /* initialize front plane palette table */
         front[i] = NGPC_TO_SDL16(bwTable[pt[8+i] & 0x07]);
         front[4+i] = NGPC_TO_SDL16(bwTable[pt[8+4+i] & 0x07]);
-        // initialize back plane palette table
+        /* initialize back plane palette table */
         back[i] = NGPC_TO_SDL16(bwTable[pt[16+i] & 0x07]);
         back[4+i] = NGPC_TO_SDL16(bwTable[pt[16+4+i] & 0x07]);
     }
 }
 
-//I think there's something wrong with this on the GP2X, because CFC2's intro screen is all red
+/* I think there's something wrong with this on the GP2X, because CFC2's intro screen is all red */
 inline void lineClear(TILECACHE *tC, unsigned short col)
 {
     for(int i=0; i<21*8; i++)
-    {
         tC->gbp[i] = col;
-    }
 }
 
 inline void clipLeftRight(SPRITEDEFS *sprDef, unsigned short OOWCol)
@@ -816,8 +860,8 @@ inline void lineFront(TILECACHE *tC)
     const unsigned char *p2;
     unsigned short *gb;
 
-    //for 8bit SDL, this would set gb to the index of the proper color
-    //then, we'd set gb to p2[n]+(i*sizeof(palette))
+    /* for 8bit SDL, this would set gb to the index of the proper color
+     * then, we'd set gb to p2[n]+(i*sizeof(palette)) */
 
     gb = tC->gbp;
     for (i=0;i<21;i++)
@@ -881,8 +925,8 @@ inline void lineSprite(SPRITEDEFS *sprDefs)
     unsigned char a,b;
     const unsigned char *p2;
 
-    //for 8bit SDL, this would set gb to the index of the proper color
-    //then, we'd set gb to p2[n]
+    /* for 8bit SDL, this would set gb to the index of the proper color
+     * then, we'd set gb to p2[n] */
 
     for (int i=sprDefs->count[*scanlineY];i>0;i--)
     {
@@ -935,74 +979,75 @@ inline void lineSprite(SPRITEDEFS *sprDefs)
     }
 }
 
-// sort all the sprites according to their priorities
-/*inline void spriteSort(unsigned int bw)
+/* sort all the sprites according to their priorities */
+#if 0
+inline void spriteSort(unsigned int bw)
 {
-    unsigned short spriteCode;
-    unsigned short *pt;
-    unsigned char x, y, prevx=0, prevy=0;
-    int    i, j;
+   unsigned short spriteCode;
+   unsigned short *pt;
+   unsigned char x, y, prevx=0, prevy=0;
+   int    i, j;
 
-    SPRITEDEFS *SprPri00 = &spriteDefs[0];
-    SPRITEDEFS *SprPri40 = &spriteDefs[1];
-    SPRITEDEFS *SprPri80 = &spriteDefs[2];
-    SPRITEDEFS *SprPriC0 = &spriteDefs[3];
+   SPRITEDEFS *SprPri00 = &spriteDefs[0];
+   SPRITEDEFS *SprPri40 = &spriteDefs[1];
+   SPRITEDEFS *SprPri80 = &spriteDefs[2];
+   SPRITEDEFS *SprPriC0 = &spriteDefs[3];
 
-
-    // initialize the number of sprites in each structure
-    SprPri00->count = 0;
-    SprPri40->count = 0;
-    SprPri80->count = 0;
-    SprPriC0->count = 0;
-    for (i=0;i<64;i++)
-    {
-        spriteCode = *((unsigned short *)(sprite_table+4*i));
-        if (spriteCode & 0x0400)
-            prevx+= *(sprite_table+4*i+2);
-        else
-            prevx = *(sprite_table+4*i+2) + 8;
-        x = prevx + *scrollSpriteX;
-        if (spriteCode & 0x0200)
-            prevy+= *(sprite_table+4*i+3);
-        else
-            prevy = *(sprite_table+4*i+3) + 8;
-        y = prevy + *scrollSpriteY;
-        j = *scanlineY+8 - y;
-        if ((spriteCode>0xff) && (j >= 0) && (j < 8) && (x<168))  //is this sprite visable on the current scanline?
-        {
-            //  if ((j >= 0) && (j < 8) && (x<168)) {
-            SPRITE *spr = NULL;
-            // *(sprite_palette_numbers+i)
-            pt = (unsigned short *)(pattern_table + 16*(spriteCode & 0x01ff)
-                                    + ((spriteCode&0x4000) ? (7-j)*2 : j*2));
-            switch (spriteCode & 0x1800)
-            {
-                // case order reversed because priority 3 (and 2) sprites occur most of the time
-                case 0x1800:
-                spr = &SprPriC0->sprite[SprPriC0->count];
-                SprPriC0->count++;
-                break;
-                case 0x1000:
-                spr = &SprPri80->sprite[SprPri80->count];
-                SprPri80->count++;
-                break;
-                case 0x0800:
-                spr = &SprPri40->sprite[SprPri40->count];
-                SprPri40->count++;
-                break;
-                case 0x0000:
-                spr = &SprPri00->sprite[SprPri00->count];
-                SprPri00->count++;
-                break;
-            }
-            spr->pattern = spriteCode;
-            spr->offset = x;
-            spr->tilept = pt;
-            spr->palette = ((bw) ? &palettes[(spriteCode>>11)&0x04]
-                            : &palettes[(*(sprite_palette_numbers+i)&0x0F)*4]);
-        }
-    }
-}*/
+   /* initialize the number of sprites in each structure */
+   SprPri00->count = 0;
+   SprPri40->count = 0;
+   SprPri80->count = 0;
+   SprPriC0->count = 0;
+   for (i=0;i<64;i++)
+   {
+      spriteCode = *((unsigned short *)(sprite_table+4*i));
+      if (spriteCode & 0x0400)
+         prevx+= *(sprite_table+4*i+2);
+      else
+         prevx = *(sprite_table+4*i+2) + 8;
+      x = prevx + *scrollSpriteX;
+      if (spriteCode & 0x0200)
+         prevy+= *(sprite_table+4*i+3);
+      else
+         prevy = *(sprite_table+4*i+3) + 8;
+      y = prevy + *scrollSpriteY;
+      j = *scanlineY+8 - y;
+      if ((spriteCode>0xff) && (j >= 0) && (j < 8) && (x<168))  /* is this sprite visable on the current scanline? */
+      {
+         //  if ((j >= 0) && (j < 8) && (x<168)) {
+         SPRITE *spr = NULL;
+         // *(sprite_palette_numbers+i)
+         pt = (unsigned short *)(pattern_table + 16*(spriteCode & 0x01ff)
+               + ((spriteCode&0x4000) ? (7-j)*2 : j*2));
+         switch (spriteCode & 0x1800)
+         {
+            // case order reversed because priority 3 (and 2) sprites occur most of the time
+            case 0x1800:
+               spr = &SprPriC0->sprite[SprPriC0->count];
+               SprPriC0->count++;
+               break;
+            case 0x1000:
+               spr = &SprPri80->sprite[SprPri80->count];
+               SprPri80->count++;
+               break;
+            case 0x0800:
+               spr = &SprPri40->sprite[SprPri40->count];
+               SprPri40->count++;
+               break;
+            case 0x0000:
+               spr = &SprPri00->sprite[SprPri00->count];
+               SprPri00->count++;
+               break;
+         }
+         spr->pattern = spriteCode;
+         spr->offset = x;
+         spr->tilept = pt;
+         spr->palette = ((bw) ? &palettes[(spriteCode>>11)&0x04]
+               : &palettes[(*(sprite_palette_numbers+i)&0x0F)*4]);
+      }
+      }
+   }
+#endif
 
 inline void spriteSortAll(unsigned int bw)
 {
@@ -1016,7 +1061,7 @@ inline void spriteSortAll(unsigned int bw)
     SPRITEDEFS *SprPri80 = &spriteDefs[1];
     SPRITEDEFS *SprPriC0 = &spriteDefs[2];
 
-    // initialize the number of sprites in each structure
+    /* initialize the number of sprites in each structure */
     memset(SprPri40->count, 0, 152);
     memset(SprPri80->count, 0, 152);
     memset(SprPriC0->count, 0, 152);
@@ -1048,11 +1093,13 @@ inline void spriteSortAll(unsigned int bw)
             if(scanline < 0 || scanline >= 152)
                 continue;
 
-//            if ((x<168) && (spriteCode>0xff) && (spriteCode & 0x1800))
-//            {
+#if 0
+            if ((x<168) && (spriteCode>0xff) && (spriteCode & 0x1800))
+            {
+#endif
                 switch (spriteCode & 0x1800)
                 {
-                    // case order reversed because priority 3 (and 2) sprites occur most of the time
+                    /* case order reversed because priority 3 (and 2) sprites occur most of the time */
                     case 0x1800:
                     spr = &SprPriC0->sprite[scanline][SprPriC0->count[scanline]++];
                     break;
@@ -1070,42 +1117,50 @@ inline void spriteSortAll(unsigned int bw)
                                         + ((spriteCode&0x4000) ? (7-j)*2 : j*2));
                 spr->palette = ((bw) ? &palettes[(spriteCode>>11)&0x04]
                                 : &palettes[(*(sprite_palette_numbers+i)&0x0F)*4]);
-//            }
+#if 0
+            }
+#endif
         }
     }
 }
 
 
-// initialize drawing/blitting of a screen
-void graphicsBlitInit()
+/* initialize drawing/blitting of a screen */
+void graphicsBlitInit(void)
 {
-    // buffers 0 and 1
-    // definitions for the back frame
+    /* buffers 0 and 1
+     * definitions for the back frame */
     tCBack.gbp   = &drawBuffer[8*SIZEX + (8-((*scrollBackX)&7))];
     tCBack.newScrollX = scrollBackX;
     tCBack.newScrollY = scrollBackY;
     tCBack.tileBase  = tile_table_back;
     tCBack.palette  = &palettes[16*4+16*4];
-    // definitions for the front frame
+    /* definitions for the front frame */
     tCFront.gbp   = &drawBuffer[8*SIZEX + (8-((*scrollFrontX)&7))];
     tCFront.newScrollX = scrollFrontX;
     tCFront.newScrollY = scrollFrontY;
     tCFront.tileBase = tile_table_front;
     tCFront.palette  = &palettes[16*4];
-    // definitions for sprite priorities
-    //SprPriLo = *frame1Pri>>6;
-    //SprPriHi = *frame0Pri>>6; // ?
+    /* definitions for sprite priorities */
+#if 0
+    SprPriLo = *frame1Pri>>6;
+    SprPriHi = *frame0Pri>>6; /* ? */
+#endif
     spriteDefs[0].gbp = &drawBuffer[8*SIZEX];
     spriteDefs[1].gbp = &drawBuffer[8*SIZEX];
     spriteDefs[2].gbp = &drawBuffer[8*SIZEX];
-    //spriteDefs[3].gbp = &drawBuffer[8*SIZEX];
-    // force recalculations for first line
+#if 0
+    spriteDefs[3].gbp = &drawBuffer[8*SIZEX];
+#endif
+    /* force recalculations for first line */
     tCBack.oldScrollX = *tCBack.newScrollX;
-    tCBack.oldScrollY = *tCBack.newScrollY+1;   // force calculation of structure data
+    tCBack.oldScrollY = *tCBack.newScrollY+1;   /* force calculation of structure data */
     tCFront.oldScrollX = *tCFront.newScrollX;
-    tCFront.oldScrollY = *tCFront.newScrollY+1;  // force calculation of structure data
-    // start drawing at line 0
-    // *scanlineY = 0;
+    tCFront.oldScrollY = *tCFront.newScrollY+1;  /* force calculation of structure data */
+    /* start drawing at line 0 */
+#if 0
+     *scanlineY = 0;
+#endif
 }
 
 inline void RenderTileCache(TILECACHE *tC, unsigned int bw)
@@ -1118,8 +1173,8 @@ inline void RenderTileCache(TILECACHE *tC, unsigned int bw)
             (tC->oldScrollY != *tC->newScrollY) ||
             (((*tC->newScrollY + *scanlineY)&7) == 0))
     {
-        // update the structure to reflect the changed scroll registers
-        // first update pointer into render buffer
+        /* update the structure to reflect the changed scroll registers
+         * first update pointer into render buffer */
         tC->gbp = tC->gbp + (tC->oldScrollX&7) - (*tC->newScrollX&7);
 
         tC->oldScrollX = *tC->newScrollX;
@@ -1140,21 +1195,22 @@ inline void RenderTileCache(TILECACHE *tC, unsigned int bw)
 
 void graphicsBlitLine(unsigned char render)
 {
-    //dbg_print("in graphicsBlitLine *scanlineY = %d\n", *scanlineY);
-
+#if 0
+    dbg_print("in graphicsBlitLine *scanlineY = %d\n", *scanlineY);
+#endif
 
     if (*scanlineY < 152)
     {
         //if(*scanlineY == 0)  //Flavor moved set_palette off of every line.  Helps speed, hurts hi-color apps
-        //Flavor now only changes palette when dirty
+        /* Flavor now only changes palette when dirty */
 
-        //this is currently broken for BW games
+        /* this is currently broken for BW games */
         //if(*scanlineY == 0)
 
 
-        // set the palettes, background color, and outside window color
-        //Flavor moving to scanline 0 set_palette(palette_table,&palettes[0],&palettes[16*4],&palettes[16*4+16*4]);
-        // sort sprites by priority
+        /* set the palettes, background color, and outside window color
+         * Flavor moving to scanline 0 set_palette(palette_table,&palettes[0],&palettes[16*4],&palettes[16*4+16*4]);
+         * sort sprites by priority */
         if(render)
         {
             unsigned int bw = (m_emuInfo.machine == NGP);
@@ -1178,20 +1234,22 @@ void graphicsBlitLine(unsigned char render)
                 spriteSortAll(bw);
             }
 
-            //spriteSort(bw);  //this needs to be re-done faster.  We shouldn't need to sort them every scanline
+#if 0
+            spriteSort(bw);  /* this needs to be re-done faster.  We shouldn't need to sort them every scanline */
+#endif
 
-            // change the tile caches if needed
+            /* change the tile caches if needed */
             RenderTileCache(&tCBack, bw);
             RenderTileCache(&tCFront, bw);
 
-            // blit the planes, take priority registers into account
+            /* blit the planes, take priority registers into account */
 
             if(*bgSelect & 0x80) /*== 0x80)*/
                 lineClear(&tCBack, NGPC_TO_SDL16(bgTable[*bgSelect & 0x07]));
             else if(bw)
-                lineClear(&tCBack, NGPC_TO_SDL16(bwTable[0]));  //in 8-bit mode, this would be the index of BGCol in the SDL palette
+                lineClear(&tCBack, NGPC_TO_SDL16(bwTable[0]));  /* in 8-bit mode, this would be the index of BGCol in the SDL palette */
             else
-                lineClear(&tCBack, 0);  //in 8-bit mode, this would be the index of BGCol in the SDL palette
+                lineClear(&tCBack, 0);  /* in 8-bit mode, this would be the index of BGCol in the SDL palette */
 
 
             lineSprite(&spriteDefs[0]);
@@ -1212,41 +1270,47 @@ void graphicsBlitLine(unsigned char render)
             lineSprite(&spriteDefs[2]);
 
 
-            // clip left and right sides of screen if necessary
+            /* clip left and right sides of screen if necessary */
             clipLeftRight(&spriteDefs[2], OOWCol);
 
             if (*wndTopLeftY > *scanlineY || *scanlineY >= (*wndTopLeftY + *wndSizeY))
             {
-                //tCBack.gbp  -= SIZEX;  //Flavor, I don't get why these were here
-                lineClear(&tCBack, OOWCol);  //in 8-bit mode, this would be the index of OOWCol in the SDL palette
-                //tCBack.gbp  += SIZEX;  //Flavor, I don't get why these were here
+#if 0
+                tCBack.gbp  -= SIZEX;  /* Flavor, I don't get why these were here */
+#endif
+                lineClear(&tCBack, OOWCol);  /* in 8-bit mode, this would be the index of OOWCol in the SDL palette */
+#if 0
+                tCBack.gbp  += SIZEX;  /* Flavor, I don't get why these were here */
+#endif
             }
 #ifndef __LIBRETRO__
             SDL_UnlockSurface(screen);
 #endif
         }
 
-        // increase scanline count
+        /* increase scanline count */
         tCFront.gbp+= SIZEX;
         tCBack.gbp+= SIZEX;
         spriteDefs[0].gbp+= SIZEX;
         spriteDefs[1].gbp+= SIZEX;
         spriteDefs[2].gbp+= SIZEX;
-        //spriteDefs[3].gbp+= SIZEX;
+#if 0
+        spriteDefs[3].gbp+= SIZEX;
+#endif
 
         if (*scanlineY == 151)
         {
-            // start VBlank period
+            /* start VBlank period */
             tlcsMemWriteB(0x00008010,tlcsMemReadB(0x00008010) | 0x40);
             if(render)
-                graphics_paint();//displayDirty = 1;
+                graphics_paint(); /* displayDirty = 1; */
         }
 
         *scanlineY+= 1;
     }
     else if (*scanlineY == 198)
     {
-        // stop VBlank period
+        /* stop VBlank period */
         tlcsMemWriteB(0x00008010,tlcsMemReadB(0x00008010) & ~0x40);
         graphicsBlitInit();
 
@@ -1261,11 +1325,11 @@ void graphicsBlitLine(unsigned char render)
 
 }
 
-#endif // __GP32__
+#endif /* __GP32__ */
 
-//
-// THOR'S GRAPHIC CORE
-//
+/*
+ * THOR'S GRAPHIC CORE
+ */
 
 typedef struct
 {
@@ -1298,7 +1362,7 @@ void sortSprites(unsigned int bw)
     unsigned short tile;
     MYSPRITEREF *spr;
 
-    // initialize the number of sprites in each structure
+    /* initialize the number of sprites in each structure */
     memset(mySprPri40.count, 0, 152);
     memset(mySprPri80.count, 0, 152);
     memset(mySprPriC0.count, 0, 152);
@@ -1575,7 +1639,7 @@ void drawScrollPlane(unsigned short* draw,
 	}
 }
 
-void myGraphicsBlitLine(unsigned char render)  //NOTA
+void myGraphicsBlitLine(unsigned char render)  /* NOTA */
 {
 	int i,x0,x1;
     if (*scanlineY < 152)
@@ -1587,7 +1651,7 @@ void myGraphicsBlitLine(unsigned char render)  //NOTA
 #elif __LIBRETRO__
 			unsigned short* draw = &drawBuffer[(*scanlineY)*(screen->w)];
 #else
-			unsigned short* draw = &drawBuffer[(*scanlineY)*(screen->w+PSP_FUDGE)];//extra fudge factor for PSP???
+			unsigned short* draw = &drawBuffer[(*scanlineY)*(screen->w+PSP_FUDGE)];/* extra fudge factor for PSP??? */
 #endif
 			unsigned short bgcol;
             unsigned int bw = (m_emuInfo.machine == NGP);
@@ -1648,9 +1712,9 @@ void myGraphicsBlitLine(unsigned char render)  //NOTA
         	    else if(bw)
 	                bgcol = NGPC_TO_SDL16(bwTable[0]);
     	        else
-        	        bgcol = NGPC_TO_SDL16(bgTable[0]);//maybe 0xFFF?
+        	        bgcol = NGPC_TO_SDL16(bgTable[0]); /* maybe 0xFFF? */
         	        
-        	    // NOTA arregla algo en m pure tlcsMemWriteB(0x83E0, 0xFF);    
+        	    /* NOTA arregla algo en m pure tlcsMemWriteB(0x83E0, 0xFF);     */
         	        
 
 				x0 = *wndTopLeftX;
@@ -1670,7 +1734,7 @@ void myGraphicsBlitLine(unsigned char render)  //NOTA
 	            	if (mySprPri80.count[*scanlineY])
 						drawSprites(draw,mySprPri80.refs[*scanlineY],mySprPri80.count[*scanlineY],x0,x1);
 		        	 
-		        	//NOTA  Wrestling Madness && Big Bang Pro Wrestling
+		        	/* NOTA  Wrestling Madness && Big Bang Pro Wrestling */
 		        	if (mainrom[0x000020] != 0x66)
 		        	drawScrollPlane(draw,tile_table_back,128,*scrollBackX,*scrollBackY+*scanlineY,x0,x1,bw);
 		        	
@@ -1704,7 +1768,7 @@ void myGraphicsBlitLine(unsigned char render)  //NOTA
         }
         if (*scanlineY == 151)
         {
-            // start VBlank period
+            /* start VBlank period */
             tlcsMemWriteB(0x00008010,tlcsMemReadB(0x00008010) | 0x40);
 #ifndef __GP32__
             if (render)
@@ -1715,7 +1779,7 @@ void myGraphicsBlitLine(unsigned char render)  //NOTA
     }
     else if (*scanlineY == 198)
     {
-        // stop VBlank period
+        /* stop VBlank period */
         tlcsMemWriteB(0x00008010,tlcsMemReadB(0x00008010) & ~0x40);
 
         *scanlineY = 0;
@@ -1725,11 +1789,11 @@ void myGraphicsBlitLine(unsigned char render)  //NOTA
 }
 
 
-//////////////////////////////////////////////////////////////////////////////
-//
-// General Routines
-//
-//////////////////////////////////////////////////////////////////////////////
+/*
+ *
+ * General Routines
+ *
+ */
 
 const char ErrDirectDrawCreate[] = "DirectDrawCreate Failed";
 const char ErrQueryInterface[]  = "QueryInterface Failed";
@@ -1744,8 +1808,8 @@ BOOL graphics_init()
 BOOL graphics_init(HWND phWnd)
 #endif
 {
-    //put SDL setup stuff here
-    //Flavor
+    /* put SDL setup stuff here
+     * Flavor */
 
 #ifdef __LIBRETRO__
     palette_init = palette_init16;
@@ -1771,7 +1835,9 @@ BOOL graphics_init(HWND phWnd)
         break;
     }
 
-    //palettes = palette_table;
+#if 0
+    palettes = palette_table;
+#endif
     drawBuffer = ((unsigned short*) screen->pixels) + SCREEN_OFFET;
 
     palette_init(screen->format->Rmask,
@@ -1785,7 +1851,9 @@ BOOL graphics_init(HWND phWnd)
         case NGP:
             bgTable  = (unsigned short *)bwTable;
             oowTable = (unsigned short *)bwTable;
-            //set_palette = set_paletteBW;
+#if 0
+            set_palette = set_paletteBW;
+#endif
 #ifndef __GP32__
             graphicsBlitInit();
 #endif
@@ -1794,12 +1862,14 @@ BOOL graphics_init(HWND phWnd)
         case NGPC:
 			bgTable  = (unsigned short *)get_address(0x000083E0);
 			oowTable  = (unsigned short *)get_address(0x000083F0);
-            //set_palette = set_paletteCol;
-#ifndef __GP32__
-            graphicsBlitInit();
+#if 0
+         set_palette = set_paletteCol;
 #endif
-            *scanlineY = 0;
-            break;
+#ifndef __GP32__
+         graphicsBlitInit();
+#endif
+         *scanlineY = 0;
+         break;
     }
 #ifndef __GP32__
     /*SDL_Surface *skin = IMG_Load("skin.jpg");

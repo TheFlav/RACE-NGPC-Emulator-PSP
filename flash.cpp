@@ -1,16 +1,17 @@
-//---------------------------------------------------------------------------
-//	This program is free software; you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License as published by
-//	the Free Software Foundation; either version 2 of the License, or
-//	(at your option) any later version. See also the license.txt file for
-//	additional informations.
-//---------------------------------------------------------------------------
+/*---------------------------------------------------------------------------
+ *	This program is free software; you can redistribute it and/or modify
+ *	it under the terms of the GNU General Public License as published by
+ *	the Free Software Foundation; either version 2 of the License, or
+ *	(at your option) any later version. See also the license.txt file for
+ *	additional informations.
+ *---------------------------------------------------------------------------
+ */
 
-//
-// Flash chip emulation by Flavor
-//   with ideas from Koyote (who originally got ideas from Flavor :)
-// for emulation of NGPC carts
-//
+/*
+ * Flash chip emulation by Flavor
+ *   with ideas from Koyote (who originally got ideas from Flavor :)
+ * for emulation of NGPC carts
+ */
 
 #ifndef __GP32__
 #include "StdAfx.h"
@@ -24,7 +25,10 @@
 #include <unistd.h>
 #endif
 
-//#define DEBUG_FLASH
+#if 0
+#define DEBUG_FLASH
+#endif
+
 #ifdef DEBUG_FLASH
 FILE *debugFile = NULL;
 #define stderr debugFile
@@ -43,15 +47,18 @@ Other
 0x01		AMD
 0xBF		SST
 */
-unsigned char manufID = 0x98;   //we're always Toshiba!
+unsigned char manufID = 0x98;   /* we're always Toshiba! */
 unsigned char deviceID = 0x2F;
 unsigned char cartSize = 32;
 unsigned int bootBlockStartAddr = 0x1F0000;
 unsigned char bootBlockStartNum = 31;
-//unsigned int cartAddrMask = 0x3FFFFF;
+#if 0
+unsigned int cartAddrMask = 0x3FFFFF;
+#endif
 
-//with selector, I get
-//writeSaveGameFile: Couldn't open Battery//mnt/sd/Games/race/ChryMast.ngf file
+/* with selector, I get
+* writeSaveGameFile: Couldn't open Battery//mnt/sd/Games/race/ChryMast.ngf file
+*/
 #ifdef __LIBRETRO__
 extern char retro_save_directory[2048];
 #define SAVEGAME_DIR retro_save_directory
@@ -63,69 +70,77 @@ extern char retro_save_directory[2048];
  #endif
 #endif
 
-unsigned char currentWriteCycle = 1;  //can be 1 through 6
+unsigned char currentWriteCycle = 1;  /* can be 1 through 6 */
 unsigned char currentCommand = NO_COMMAND;
 
 #define FLASH_VALID_ID  0x0053
 
 struct NGFheaderStruct
 {
-	unsigned short version;		//always 0x53?
-	unsigned short numBlocks;	//how many blocks are in the file
-	unsigned int fileLen;		//length of the file
+	unsigned short version;		/* always 0x53? */
+	unsigned short numBlocks;	/* how many blocks are in the file */
+	unsigned int fileLen;		/* length of the file */
 } ;
 
 struct blockStruct
 {
-	unsigned int NGPCaddr;  //where this block starts (in NGPC memory map)
-	unsigned int len;  // length of following data
+	unsigned int NGPCaddr;  /* where this block starts (in NGPC memory map) */
+	unsigned int len;  /* length of following data */
 } ;
 
-#define MAX_BLOCKS 35 //a 16m chip has 35 blocks (SA0-SA34)
-unsigned char blocksDirty[2][MAX_BLOCKS];  //max of 2 chips
+#define MAX_BLOCKS 35 /* a 16m chip has 35 blocks (SA0-SA34) */
+unsigned char blocksDirty[2][MAX_BLOCKS];  /* max of 2 chips */
 unsigned char needToWriteFile = 0;
 char ngfFilename[300] = {0};
 
 #define FLASH_WRITE 0
 #define FLASH_ERASE 1
 
-
-
-void setupFlashParams()
+void setupFlashParams(void)
 {
     switch(cartSize)
     {
         default:
         case 32:
-	        deviceID = 0x2F;  //the upper chip will always be 16bit
+	        deviceID = 0x2F;  /* the upper chip will always be 16bit */
             bootBlockStartAddr = 0x1F0000;
             bootBlockStartNum = 31;
-            //cartAddrMask=0x3FFFFF;
+#if 0
+            cartAddrMask=0x3FFFFF;
+#endif
             break;
         case 16:
 			deviceID = 0x2F;
             bootBlockStartAddr = 0x1F0000;
             bootBlockStartNum = 31;
-            //cartAddrMask=0x1FFFFF;
+#if 0
+            cartAddrMask=0x1FFFFF;
+#endif
             break;
         case 8:
 	        deviceID = 0x2C;
             bootBlockStartAddr = 0xF0000;
             bootBlockStartNum = 15;
-            //cartAddrMask=0x0FFFFF;
+#if 0
+            cartAddrMask=0x0FFFFF;
+#endif
             break;
         case 4:
 	        deviceID = 0xAB;
             bootBlockStartAddr = 0x70000;
             bootBlockStartNum = 7;
-            //cartAddrMask=0x07FFFF;
+#if 0
+            cartAddrMask=0x07FFFF;
+#endif
             break;
         case 0:
 	        manufID = 0x00;
 	        deviceID = 0x00;
             bootBlockStartAddr = 0x00000;
             bootBlockStartNum = 0;
-            //cartAddrMask=0;
+#if 0
+            cartAddrMask=0;
+#endif
             break;
     }
 }
@@ -137,7 +152,7 @@ unsigned char blockNumFromAddr(unsigned int addr)
     if(addr >= bootBlockStartAddr)
     {
         unsigned int bootAddr = addr-bootBlockStartAddr;
-        //boot block is 32k, 8k, 8k, 16k (0x8000,0x2000,0x2000,0x4000)
+        /* boot block is 32k, 8k, 8k, 16k (0x8000,0x2000,0x2000,0x4000) */
         if(bootAddr < 0x8000)
             return (bootBlockStartAddr / 0x10000);
         else if(bootAddr < 0xA000)
@@ -211,7 +226,7 @@ void setupNGFfilename()
     {
 #ifdef DEBUG_FLASH
 		fprintf(debugFile, "setupNGFfilename: %s file already opened\n", ngfFilename);
-        return;  //already set up
+        return;  /* already set up */
 #endif
     }
 
@@ -247,10 +262,10 @@ void setupNGFfilename()
 	fprintf(stdout, "setupNGFfilename: using %s for save-game info\n", ngfFilename);
 }
 
-//write all the dirty blocks out to a file
-void writeSaveGameFile()
+/* write all the dirty blocks out to a file */
+void writeSaveGameFile(void)
 {
-	//find the dirty blocks and write them to the .NGF file
+	/* find the dirty blocks and write them to the .NGF file */
 	int totalBlocks = bootBlockStartNum+4;
 	int i;
 	FILE *ngfFile;
@@ -277,7 +292,7 @@ void writeSaveGameFile()
 	NGFheader.version = 0x53;
 	NGFheader.numBlocks = 0;
 	NGFheader.fileLen = sizeof(NGFheaderStruct);
-	//add them all up, first
+	/* add them all up, first */
 	for(i=0;i<totalBlocks;i++)
 	{
 		if(blocksDirty[0][i])
@@ -290,7 +305,7 @@ void writeSaveGameFile()
 		}
 	}
 
-	if(cartSize == 32)  //do the second chip, also
+	if(cartSize == 32)  /* do the second chip, also */
 	{
 		for(i=0;i<totalBlocks;i++)
 		{
@@ -346,7 +361,7 @@ void writeSaveGameFile()
 		}
 	}
 
-	if(cartSize == 32)  //do the second chip, also
+	if(cartSize == 32)  /* do the second chip, also */
 	{
 		for(i=0;i<totalBlocks;i++)
 		{
@@ -386,7 +401,9 @@ void writeSaveGameFile()
 #ifndef __GP32__
 #ifdef TARGET_GP2X
 	sync();
-	//system("sync");
+#if 0
+   system("sync");
+#endif
 #endif
 #endif
 
@@ -395,10 +412,10 @@ void writeSaveGameFile()
 #endif
 }
 
-//read the save-game file and overlay it onto mainrom
-void loadSaveGameFile()
+/* read the save-game file and overlay it onto mainrom */
+void loadSaveGameFile(void)
 {
-	//find the NGF file and read it in
+	/* find the NGF file and read it in */
 	FILE *ngfFile;
 	int bytes, i;
 	unsigned char *blocks;
@@ -430,9 +447,9 @@ void loadSaveGameFile()
 
 
 	/*
-	unsigned short version;		//always 0x53?
-	unsigned short numBlocks;	//how many blocks are in the file
-	unsigned int fileLen;		//length of the file
+	unsigned short version;		// always 0x53?
+	unsigned short numBlocks;	// how many blocks are in the file
+	unsigned int fileLen;		// length of the file
 	*/
 
 	if(NGFheader.version != 0x53)
@@ -443,7 +460,7 @@ void loadSaveGameFile()
 	}
 
     blockMem = malloc(NGFheader.fileLen - sizeof(NGFheaderStruct));
-    //error handling?
+    /* error handling? */
     if(!blockMem)
     {
 		fprintf(stderr, "loadSaveGameFile: can't malloc %d bytes\n", (NGFheader.fileLen - sizeof(NGFheaderStruct)));
@@ -470,7 +487,7 @@ void loadSaveGameFile()
 		return;
     }
 
-	//loop through the blocks and insert them into mainrom
+	/* loop through the blocks and insert them into mainrom */
 	for(i=0; i < NGFheader.numBlocks; i++)
 	{
 	    blockHeader = (blockStruct*) blocks;
@@ -509,9 +526,11 @@ void loadSaveGameFile()
 
 void flashWriteByte(unsigned int addr, unsigned char data, unsigned char operation)
 {
-    //addr &= cartAddrMask;  //the stuff gets mirrored to the higher slots.
+#if 0
+    addr &= cartAddrMask;  /* the stuff gets mirrored to the higher slots. */
+#endif
 
-	if(blockNumFromAddr(addr) == 0)  //hack because DWARP writes to bank 0
+	if(blockNumFromAddr(addr) == 0)  /* hack because DWARP writes to bank 0 */
 		return;
 
 #ifdef DEBUG_FLASH
@@ -521,7 +540,7 @@ void flashWriteByte(unsigned int addr, unsigned char data, unsigned char operati
     }
 #endif
 
-	//set a dirty flag for the block that we are writing to
+	/* set a dirty flag for the block that we are writing to */
 	if(addr < 0x200000)
 	{
         blocksDirty[0][blockNumFromAddr(addr)] = 1;
@@ -533,15 +552,16 @@ void flashWriteByte(unsigned int addr, unsigned char data, unsigned char operati
         needToWriteFile = 1;
 	}
 	else
-		return;  //panic
+		return;  /* panic */
 
-	//changed to &= because it's actually how flash works
-	//flash memory can be erased (changed to 0xFF)
-	//and when written, 1s can become 0s, but you can't turn 0s into 1s (except by erasing)
+	/* changed to &= because it's actually how flash works
+	 * flash memory can be erased (changed to 0xFF)
+	 * and when written, 1s can become 0s, but you can't turn 0s into 1s (except by erasing)
+    */
 	if(operation == FLASH_ERASE)
-		mainrom[addr] = 0xFF;		//we're just erasing, so set to 0xFF
+		mainrom[addr] = 0xFF;		/* we're just erasing, so set to 0xFF */
 	else
-		mainrom[addr] &= data;		//actually writing data
+		mainrom[addr] &= data;		/* actually writing data */
 }
 
 unsigned char flashReadInfo(unsigned int addr)
@@ -556,8 +576,8 @@ unsigned char flashReadInfo(unsigned int addr)
         case 1:
             return deviceID;
         case 2:
-            return 0;  //block not protected
-        case 3:  //thanks Koyote
+            return 0;  /* block not protected */
+        case 3:  /* thanks Koyote */
 		default:
             return 0x80;
     }
@@ -581,7 +601,7 @@ void flashChipWrite(unsigned int addr, unsigned char data)
                 currentWriteCycle++;
             else if(data == 0xF0)
 			{
-                currentWriteCycle=1;//this is a reset command
+                currentWriteCycle=1; /* this is a reset command */
 				writeSaveGameFile();
 			}
             else
@@ -599,7 +619,7 @@ void flashChipWrite(unsigned int addr, unsigned char data)
             break;
         case 3:
             if((addr & 0xFFFF) == 0x5555 && data == 0x80)
-                currentWriteCycle++;//continue on
+                currentWriteCycle++; /* continue on */
             else if((addr & 0xFFFF) == 0x5555 && data == 0xF0)
 			{
                 currentWriteCycle=1;
@@ -609,8 +629,9 @@ void flashChipWrite(unsigned int addr, unsigned char data)
             {
                 currentWriteCycle++;
                 currentCommand = COMMAND_INFO_READ;
-                //now, the next time we read from flash, we should return a ID value
-                //  or a block protect value
+                /* now, the next time we read from flash, 
+                 * we should return a ID value
+                 * or a block protect value */
                 break;
             }
             else if((addr & 0xFFFF) == 0x5555 && data == 0xA0)
@@ -626,17 +647,18 @@ void flashChipWrite(unsigned int addr, unsigned char data)
             break;
 
         case 4:
-            if(currentCommand == COMMAND_BYTE_PROGRAM)//time to write to flash memory
+            /* time to write to flash memory */
+            if(currentCommand == COMMAND_BYTE_PROGRAM)
             {
-				if(addr >= 0x200000 && addr < 0x400000)
-					addr -= 0x200000;
-				else if(addr >= 0x800000 && addr < 0xA00000)
-					addr -= 0x600000;
+               if(addr >= 0x200000 && addr < 0x400000)
+                  addr -= 0x200000;
+               else if(addr >= 0x800000 && addr < 0xA00000)
+                  addr -= 0x600000;
 
-				//should be changed to just write to mainrom
-				flashWriteByte(addr, data, FLASH_WRITE);
+               /*should be changed to just write to mainrom */
+               flashWriteByte(addr, data, FLASH_WRITE);
 
-                currentWriteCycle=1;
+               currentWriteCycle=1;
             }
             else if((addr & 0xFFFF) == 0x5555 && data == 0xAA)
                 currentWriteCycle++;
@@ -654,25 +676,28 @@ void flashChipWrite(unsigned int addr, unsigned char data)
             currentCommand = NO_COMMAND;
             break;
         case 6:
-            if((addr & 0xFFFF) == 0x5555 && data == 0x10)//chip erase
+            /* chip erase */
+            if((addr & 0xFFFF) == 0x5555 && data == 0x10)
             {
                 currentWriteCycle=1;
                 currentCommand = COMMAND_CHIP_ERASE;
 
-                //erase the entire chip
-                //memset it to all 0xFF
-                //I think we won't implement this
+                /* erase the entire chip
+                 * memset it to all 0xFF
+                 * I think we won't implement this
+                 */
 
                 break;
             }
-            if(data == 0x30 || data == 0x50)//block erase
+            /* block erase */
+            if(data == 0x30 || data == 0x50)
             {
                 unsigned char chip=0;
                 currentWriteCycle=1;
                 currentCommand = COMMAND_BLOCK_ERASE;
 
-                //erase the entire block that contains addr
-                //memset it to all 0xFF
+                /* erase the entire block that contains addr
+                 * memset it to all 0xFF */
 
                 if(addr >= 0x800000)
                     chip = 1;
@@ -694,8 +719,8 @@ void flashChipWrite(unsigned int addr, unsigned char data)
     }
 }
 
-//this should be called when a ROM is unloaded
-void flashShutdown()
+/* this should be called when a ROM is unloaded */
+void flashShutdown(void)
 {
 	writeSaveGameFile();
 #ifdef DEBUG_FLASH
@@ -703,8 +728,8 @@ void flashShutdown()
 #endif
 }
 
-//this should be called when a ROM is loaded
-void flashStartup()
+/* this should be called when a ROM is loaded */
+void flashStartup(void)
 {
 #ifdef DEBUG_FLASH
     if(debugFile == NULL)
@@ -722,49 +747,55 @@ void flashStartup()
 void vectFlashWrite(unsigned char chip, unsigned int to, unsigned char *fromAddr, unsigned int numBytes)
 {
 #ifdef DEBUG_FLASH
-    if(debugFile != NULL)
-    {
-        fprintf(debugFile, "vFW: chip=%d to=0x%08X *fromAddr=%02x num=%d\n", chip, to, *fromAddr, numBytes);
-    }
+   if(debugFile != NULL)
+   {
+      fprintf(debugFile, "vFW: chip=%d to=0x%08X *fromAddr=%02x num=%d\n", chip, to, *fromAddr, numBytes);
+   }
 #endif
 
-    if(chip)
-        to+=0x200000;
+   if(chip)
+      to+=0x200000;
 
-    //memcpy(dest,fromAddr,numBytes);
-	while(numBytes--)
-	{
-		flashWriteByte(to, *fromAddr, FLASH_WRITE);
-		fromAddr++;
-		to++;
-	}
+#if 0
+   memcpy(dest,fromAddr,numBytes);
+#endif
+   while(numBytes--)
+   {
+      flashWriteByte(to, *fromAddr, FLASH_WRITE);
+      fromAddr++;
+      to++;
+   }
 }
 
 void vectFlashErase(unsigned char chip, unsigned char blockNum)
 {
-	/*unsigned char totalBlocks = bootBlockStartNum+4;
+#if 0
+   unsigned char totalBlocks = bootBlockStartNum+4;
 
-    if(blockNum >= totalBlocks)
-        blockNum = totalBlocks-1;*/
-
-    //this needs to be modified to take into account boot block areas (less than 64k)
-    unsigned int blockAddr = blockNumToAddr(chip, blockNum);
-	unsigned int numBytes = blockSize(blockNum);
-
-#ifdef DEBUG_FLASH
-    if(debugFile != NULL)
-    {
-        fprintf(debugFile, "vectFlashErase: chip=%d blockNum=%d\n", chip, blockNum);
-    }
+   if(blockNum >= totalBlocks)
+      blockNum = totalBlocks-1;
 #endif
 
-    //memset block to 0xFF
-    //memset(&mainrom[blockAddr], 0xFF, numBytes);
-	while(numBytes--)
-	{
-		flashWriteByte(blockAddr, 0xFF, FLASH_ERASE);
-		blockAddr++;
-	}
+   /* this needs to be modified to take into account boot block areas (less than 64k) */
+   unsigned int blockAddr = blockNumToAddr(chip, blockNum);
+   unsigned int numBytes = blockSize(blockNum);
+
+#ifdef DEBUG_FLASH
+   if(debugFile != NULL)
+   {
+      fprintf(debugFile, "vectFlashErase: chip=%d blockNum=%d\n", chip, blockNum);
+   }
+#endif
+
+#if 0
+   /* memset block to 0xFF */
+   memset(&mainrom[blockAddr], 0xFF, numBytes);
+#endif
+   while(numBytes--)
+   {
+      flashWriteByte(blockAddr, 0xFF, FLASH_ERASE);
+      blockAddr++;
+   }
 }
 
 void vectFlashChipErase(unsigned char chip)
@@ -779,41 +810,26 @@ void vectFlashChipErase(unsigned char chip)
 
 void setFlashSize(unsigned int romSize)
 {
-    //add individual hacks here.
-    if(strncmp((const char *)&mainrom[0x24], "DELTA WARP ", 11)==0)//delta warp
-    {
-        //1 8mbit chip
-        cartSize = 8;
-    }
+    /* add individual hacks here. */
+   
+   /*delta warp */
+    if(strncmp((const char *)&mainrom[0x24], "DELTA WARP ", 11)==0)
+        cartSize = 8;   /* 1 8mbit chip */
     else if(romSize > 0x200000)
-    {
-        //2 16mbit chips
-        cartSize = 32;
-    }
+        cartSize = 32; /* 2 16mbit chips */
     else if(romSize > 0x100000)
-    {
-        //1 16mbit chip
-        cartSize = 16;
-    }
-    else if(romSize > 0x080000)
-    {
-        //1 8mbit chip
+        cartSize = 16; /* 1 16mbit chip */
+    else if(romSize > 0x080000) /* 1 8mbit chip */
         cartSize = 8;
-    }
-    else if(romSize > 0x040000)
-    {
-        //1 4mbit chip
+    else if(romSize > 0x040000) /* 1 4mbit chip */
         cartSize = 4;
-    }
-    else if(romSize == 0)  //no cart, just emu BIOS
-    {
+    else if(romSize == 0)  /* no cart, just emu BIOS */
         cartSize = 0;
-    }
     else
     {
-        //we don't know.  It's probablly a homebrew or something cut down
-        // so just pretend we're a Bung! cart
-        //2 16mbit chips
+        /* we don't know.  It's probably a homebrew or something cut down
+         * so just pretend we're a Bung! cart
+         * 2 16mbit chips */
         cartSize = 32;
     }
 

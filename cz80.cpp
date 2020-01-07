@@ -22,24 +22,21 @@
 #include "cz80.h"
 
 
-// include macro file
-//////////////////////
+/* include macro file */
 
 #include "cz80.inc"
 
-// lookup tables
-/////////////////
+/* lookup tables */
 
-static u8 SZXY[256];            // zero and sign flags
-static u8 SZXYP[256];           // zero, sign and parity flags
-static u8 SZXY_BIT[256];        // zero, sign and parity/overflow (=zero) flags for BIT opcode
-static u8 SZXYHV_inc[256];      // zero, sign, half carry and overflow flags INC R8
-static u8 SZXYHV_dec[256];      // zero, sign, half carry and overflow flags DEC R8
+static u8 SZXY[256];            /* zero and sign flags */
+static u8 SZXYP[256];           /* zero, sign and parity flags */
+static u8 SZXY_BIT[256];        /* zero, sign and parity/overflow (=zero) flags for BIT opcode */
+static u8 SZXYHV_inc[256];      /* zero, sign, half carry and overflow flags INC R8 */
+static u8 SZXYHV_dec[256];      /* zero, sign, half carry and overflow flags DEC R8 */
 
 #define fast_memset memset
 
-// core main functions
-///////////////////////
+/* core main functions */
 
 void Cz80_Init(cz80_struc *cpu)
 {
@@ -47,7 +44,7 @@ void Cz80_Init(cz80_struc *cpu)
 
     fast_memset(cpu, 0, sizeof(cz80_struc));
     
-    // flags tables initialisation
+    /* flags tables initialisation */
     for (i = 0; i < 256; i++)
     {
         SZXY[i] = i & (CZ80_SF | CZ80_YF | CZ80_XF);
@@ -89,8 +86,6 @@ u32 Cz80_Reset(cz80_struc *cpu)
     return CPU->Status;
 }
 
-/////////////////////////////////
-
 void CZ80_FASTCALL Cz80_Enable(cz80_struc *cpu)
 {
     cpu->Status &= ~CZ80_DISABLE;
@@ -101,11 +96,7 @@ void CZ80_FASTCALL Cz80_Disable(cz80_struc *cpu)
     cpu->Status |= CZ80_DISABLE;
 }
 
-/////////////////////////////////
-
 #include "cz80exec.inc"
-
-/////////////////////////////////
 
 void CZ80_FASTCALL Cz80_Set_IRQ(cz80_struc *cpu, s32 vector)
 {
@@ -131,8 +122,6 @@ void CZ80_FASTCALL Cz80_Clear_NMI(cz80_struc *cpu)
 {
     cpu->Status &= ~CZ80_HAS_NMI;
 }
-
-/////////////////////////////////
 
 s32 CZ80_FASTCALL Cz80_Get_CycleToDo(cz80_struc *cpu)
 {
@@ -166,8 +155,7 @@ void CZ80_FASTCALL Cz80_Waste_Cycle(cz80_struc *cpu, s32 cycle)
     cpu->CycleIO -= cycle;
 }
 
-// externals main functions
-////////////////////////////
+/* externals main functions */
 
 u32 CZ80_FASTCALL Cz80_Get_BC(cz80_struc *cpu)
 {

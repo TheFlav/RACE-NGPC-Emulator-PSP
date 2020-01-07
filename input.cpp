@@ -1,8 +1,6 @@
-// input.cpp: implementation of the input class.
-//
-//////////////////////////////////////////////////////////////////////
+/* input.cpp: implementation of the input class. */
 
-//Flavor - Convert from DirectInput to SDL/GP2X
+/* Flavor - Convert from DirectInput to SDL/GP2X */
 
 #ifndef __GP32__
 #include "StdAfx.h"
@@ -10,7 +8,9 @@
 #include "main.h"
 #include "input.h"
 #include "memory.h"
-///#include "menu.h"
+#if 0
+/#include "menu.h"
+#endif
 
 
 #ifdef _DEBUG
@@ -19,8 +19,10 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
-// address where the state of the input device(s) is stored
-//unsigned char	*InputByte = get_address(0x00006F82);
+/* address where the state of the input device(s) is stored */
+#if 0
+unsigned char	*InputByte = get_address(0x00006F82);
+#endif
 unsigned char	ngpInputState = 0;
 unsigned char	*InputByte = &ngpInputState;
 
@@ -73,15 +75,15 @@ BOOL InitInput(HWND hwnd)
 #ifndef __GP32__
     keystates = PSP_GetKeyStateArray(NULL);
 #endif
-	// setup standard values for input
-	// NGP/NGPC:
+	/* setup standard values for input
+	 * NGP/NGPC: */
 	m_sysInfo[NGP].InputKeys[KEY_UP]			= DIK_UP;
 	m_sysInfo[NGP].InputKeys[KEY_DOWN]		= DIK_DOWN;
 	m_sysInfo[NGP].InputKeys[KEY_LEFT]		= DIK_LEFT;
 	m_sysInfo[NGP].InputKeys[KEY_RIGHT]		= DIK_RIGHT;
 	m_sysInfo[NGP].InputKeys[KEY_BUTTON_A]	= DIK_SPACE;
 	m_sysInfo[NGP].InputKeys[KEY_BUTTON_B]	= DIK_N;
-	m_sysInfo[NGP].InputKeys[KEY_SELECT]		= DIK_O;	// Option button
+	m_sysInfo[NGP].InputKeys[KEY_SELECT]		= DIK_O;	/* Option button */
 	m_sysInfo[NGPC].InputKeys[KEY_UP]			= DIK_UP;
 	m_sysInfo[NGPC].InputKeys[KEY_DOWN]		= DIK_DOWN;
 	m_sysInfo[NGPC].InputKeys[KEY_LEFT]		= DIK_LEFT;

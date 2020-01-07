@@ -19,7 +19,7 @@ typedef struct {
 extern Z80_Regs Z80;
 
 #define Z80_IGNORE_INT	-1 /* Ignore interrupt */
-#define Z80_NMI_INT 	-2 /* Execute NMI */
+#define Z80_NMI_INT 	-2    /* Execute NMI */
 #define Z80_IRQ_INT 	-1000 /* Execute IRQ */
 
 extern unsigned Z80_GetPC (void); /* Get program counter */
