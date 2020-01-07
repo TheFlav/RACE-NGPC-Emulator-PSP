@@ -9,13 +9,6 @@
 #include <ctype.h>
 #include <math.h>
 
-#if !defined(__GP32__) && !defined(__LIBRETRO__)
-#include "GP2X.h"
-extern SDL_Surface* screen;
-extern SDL_Surface* actualScreen;
-#endif
-
-
 struct SYSTEMINFO {
 	int		hSize;
 	int		vSize;

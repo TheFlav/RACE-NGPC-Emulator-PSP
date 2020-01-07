@@ -10,11 +10,6 @@
 // This is the main program entry point
 //
 
-#ifndef __LIBRETRO__
-#include <SDL/SDL.h>
-#include <SDL/SDL_ttf.h>
-#endif
-
 #include "unzip.h"
 
 #ifndef __GP32__
@@ -51,9 +46,6 @@
 #ifdef __GP32__
 #include "fileio.h"
 #include "gfx.h"
-#elif !defined(__LIBRETRO__)
-SDL_Surface* screen = NULL;						// Main program screen
-SDL_Surface* actualScreen = NULL;						// Main program screen
 #endif
 
 extern int finscan;
@@ -408,7 +400,6 @@ int handleInputFile(char *romName)
 	int iDepth = 0;
 	int size;
 
-
 	initSysInfo();  //initialize it all
 
 	//if it's a ZIP file, we need to handle that here.
@@ -460,125 +451,3 @@ int handleInputFile(char *romName)
 	setFlashSize(m_emuInfo.romSize);
 	return 1;
 }
-
-
-#ifndef __LIBRETRO__
-int main(int argc, char *argv[])
-{
-	char romName[512];
-
-#ifdef __LIBRETRO__
-    SetupCallbacks();
-    scePowerSetClockFrequency(222, 222, 111);
-    scePowerSetClockFrequency(266, 266, 133);
-    scePowerSetClockFrequency(333, 333, 166);
-#endif
-    if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO|SDL_INIT_JOYSTICK) < 0)
-	{
-		fprintf(stderr, "SDL_Init failed!\n");
-#ifdef __LIBRETRO__
-		sceKernelExitGame();
-#endif
-		return -1;
-	}
-	// Set up quiting so that it automatically runs on exit.
-	atexit(SDL_Quit);
-
-	PSP_JoystickOpen();
-
-	actualScreen = SDL_SetVideoMode (SIZEX, SIZEY, 16, SDL_SWSURFACE);
-	if (actualScreen == NULL)
-	{
-		fprintf(stderr, "SDL_SetVideoMode failed!\n");
-#ifdef __LIBRETRO__
-		sceKernelExitGame();
-#endif
-		return -1;
-	}
-	else
-	{
-		dbg_print("screen params: bpp=%d\n", actualScreen->format->BitsPerPixel);
-	}
-#ifdef ZOOM_SUPPORT
-    screen = SDL_CreateRGBSurface (actualScreen->flags,
-                                actualScreen->w,
-                                actualScreen->h,
-                                actualScreen->format->BitsPerPixel,
-                                actualScreen->format->Rmask,
-                                actualScreen->format->Gmask,
-                                actualScreen->format->Bmask,
-                                actualScreen->format->Amask);
-	if (screen == NULL)
-	{
-		fprintf(stderr, "SDL_CreateRGBSurface failed!\n");
-#ifdef __LIBRETRO__
-		sceKernelExitGame();
-#endif
-		return -1;
-	}
-#else
-    screen = actualScreen;
-#endif
-	SDL_ShowCursor(0);  //disable the cursor
-
-	/* Set up the SDL_TTF */
-	TTF_Init();
-	atexit(TTF_Quit);
-    //printTTF("calling LoadRomFromPSP", 10, TEXT_HEIGHT*1, white, 1, actualScreen, 1);
-
-    sound_system_init();
-    while(!exitNow)
-    {
-#ifdef TARGET_WIN
-		strncpy(romName, argv[1], 500);
-		dbg_print("Starting emulation on file \"%s\"\n");
-#endif
-        if(LoadRomFromPSP(romName, actualScreen)<=0)
-        {
-            break;
-        }
-        SDL_FillRect(actualScreen, NULL, SDL_MapRGB(screen->format,0,0,0));//fill black
-        SDL_Flip(actualScreen);
-
-//printTTF(romName, 20, TEXT_HEIGHT*16, white, 1, actualScreen, 1);
-
-        system_sound_chipreset();	//Resets chips
-
-        handleInputFile(romName);
-
-        InitInput(NULL);
-
-        dbg_print("Running NGPC Emulation\n");
-
-        SDL_PauseAudio(0);  //run audio
-#ifdef __LIBRETRO__
-        switch(options[PSP_MHZ_OPTION])
-        {
-            case PSP_MHZ_222:
-                scePowerSetClockFrequency(222, 222, 111);
-                break;
-            case PSP_MHZ_266:
-                scePowerSetClockFrequency(266, 266, 133);
-                break;
-            default:
-            case PSP_MHZ_333:
-                scePowerSetClockFrequency(333, 333, 166);
-                break;
-        }
-#endif
-        ngpc_run();
-#ifdef __LIBRETRO__
-        scePowerSetClockFrequency(333, 333, 166);
-#endif
-        SDL_PauseAudio(1);  //pause audio
-
-        flashShutdown();
-    }
-
-    //printTTF("EXITING", 10, TEXT_HEIGHT*10, white, 1);
-#ifdef __LIBRETRO__
-    sceKernelExitGame(); //Exit the program when it is done.
-#endif
-	return 0;
-}
-#endif

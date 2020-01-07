@@ -122,7 +122,7 @@ int state_restore_mem(void *state)
   return state_restore((race_state_t*)state);
 }
 
-int state_get_size()
+int state_get_size(void)
 {
   return sizeof(race_state_t);
 }

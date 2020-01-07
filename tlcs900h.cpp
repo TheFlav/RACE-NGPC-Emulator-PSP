@@ -666,12 +666,12 @@ char *instr_tableF0[256] =
         "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef"
     };
 
-void initTlcs900hProfile()
+void initTlcs900hProfile(void)
 {
     memset(profile, 0, 256 * sizeof(profStruct));
 }
 
-void printTlcs900hProfile()
+void printTlcs900hProfile(void)
 {
     FILE *profileFile;
     profileFile = fopen("profile.csv", "wt");
@@ -1006,7 +1006,7 @@ inline void tlcsMemWriteL(unsigned int addr, unsigned int data)
 }*/
 
 
-inline unsigned char readbyte()
+inline unsigned char readbyte(void)
 {
 #ifdef TARGET_GP2X
     unsigned char __val asm("r0");//%0 and r0 are the same, now
@@ -1038,7 +1038,7 @@ inline unsigned char readbyte()
 #endif
 }
 
-inline unsigned char readbyteSetLastbyte()
+inline unsigned char readbyteSetLastbyte(void)
 {
 #ifdef TARGET_GP2X
     unsigned char __val asm("r0");//%0 and r0 are the same, now
@@ -1089,7 +1089,7 @@ inline unsigned char readbyteSetLastbyte()
 #endif
 }
 
-inline unsigned short readword()
+inline unsigned short readword(void)
 {
 #ifdef TARGET_GP2X
     unsigned short __val asm("r0");//%0 and r0 are the same, now
@@ -1141,7 +1141,7 @@ inline unsigned short readword()
 #endif
 }
 
-inline unsigned short readwordSetLastbyte()
+inline unsigned short readwordSetLastbyte(void)
 {
 #ifdef TARGET_GP2X
     unsigned short __val asm("r0");//%0 and r0 are the same, now
@@ -1208,7 +1208,7 @@ if it's 1, we read a byte and then a word
 
 Or, we could just read a dword and forget about the MSB
 */
-inline unsigned int read24()
+inline unsigned int read24(void)
 {
 #ifdef TARGET_GP2X
     register unsigned int __val asm("r0");//%0 and r0 are the same, now
@@ -1273,7 +1273,7 @@ inline unsigned int read24()
 #endif
 }
 
-inline unsigned int read24SetLastbyte()
+inline unsigned int read24SetLastbyte(void)
 {
 #ifdef TARGET_GP2X
     register unsigned int __val asm("r0");//%0 and r0 are the same, now
@@ -1346,7 +1346,7 @@ inline unsigned int read24SetLastbyte()
 #endif
 }
 
-inline unsigned int readlong()
+inline unsigned int readlong(void)
 {
 #ifdef TARGET_GP2X
     register unsigned int __val asm("r0");//%0 and r0 are the same, now
@@ -1410,7 +1410,7 @@ inline unsigned int readlong()
 #endif
 }
 
-inline void doJumpByte()
+inline void doJumpByte(void)
 {
 #ifdef TARGET_GP2X
  #ifdef GENREGSPC_AS_REG
@@ -1435,7 +1435,7 @@ inline void doJumpByte()
 #endif
 }
 
-inline void skipJumpByte()
+inline void skipJumpByte(void)
 {
 #ifdef TARGET_GP2X
  #ifdef GENREGSPC_AS_REG
@@ -1457,7 +1457,7 @@ inline void skipJumpByte()
 #endif
 }
 
-inline void doJumpWord()
+inline void doJumpWord(void)
 {
 #ifdef TARGET_GP2X
  #ifdef GENREGSPC_AS_REG
