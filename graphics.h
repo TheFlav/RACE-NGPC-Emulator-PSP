@@ -37,7 +37,7 @@
 //extern unsigned char *drawBuffer;
 //extern BITMAP myBitmap;
 
-BOOL graphics_init(HWND phWnd);
+BOOL graphics_init(void);
 void graphics_blit(void);
 void graphics_paint();
 void graphics_cleanup();

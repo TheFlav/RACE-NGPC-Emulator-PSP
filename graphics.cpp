@@ -1603,7 +1603,7 @@ const char ErrCreateSurface[]  = "CreateSurface Failed";
 
 #define DDOK(x) if (hRet != DD_OK) { LastErr = x; return FALSE; }
 
-BOOL graphics_init(HWND phWnd)
+BOOL graphics_init(void)
 {
 #ifdef __LIBRETRO__
     palette_init = palette_init16;

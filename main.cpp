@@ -55,7 +55,7 @@ void mainemuinit()
 {
 	// initialize cpu memory
 	mem_init();
-	graphics_init(NULL);
+	graphics_init();
 
     // initialize the TLCS-900H cpu
     tlcs_init();

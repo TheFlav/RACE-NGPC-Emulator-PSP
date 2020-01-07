@@ -19,10 +19,10 @@
 #include "StdAfx.h"
 #include "main.h"
 
-int initSound();
-void soundCleanup();
+int initSound(void);
+void soundCleanup(void);
 
-void setHwnd(HWND hWnd);
+void setHwnd(void);
 
 /* stolen MAME things */
 int osd_start_audio_stream(int stereo);

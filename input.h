@@ -18,7 +18,7 @@
 
 extern unsigned char	ngpInputState;
 
-BOOL InitInput(HWND hWnd);
+BOOL InitInput(void);
 void UpdateInputState(void);
 void FreeInput(void);
 

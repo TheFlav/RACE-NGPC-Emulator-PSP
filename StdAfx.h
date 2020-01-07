@@ -24,7 +24,6 @@
 #define BOOL  int
 #define FALSE 0
 #define TRUE  (!0)
-#define HWND void*
 
 #ifdef _WIN32
 #define path_default_slash() "\\"

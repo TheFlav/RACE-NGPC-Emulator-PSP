@@ -29,7 +29,7 @@ struct joy_range
     int minx, maxx, miny, maxy;
 } range;
 
-BOOL InitInput(HWND hwnd)
+BOOL InitInput(void)
 {
     return TRUE;
 }
