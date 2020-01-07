@@ -21,8 +21,6 @@
 #define NGPC_SIZEX 160
 #define NGPC_SIZEY 152
 
-#define ZOOM_SUPPORT
-
 //render screen 260x152 is good for NGPC
 #define SIZEX	260//480//368//320//480
 #define SIZEY	152//272//207//240//272

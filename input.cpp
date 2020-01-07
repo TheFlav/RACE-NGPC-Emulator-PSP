@@ -14,10 +14,6 @@ unsigned char	*InputByte = get_address(0x00006F82);
 unsigned char	ngpInputState = 0;
 unsigned char	*InputByte = &ngpInputState;
 
-#ifdef ZOOM_SUPPORT
-extern int zoom;
-#endif
-
 #ifdef __GP32__
 #define DIK_UP BUTTON_UP
 #define DIK_DOWN BUTTON_DOWN

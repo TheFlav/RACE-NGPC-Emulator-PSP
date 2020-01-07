@@ -29,10 +29,6 @@ extern int gfx_hacks;
 
 #define INITGUID
 
-#ifdef ZOOM_SUPPORT
-int zoom=0;
-#endif
-
 /*
  * 16 bit graphics buffers
  * At the moment there's no system which uses more than 16 bit
