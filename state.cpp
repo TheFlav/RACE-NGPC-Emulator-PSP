@@ -166,18 +166,18 @@ static int state_store(race_state_t *rs)
   rs->gpr[i++] = gen_regsXNSP;
 
   /* Z80 Registers */
-  #ifdef CZ80
+#ifdef CZ80
   extern cz80_struc *RACE_cz80_struc;
   extern s32 Z80_ICount;
   int size_of_z80 = 
-    (uintptr_t)(&(RACE_cz80_struc->CycleSup)) - (uintptr_t)(&(RACE_cz80_struc->BC));
+     (uintptr_t)(&(RACE_cz80_struc->CycleSup)) - (uintptr_t)(&(RACE_cz80_struc->BC));
   memcpy(&rs->RACE_cz80_struc, RACE_cz80_struc, size_of_z80);
   rs->Z80_ICount = Z80_ICount;
   rs->PC_offset = Cz80_Get_PC(RACE_cz80_struc);
-  #elif DRZ80
+#elif DRZ80
   extern Z80_Regs Z80;
   memcpy(&rs->Z80, &Z80, sizeof(Z80));
-  #endif
+#endif
 
   /* Sound */
   extern int sndCycles;
@@ -244,7 +244,7 @@ static int state_restore(race_state_t *rs)
   extern cz80_struc *RACE_cz80_struc;
   extern s32 Z80_ICount;
   int size_of_z80 = 
-    (uintptr_t)(&(RACE_cz80_struc->CycleSup)) - (uintptr_t)(&(RACE_cz80_struc->BC));
+     (uintptr_t)(&(RACE_cz80_struc->CycleSup)) - (uintptr_t)(&(RACE_cz80_struc->BC));
 
   memcpy(RACE_cz80_struc, &rs->RACE_cz80_struc, size_of_z80);
   Z80_ICount = rs->Z80_ICount;

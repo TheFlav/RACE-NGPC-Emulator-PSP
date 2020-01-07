@@ -175,7 +175,7 @@ void graphicsBlitEnd(void)
 void graphics_paint(void);
 
 #if defined(DO_PERIODIC_FLASH_SAVES)
-inline void incFrameCount()
+static inline void incFrameCount(void)
 {
     frameCount++;
 }
@@ -591,10 +591,11 @@ int    OOWCol;      /* placeholder for the outside window color this VSYNC */
 unsigned char SprPriLo, SprPriHi, SprPri = 0;
 #endif
 
-inline void set_paletteCol(unsigned short *palette_table,
-                    unsigned short *sprite,
-                    unsigned short *front,
-                    unsigned short *back)
+static inline void set_paletteCol(
+      unsigned short *palette_table,
+      unsigned short *sprite,
+      unsigned short *front,
+      unsigned short *back)
 {
    int i;
    /* initialize palette table
@@ -631,10 +632,11 @@ inline void set_paletteCol(unsigned short *palette_table,
    }
 }
 
-inline void set_paletteBW(unsigned short *palette_table,
-                   unsigned short *sprite,
-                   unsigned short *front,
-                   unsigned short *back)
+static inline void set_paletteBW(
+      unsigned short *palette_table,
+      unsigned short *sprite,
+      unsigned short *front,
+      unsigned short *back)
 {
     int i;
     unsigned char *pt = ((unsigned char *)palette_table)-0x0100; /* get b/w color table */
@@ -655,13 +657,13 @@ inline void set_paletteBW(unsigned short *palette_table,
 }
 
 /* I think there's something wrong with this on the GP2X, because CFC2's intro screen is all red */
-inline void lineClear(TILECACHE *tC, unsigned short col)
+static inline void lineClear(TILECACHE *tC, unsigned short col)
 {
     for(int i=0; i<21*8; i++)
         tC->gbp[i] = col;
 }
 
-inline void clipLeftRight(SPRITEDEFS *sprDef, unsigned short OOWCol)
+static inline void clipLeftRight(SPRITEDEFS *sprDef, unsigned short OOWCol)
 {
     int  i,j;
 
@@ -677,7 +679,7 @@ inline void clipLeftRight(SPRITEDEFS *sprDef, unsigned short OOWCol)
         sprDef->gbp[i] = OOWCol;
 }
 
-inline void lineFront(TILECACHE *tC)
+static inline void lineFront(TILECACHE *tC)
 {
     int    i;
     unsigned char a,b;
@@ -742,7 +744,7 @@ inline void lineFront(TILECACHE *tC)
     }
 }
 
-inline void lineSprite(SPRITEDEFS *sprDefs)
+static inline void lineSprite(SPRITEDEFS *sprDefs)
 {
     SPRITE   *spr;
     unsigned short *gb;
@@ -805,7 +807,7 @@ inline void lineSprite(SPRITEDEFS *sprDefs)
 
 /* sort all the sprites according to their priorities */
 #if 0
-inline void spriteSort(unsigned int bw)
+static void spriteSort(unsigned int bw)
 {
    unsigned short spriteCode;
    unsigned short *pt;
@@ -873,7 +875,7 @@ inline void spriteSort(unsigned int bw)
    }
 #endif
 
-inline void spriteSortAll(unsigned int bw)
+static inline void spriteSortAll(unsigned int bw)
 {
     unsigned int spriteCode;
     unsigned short *pt;
@@ -987,7 +989,7 @@ void graphicsBlitInit(void)
 #endif
 }
 
-inline void RenderTileCache(TILECACHE *tC, unsigned int bw)
+static inline void RenderTileCache(TILECACHE *tC, unsigned int bw)
 {
     int    i;
     unsigned char line;

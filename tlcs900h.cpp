@@ -37,7 +37,6 @@
 #include "main.h"
 #include "tlcs900h.h"
 #include "memory.h"
-//#include "mainemu.h"
 #include "input.h"
 #include "graphics.h"
 #include "ngpBios.h"
@@ -8242,74 +8241,74 @@ int decodeF0()  // (n)                dst
     return 2 + decode_tableF0[lastbyte]();
 }
 
-int decodeF1()  //   (nn)             dst
+int decodeF1(void)  //   (nn)             dst
 {
-    mem = readwordSetLastbyte();
+   mem = readwordSetLastbyte();
 #ifdef TCLS900H_PROFILING
-    profile[0xf0].decode[lastbyte]++;
+   profile[0xf0].decode[lastbyte]++;
 #endif
-    return 2 + decode_tableF0[lastbyte]();
+   return 2 + decode_tableF0[lastbyte]();
 }
 
-int decodeF2()  //     (nnn)           dst
+int decodeF2(void)  //     (nnn)           dst
 {
-    mem = read24SetLastbyte();
+   mem = read24SetLastbyte();
 #ifdef TCLS900H_PROFILING
-    profile[0xf0].decode[lastbyte]++;
+   profile[0xf0].decode[lastbyte]++;
 #endif
-    return 3 + decode_tableF0[lastbyte]();
+   return 3 + decode_tableF0[lastbyte]();
 }
 
-int decodeF3()  //       (mem)         dst
+int decodeF3(void)  //       (mem)         dst
 {
-    unsigned char reg = readbyte();
-    signed short d16;
-    int    retval = 0;
+   unsigned char reg = readbyte();
+   signed short d16;
+   int    retval = 0;
 
-    switch(reg&0x03)
-    {
-        case 0x00:
-        mem = *allregsL[reg];
-        retval = 5;
-        break;
-        case 0x01:
-        mem = *allregsL[reg]+(signed short)readword();
-        retval = 5;
-        break;
-        case 0x02:
-        break;
-        case 0x03:
-        switch(reg)
-        {
+   switch(reg&0x03)
+   {
+      case 0x00:
+         mem = *allregsL[reg];
+         retval = 5;
+         break;
+      case 0x01:
+         mem = *allregsL[reg]+(signed short)readword();
+         retval = 5;
+         break;
+      case 0x02:
+         break;
+      case 0x03:
+         switch(reg)
+         {
             case 0x03:
-            reg = readbyte();
-            mem = *allregsL[reg]+(signed char)(*allregsB[readbyte()]);
-            //   mem = *allregsL[reg]+*allregsB[readbyte()];
-            retval = 8;
-            break;
+               reg = readbyte();
+               mem = *allregsL[reg]+(signed char)(*allregsB[readbyte()]);
+               //   mem = *allregsL[reg]+*allregsB[readbyte()];
+               retval = 8;
+               break;
             case 0x07:
-            reg = readbyte();
-            mem = *allregsL[reg]+(signed short)(*allregsW[readbyte()]);
-            //   mem = *allregsL[reg]+*allregsW[readbyte()];
-            retval = 8;
-            break;
+               reg = readbyte();
+               mem = *allregsL[reg]+(signed short)(*allregsW[readbyte()]);
+               //   mem = *allregsL[reg]+*allregsW[readbyte()];
+               retval = 8;
+               break;
             case 0x13:
-            d16 = (signed short)readword();
-            mem = gen_regsPC + d16;
-            retval = 5;
-            break;
+               d16 = (signed short)readword();
+               mem = gen_regsPC + d16;
+               retval = 5;
+               break;
             default:
-            break;
-        }
-    }
-    lastbyte = readbyte();
+               break;
+         }
+   }
+   lastbyte = readbyte();
 #ifdef TCLS900H_PROFILING
-    profile[0xf0].decode[lastbyte]++;
+   profile[0xf0].decode[lastbyte]++;
 #endif
-    return retval + decode_tableF0[lastbyte]();
+   return retval + decode_tableF0[lastbyte]();
 }
 
-int decodeF4()  //         (-xrr)       dst
+int decodeF4(void)  //         (-xrr)       dst
 {
     unsigned char reg;
 
@@ -8321,62 +8320,62 @@ int decodeF4()  //         (-xrr)       dst
     return 3 + decode_tableF0[lastbyte]();
 }
 
-int decodeF5()  //           (xrr+)     dst
+int decodeF5(void)  //           (xrr+)     dst
 {
-    unsigned char reg;
-    int  retval;
+   unsigned char reg;
+   int  retval;
 
-    reg = readbyteSetLastbyte();
-    mem = (*allregsL[reg]);
+   reg = readbyteSetLastbyte();
+   mem = (*allregsL[reg]);
 #ifdef TCLS900H_PROFILING
-    profile[0xf0].decode[lastbyte]++;
+   profile[0xf0].decode[lastbyte]++;
 #endif
-    retval = 3 + decode_tableF0[lastbyte]();
-    *allregsL[reg]+= 1<<(reg&3);
-    return retval;
+   retval = 3 + decode_tableF0[lastbyte]();
+   *allregsL[reg]+= 1<<(reg&3);
+   return retval;
 }
 
 // main instruction decode table
 int (*instr_table[256])()=
-    {
-        nop,  normal,  pushsr,  popsr,  tmax,  halt,  ei,   reti,
-        ld8I,  pushI,  ldw8I,  pushwI,  incf,  decf,  ret,  retd,
-        rcf,  scf,  ccf,  zcf,  pushA,  popA,  exFF,  ldf,
-        pushF,  popF,  jp16,  jp24,  call16,  call24,  calr,  udef,
-        ldRIB,  ldRIB,  ldRIB,  ldRIB,  ldRIB,  ldRIB,  ldRIB,  ldRIB,
-        pushRW,  pushRW,  pushRW,  pushRW,  pushRW,  pushRW,  pushRW,  pushRW,
-        ldRIW,  ldRIW,  ldRIW,  ldRIW,  ldRIW,  ldRIW,  ldRIW,  ldRIW,
-        pushRL,  pushRL,  pushRL,  pushRL,  pushRL,  pushRL,  pushRL,  pushRL,
-        //
-        ldRIL,  ldRIL,  ldRIL,  ldRIL,  ldRIL,  ldRIL,  ldRIL,  ldRIL,
-        popRW,  popRW,  popRW,  popRW,  popRW,  popRW,  popRW,  popRW,
-        udef,  udef,  udef,  udef,  udef,  udef,  udef,  udef,
-        popRL,  popRL,  popRL,  popRL,  popRL,  popRL,  popRL,  popRL,
-        jrcc0,  jrcc1,  jrcc2,  jrcc3,  jrcc4,  jrcc5,  jrcc6,  jrcc7,
-        jrcc8,  jrcc9,  jrccA,  jrccB,  jrccC,  jrccD,  jrccE,  jrccF,
-        jrlcc0,  jrlcc1,  jrlcc2,  jrlcc3,  jrlcc4,  jrlcc5,  jrlcc6,  jrlcc7,
-        jrlcc8,  jrlcc9,  jrlccA,  jrlccB,  jrlccC,  jrlccD,  jrlccE,  jrlccF,
-        //
-        decode80, decode80, decode80, decode80, decode80, decode80, decode80, decode80,
-        decode88, decode88, decode88, decode88, decode88, decode88, decode88, decode88,
-        decode90, decode90, decode90, decode90, decode90, decode90, decode90, decode90,
-        decode98, decode98, decode98, decode98, decode98, decode98, decode98, decode98,
-        decodeA0, decodeA0, decodeA0, decodeA0, decodeA0, decodeA0, decodeA0, decodeA0,
-        decodeA8, decodeA8, decodeA8, decodeA8, decodeA8, decodeA8, decodeA8, decodeA8,
-        decodeB0, decodeB0, decodeB0, decodeB0, decodeB0, decodeB0, decodeB0, decodeB0,
-        decodeB8, decodeB8, decodeB8, decodeBB, decodeB8, decodeB8, decodeB8, decodeB8,
-        //
-        decodeC0, decodeC1, decodeC2, decodeC3, decodeC4, decodeC5, udef,  decodeC7,
-        decodeC8, decodeC8, decodeC8, decodeC8, decodeC8, decodeC8, decodeC8, decodeC8,
-        decodeD0, decodeD1, decodeD2, decodeD3, decodeD4, decodeD5, udef,  decodeD7,
-        decodeD8, decodeD8, decodeD8, decodeD8, decodeD8, decodeD8, decodeD8, decodeD8,
-        decodeE0, decodeE1, decodeE2, decodeE3, decodeE4, decodeE5, udef,  decodeE7,
-        decodeE8, decodeE8, decodeE8, decodeE8, decodeE8, decodeE8, decodeE8, decodeE8,
-        decodeF0, decodeF1, decodeF2, decodeF3, decodeF4, decodeF5, udef,  ldx,
-        swi,  swi,  swi,  swi,  swi,  swi,  swi,  swi
-    };
+{
+   nop,  normal,  pushsr,  popsr,  tmax,  halt,  ei,   reti,
+   ld8I,  pushI,  ldw8I,  pushwI,  incf,  decf,  ret,  retd,
+   rcf,  scf,  ccf,  zcf,  pushA,  popA,  exFF,  ldf,
+   pushF,  popF,  jp16,  jp24,  call16,  call24,  calr,  udef,
+   ldRIB,  ldRIB,  ldRIB,  ldRIB,  ldRIB,  ldRIB,  ldRIB,  ldRIB,
+   pushRW,  pushRW,  pushRW,  pushRW,  pushRW,  pushRW,  pushRW,  pushRW,
+   ldRIW,  ldRIW,  ldRIW,  ldRIW,  ldRIW,  ldRIW,  ldRIW,  ldRIW,
+   pushRL,  pushRL,  pushRL,  pushRL,  pushRL,  pushRL,  pushRL,  pushRL,
+   //
+   ldRIL,  ldRIL,  ldRIL,  ldRIL,  ldRIL,  ldRIL,  ldRIL,  ldRIL,
+   popRW,  popRW,  popRW,  popRW,  popRW,  popRW,  popRW,  popRW,
+   udef,  udef,  udef,  udef,  udef,  udef,  udef,  udef,
+   popRL,  popRL,  popRL,  popRL,  popRL,  popRL,  popRL,  popRL,
+   jrcc0,  jrcc1,  jrcc2,  jrcc3,  jrcc4,  jrcc5,  jrcc6,  jrcc7,
+   jrcc8,  jrcc9,  jrccA,  jrccB,  jrccC,  jrccD,  jrccE,  jrccF,
+   jrlcc0,  jrlcc1,  jrlcc2,  jrlcc3,  jrlcc4,  jrlcc5,  jrlcc6,  jrlcc7,
+   jrlcc8,  jrlcc9,  jrlccA,  jrlccB,  jrlccC,  jrlccD,  jrlccE,  jrlccF,
+   //
+   decode80, decode80, decode80, decode80, decode80, decode80, decode80, decode80,
+   decode88, decode88, decode88, decode88, decode88, decode88, decode88, decode88,
+   decode90, decode90, decode90, decode90, decode90, decode90, decode90, decode90,
+   decode98, decode98, decode98, decode98, decode98, decode98, decode98, decode98,
+   decodeA0, decodeA0, decodeA0, decodeA0, decodeA0, decodeA0, decodeA0, decodeA0,
+   decodeA8, decodeA8, decodeA8, decodeA8, decodeA8, decodeA8, decodeA8, decodeA8,
+   decodeB0, decodeB0, decodeB0, decodeB0, decodeB0, decodeB0, decodeB0, decodeB0,
+   decodeB8, decodeB8, decodeB8, decodeBB, decodeB8, decodeB8, decodeB8, decodeB8,
+   //
+   decodeC0, decodeC1, decodeC2, decodeC3, decodeC4, decodeC5, udef,  decodeC7,
+   decodeC8, decodeC8, decodeC8, decodeC8, decodeC8, decodeC8, decodeC8, decodeC8,
+   decodeD0, decodeD1, decodeD2, decodeD3, decodeD4, decodeD5, udef,  decodeD7,
+   decodeD8, decodeD8, decodeD8, decodeD8, decodeD8, decodeD8, decodeD8, decodeD8,
+   decodeE0, decodeE1, decodeE2, decodeE3, decodeE4, decodeE5, udef,  decodeE7,
+   decodeE8, decodeE8, decodeE8, decodeE8, decodeE8, decodeE8, decodeE8, decodeE8,
+   decodeF0, decodeF1, decodeF2, decodeF3, decodeF4, decodeF5, udef,  ldx,
+   swi,  swi,  swi,  swi,  swi,  swi,  swi,  swi
+};
 
-void tlcs_init()
+void tlcs_init(void)
 {
     int i,j;
 
@@ -9021,53 +9020,53 @@ inline void tlcsTimers(int stateChange)
     tlcs1Timer(stateChange, 2, (T8RUN>>2)&3, T23MOD, &timer2, &timer3, TREG2, TREG3);
 }
 
-inline void tlcsTI0()
+static void tlcsTI0(void)
 {
+   if (((T01MOD & 3) == 0) && (T8RUN & 1))
+      timer0+= 1;  
 
-    if (((T01MOD & 3) == 0) && (T8RUN & 1))
-        timer0+= 1;  
-    
-    if (gfx_hacks==1){   
-    //Arregla Samurai 2    
-    if (mainrom[0x000020] == 0x30)   {    
+   if (gfx_hacks==1){   
+      //Arregla Samurai 2    
+      if (mainrom[0x000020] == 0x30)   {    
 
-    contador++;
-    if (contador==100)
-    timer0+= 1;
-    
-    if (contador==152)
-    contador=0;}   
-    
-    //Arregla el tablero del Super Real Mahjong, NO modo historia
-    //Arregla Ohanabi 0x10
+         contador++;
+         if (contador==100)
+            timer0+= 1;
 
-    if ((mainrom[0x000020] == 0x11 || mainrom[0x000020] == 0x10) && *scanlineY>182)
-    timer0 = 0; 
-    
-    //Arregla Oelsol 0x07
-    if (mainrom[0x000020] == 0x07 && *rasterY>0  )
-    {if (*scanlineY==2)
-    timer0-= 1; }
-    
-    //Arregla Dekahel 0x08   
-    if (mainrom[0x000020] == 0x08 && *rasterY==0 )
-    timer0 = 0;     
-    
-     //Arregla ecup 0x12  
-    //if (mainrom[0x000020] == 0x12 && *scrollBackY==0 )
-   // timer0 = 0;     
-     
-   if (mainrom[0x000020] == 0x12)
-   {if (*scanlineY>122 && *rasterY==0 )
-   timer0 = 0;   
-   if (*scanlineY==2)
-   timer0+= 1;   }}
-   
-   
-   
-   }
+         if (contador==152)
+            contador=0;}   
 
-inline int tlcs_step()
+      //Arregla el tablero del Super Real Mahjong, NO modo historia
+      //Arregla Ohanabi 0x10
+
+      if ((mainrom[0x000020] == 0x11 || mainrom[0x000020] == 0x10) && *scanlineY>182)
+         timer0 = 0; 
+
+      //Arregla Oelsol 0x07
+      if (mainrom[0x000020] == 0x07 && *rasterY>0  )
+      {if (*scanlineY==2)
+         timer0-= 1; }
+
+      //Arregla Dekahel 0x08   
+      if (mainrom[0x000020] == 0x08 && *rasterY==0 )
+         timer0 = 0;     
+
+      //Arregla ecup 0x12  
+      //if (mainrom[0x000020] == 0x12 && *scrollBackY==0 )
+      // timer0 = 0;     
+
+      if (mainrom[0x000020] == 0x12)
+      {if (*scanlineY>122 && *rasterY==0 )
+         timer0 = 0;   
+         if (*scanlineY==2)
+            timer0+= 1;   }}
+
+
+
+}
+
+/* perform one cpu step */
+static int tlcs_step(void)
 {
     int clocks = DMAstate;
 #ifdef TCLS900H_PROFILING

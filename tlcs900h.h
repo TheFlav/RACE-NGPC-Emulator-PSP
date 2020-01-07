@@ -1,21 +1,20 @@
-//---------------------------------------------------------------------------
-//	This program is free software; you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License as published by
-//	the Free Software Foundation; either version 2 of the License, or
-//	(at your option) any later version. See also the license.txt file for
-//	additional informations.
-//---------------------------------------------------------------------------
+/*---------------------------------------------------------------------------
+ *	This program is free software; you can redistribute it and/or modify
+ *	it under the terms of the GNU General Public License as published by
+ *	the Free Software Foundation; either version 2 of the License, or
+ *	(at your option) any later version. See also the license.txt file for
+ *	additional informations.
+ *---------------------------------------------------------------------------
 
-// tlcs900h.h: interface for the tlcs900h class.
-//
-//////////////////////////////////////////////////////////////////////
+ * tlcs900h.h: interface for the tlcs900h class.
+ */
 
 #if !defined(AFX_TLCS900H_H__41E77E01_8224_11D3_8644_00A0241D2A65__INCLUDED_)
 #define AFX_TLCS900H_H__41E77E01_8224_11D3_8644_00A0241D2A65__INCLUDED_
 
 #if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+#endif /* _MSC_VER > 1000 */
 
 extern unsigned int gen_regsPC, gen_regsSR;
 extern unsigned char F2;
@@ -54,29 +53,16 @@ extern int setting_ngp_language;
 #define SR		21
 #define XSSP	22
 #define XNSP	23
-// initialize registers, etc..
-void tlcs_init();
-void tlcs_reinit();
-// perform one cpu step
-int tlcs_step();
-// output the current contents of the registers to a file
-//void tlcs_print(FILE *output);
-// execute interrupt
+/* initialize registers, etc.. */
+void tlcs_init(void);
+void tlcs_reinit(void);
+/* execute interrupt */
 void tlcs_interrupt_wrapper(int irq);
-// check PC
-//int check_pc(unsigned int addr);
-// input from TI0
-void tlcsTI0();
-//
-//void tlcs_test();
-//
-//void setErrorLog(FILE *errorlog, FILE *outputram);
-//void closeLog();
-void ngpc_run();
+void ngpc_run(void);
 #ifdef AUTO_FRAMESKIP
-void tlcs_execute(int cycles, int skipFrames);// skipFrames=how many frames to skip for each frame rendered
+void tlcs_execute(int cycles, int skipFrames); /* skipFrames=how many frames to skip for each frame rendered */
 #else
 void tlcs_execute(int cycles);
 #endif
 
-#endif // !defined(AFX_TLCS900H_H__41E77E01_8224_11D3_8644_00A0241D2A65__INCLUDED_)
+#endif /* !defined(AFX_TLCS900H_H__41E77E01_8224_11D3_8644_00A0241D2A65__INCLUDED_) */

@@ -32,7 +32,7 @@ int sndCycles = 0;
 
 void soundStep(int cycles)
 {
-	sndCycles+= cycles;
+   sndCycles+= cycles;
 }
 
 /*
@@ -45,12 +45,12 @@ unsigned int	ngpRunning;
 
 void ngpSoundStart(void)
 {
-	ngpRunning = 1;	/* ? */
+   ngpRunning = 1;	/* ? */
 #if defined(DRZ80) || defined(CZ80)
-    Z80_Reset();
+   Z80_Reset();
 #else
-	z80Init();
-	z80SetRunning(1);
+   z80Init();
+   z80SetRunning(1);
 #endif
 }
 
@@ -58,25 +58,25 @@ void ngpSoundStart(void)
 void ngpSoundExecute(void)
 {
 #if defined(DRZ80) || defined(CZ80)
-    int toRun = sndCycles/2;
-    if(ngpRunning)
-    {
-        Z80_Execute(toRun);
-    }
+   int toRun = sndCycles/2;
+   if(ngpRunning)
+   {
+      Z80_Execute(toRun);
+   }
 #if 0
-    timer_add_cycles(toRun);
+   timer_add_cycles(toRun);
 #endif
-    sndCycles -= toRun;
+   sndCycles -= toRun;
 #else
-	int		elapsed;
-	while(sndCycles > 0)
-	{
-		elapsed = z80Step();
-		sndCycles-= (2*elapsed);
+   int		elapsed;
+   while(sndCycles > 0)
+   {
+      elapsed = z80Step();
+      sndCycles-= (2*elapsed);
 #if 0
-		timer_add_cycles(elapsed);
+      timer_add_cycles(elapsed);
 #endif
-	}
+   }
 #endif
 }
 
@@ -103,4 +103,3 @@ void ngpSoundInterrupt(void)
 #endif
    }
 }
-

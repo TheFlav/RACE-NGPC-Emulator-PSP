@@ -19,7 +19,6 @@
 extern unsigned char	ngpInputState;
 
 BOOL InitInput(void);
-void UpdateInputState(void);
 void FreeInput(void);
 
 #endif /* !defined(AFX_INPUT_H__59701BE2_A97A_11D3_8645_00A0241D2A65__INCLUDED_) */

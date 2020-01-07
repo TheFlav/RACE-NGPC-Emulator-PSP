@@ -37,17 +37,15 @@ extern unsigned char cpurom[];			// Bios ROM image area
 /// tlcs 900h memory
 //extern unsigned char	cpuram[];		// 900h cpu core needs this..
 extern unsigned char *cpuram;
-unsigned char tlcsMemReadB(unsigned int addr);
-unsigned short tlcsMemReadW(unsigned int addr);
-unsigned int tlcsMemReadL(unsigned int addr);
-void tlcsMemWriteB(unsigned int addr, unsigned char data);
 void tlcsMemWriteW(unsigned int addr, unsigned short data);
 void tlcsMemWriteL(unsigned int addr, unsigned int data);
-void mem_init();
+void mem_init(void);
 void mem_dump_ram(FILE *output);
 
-//unsigned char *get_address(unsigned int addr);
-//unsigned char *get_addressW(unsigned int addr);
+#if 0
+unsigned char *get_address(unsigned int addr);
+unsigned char *get_addressW(unsigned int addr);
+#endif
 
 /// gameboy memory
 
@@ -141,107 +139,86 @@ unsigned char i8048ExtReadB(unsigned int addr);
 void i8048ExtWriteB(unsigned int addr, unsigned char data);
 unsigned char i8048PortReadB(unsigned char port);
 void i8048PortWriteB(unsigned char port, unsigned char data);
-void i8048SetT1();
-unsigned char i8048GetT1();
+void i8048SetT1(void);
+unsigned char i8048GetT1(void);
 
-//
-// sm85xx memory functions
-//
+/*
+ * sm85xx memory functions
+ */
 
 extern unsigned char (*sm85MemReadB)(unsigned short addr);
 extern void (*sm85MemWriteB)(unsigned short addr, unsigned char data);
 
 extern unsigned char realBIOSloaded;
 
-inline unsigned char *get_address(unsigned int addr)
+static inline unsigned char *get_address(unsigned int addr)
 {
-	addr&= 0x00FFFFFF;
-	if (addr<0x00200000)
-	{
-		if (addr<0x000008a0)
-		{
-		    //if(((unsigned int)&cpuram[addr] >> 24) == 0xFF)
-            //    dbg_print("1) addr=0x%X returning=0x%X\n", addr, &cpuram[addr]);
-			return &cpuram[addr];
-		}
-		if (addr>0x00003fff && addr<0x00018000)
-        {
-            //if((unsigned int)&mainram[addr-0x00004000] >> 24 == 0xFF)
-            //    dbg_print("2) addr=0x%X returning=0x%X\n", addr, &mainram[addr-0x00004000]);
+   addr&= 0x00FFFFFF;
+   if (addr<0x00200000)
+   {
+      if (addr<0x000008a0)
+      {
+         //if(((unsigned int)&cpuram[addr] >> 24) == 0xFF)
+         //    dbg_print("1) addr=0x%X returning=0x%X\n", addr, &cpuram[addr]);
+         return &cpuram[addr];
+      }
+      if (addr>0x00003fff && addr<0x00018000)
+      {
+         //if((unsigned int)&mainram[addr-0x00004000] >> 24 == 0xFF)
+         //    dbg_print("2) addr=0x%X returning=0x%X\n", addr, &mainram[addr-0x00004000]);
 
-            switch (addr)  //Thanks Koyote
-            {
-                case 0x6F80:
-                    mainram[addr-0x00004000] = 0xFF;
-                    break;
-                case 0x6F80+1:
-                    mainram[addr-0x00004000] = 0x03;
-                    break;
-                case 0x6F85:
-                    mainram[addr-0x00004000] = 0x00;
-                    break;
-                case 0x6F82:
-                    mainram[addr-0x00004000] = ngpInputState;
-                    break;
-                case 0x6DA2:
-                    mainram[addr-0x00004000] = 0x80;
-                    break;
-            }
-            return &mainram[addr-0x00004000];
-        }
-	}
-	else
-	{
-		if (addr<0x00400000)
-		{
-            return &mainrom[(addr-0x00200000)/*&cartAddrMask*/];
-		}
-        if(addr<0x00800000) //Flavor added
-		{
-            return 0;
-		}
-		if (addr<0x00A00000)
-		{
-            return &mainrom[(addr-(0x00800000-0x00200000))/*&cartAddrMask*/];
-		}
-		if(addr<0x00FF0000) //Flavor added
-		{
-            return 0;
-		}
+         switch (addr)  //Thanks Koyote
+         {
+            case 0x6F80:
+               mainram[addr-0x00004000] = 0xFF;
+               break;
+            case 0x6F80+1:
+               mainram[addr-0x00004000] = 0x03;
+               break;
+            case 0x6F85:
+               mainram[addr-0x00004000] = 0x00;
+               break;
+            case 0x6F82:
+               mainram[addr-0x00004000] = ngpInputState;
+               break;
+            case 0x6DA2:
+               mainram[addr-0x00004000] = 0x80;
+               break;
+         }
+         return &mainram[addr-0x00004000];
+      }
+   }
+   else
+   {
+      if (addr<0x00400000)
+      {
+         return &mainrom[(addr-0x00200000)/*&cartAddrMask*/];
+      }
+      if(addr<0x00800000) //Flavor added
+      {
+         return 0;
+      }
+      if (addr<0x00A00000)
+      {
+         return &mainrom[(addr-(0x00800000-0x00200000))/*&cartAddrMask*/];
+      }
+      if(addr<0x00FF0000) //Flavor added
+      {
+         return 0;
+      }
 
-        //if((unsigned int)&cpurom[addr-0x00ff0000] >> 24 == 0xFF)
-        //   dbg_print("5) addr=0x%X returning=0x%X\n", addr, &cpurom[addr-0x00ff0000]);
+      //if((unsigned int)&cpurom[addr-0x00ff0000] >> 24 == 0xFF)
+      //   dbg_print("5) addr=0x%X returning=0x%X\n", addr, &cpurom[addr-0x00ff0000]);
 
-        return &cpurom[addr-0x00ff0000];
-    }
+      return &cpurom[addr-0x00ff0000];
+   }
 
-	//dbg_print("6) addr=0x%X returning=0\n", addr);
-	return 0;  //Flavor ERROR
+   //dbg_print("6) addr=0x%X returning=0\n", addr);
+   return 0;  //Flavor ERROR
 }
 
-/*inline unsigned char *get_addressW(unsigned int addr)
-{
-	addr&= 0x00FFFFFF;
-	if (addr<0x00200000)
-	{
-		if (addr<0x000008a0)
-		{
-			return &cpuram[addr];
-		}
-		if (addr>0x00003fff && addr<0x00018000)
-            return &mainram[addr-0x00004000];
-
-        return NULL;
-	}
-	else
-	{
-		return NULL;
-	}
-	return NULL;  //Flavor ERROR
-}*/
-
-// read a byte from a memory address (addr)
-inline unsigned char tlcsMemReadB(unsigned int addr)
+/* read a byte from a memory address (addr) */
+static inline unsigned char tlcsMemReadB(unsigned int addr)
 {
 	addr&= 0x00FFFFFF;
 
@@ -298,8 +275,8 @@ inline unsigned char tlcsMemReadB(unsigned int addr)
 	return 0xFF;
 }
 
-// read a word from a memory address (addr)
-inline unsigned short tlcsMemReadW(unsigned int addr)
+/* read a word from a memory address (addr) */
+static inline unsigned short tlcsMemReadW(unsigned int addr)
 {
 #ifdef TARGET_GP2X
 	register unsigned short i asm("r0");
@@ -335,9 +312,8 @@ inline unsigned short tlcsMemReadW(unsigned int addr)
 #endif
 }
 
-
-// read a long word from a memory address (addr)
-inline unsigned int tlcsMemReadL(unsigned int addr)
+/* read a long word from a memory address (addr) */
+static inline unsigned int tlcsMemReadL(unsigned int addr)
 {
 #ifdef TARGET_GP2X
 	register unsigned int i asm("r0");
@@ -378,8 +354,8 @@ inline unsigned int tlcsMemReadL(unsigned int addr)
 #endif
 }
 
-// write a byte (data) to a memory address (addr)
-inline void tlcsMemWriteB(unsigned int addr, unsigned char data)
+/* write a byte (data) to a memory address (addr) */
+static inline void tlcsMemWriteB(unsigned int addr, unsigned char data)
 {
 	addr&= 0x00FFFFFF;
     if (addr<0x000008a0)
@@ -453,9 +429,5 @@ inline void tlcsMemWriteB(unsigned int addr, unsigned char data)
         flashChipWrite(addr, data);
 
 }
-
-
-
-
 
 #endif  // _MEMORYH_

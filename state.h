@@ -16,7 +16,7 @@
 #ifndef _STATE_H
 #define _STATE_H
 
-int state_get_size();
+int state_get_size(void);
 int state_store_mem(void *state);
 int state_restore_mem(void *state);
 
