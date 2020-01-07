@@ -54,24 +54,6 @@ int dacLBufferRead, dacLBufferWrite, dacLBufferCount;
 _u16 dacBufferL[DAC_BUFFERSIZE];
 int fixsoundmahjong;
 
-#if !defined(__GP32__) && !defined(__LIBRETRO__)
-
-int volume = SDL_MIX_MAXVOLUME;//SDL_MIX_MAXVOLUME / 2;
-
-void increaseVolume()
-{
-    if(volume < SDL_MIX_MAXVOLUME)
-        volume++;
-}
-
-void decreaseVolume()
-{
-    if(volume > 0)
-        volume--;
-}
-
-#endif
-
 //=============================================================================
 
 #define SOUNDCHIPCLOCK	(3072000)	//Unverified / sounds correct
@@ -272,9 +254,6 @@ void sound_update(_u16* chip_buffer, int length_bytes)
 
 void WriteSoundChip(SoundChip* chip, _u8 data)
 {
-#if !defined(__GP32__) && !defined(__LIBRETRO__)
-    SDL_LockAudio();
-#endif
 	//Command
 	if (data & 0x80)
 	{
@@ -382,9 +361,6 @@ void WriteSoundChip(SoundChip* chip, _u8 data)
 				break;
 		}
 	}
-#if !defined(__GP32__) && !defined(__LIBRETRO__)
-    SDL_UnlockAudio();
-#endif
 }
 
 //=============================================================================
@@ -393,9 +369,6 @@ void WriteSoundChip(SoundChip* chip, _u8 data)
 void dac_writeL(unsigned char data)
 {
     static int conv=5;
-#if !defined(__GP32__) && !defined(__LIBRETRO__)
-    SDL_LockAudio();
-#endif
 
 #ifdef __LIBRETRO__
     //pretend that conv=5.5 (44100/8000) conversion factor
@@ -433,15 +406,11 @@ void dac_writeL(unsigned char data)
         }
     }
 
-#if !defined(__GP32__) && !defined(__LIBRETRO__)
-    SDL_UnlockAudio();
-#endif
 }
 //#endif
 
 /*void dac_writeR(unsigned char data)
 {
-    SDL_LockAudio();
 	//Write to buffer
 	dacBufferR[dacRBufferWrite] = data;
 	dacRBufferWrite++;
@@ -455,29 +424,10 @@ void dac_writeL(unsigned char data)
 		dbg_printf("dac_write: DAC buffer overflow\nPlease report this to the author.");
 		dacRBufferCount = 0;
 	}
-    SDL_UnlockAudio();
 }*/
 
 void dac_mixer(_u16* stream, int length_bytes)
 {
-#if !defined(__GP32__) && !defined(__LIBRETRO__)
-    int length_words = length_bytes>>1;
-    length_bytes &= 0xFFFFFFFE; //make sure it's 16bit safe
-
-    if(dacLBufferRead+length_words >= DAC_BUFFERSIZE)
-    {
-        SDL_MixAudio((Uint8*)stream, (Uint8*)&dacBufferL[dacLBufferRead], (DAC_BUFFERSIZE-dacLBufferRead)*2, volume); //mix it to the buffer
-        SDL_MixAudio((Uint8*)&stream[DAC_BUFFERSIZE-dacLBufferRead], (Uint8*)dacBufferL, length_bytes-((DAC_BUFFERSIZE-dacLBufferRead)*2), volume); //mix it to the buffer
-        dacLBufferRead = length_words-(DAC_BUFFERSIZE-dacLBufferRead);
-    }
-    else
-    {
-        SDL_MixAudio((Uint8*)stream, (Uint8*)&dacBufferL[dacLBufferRead], length_bytes, volume); //mix it to the buffer
-        dacLBufferRead += length_words;
-    }
-
-    dacLBufferCount -= length_words; //need it in 16bits
-#endif
 }
 
 
@@ -636,57 +586,10 @@ int audioCallback(unsigned short* sndBuf,int len) {
 
 #endif
 
-#ifndef __LIBRETRO__
-void mixaudioCallback(void *userdata, Uint8 *stream, int len)
+int sound_system_init(void)
 {
-#ifndef __GP32__
-    sound_update((_u16*)blockSound, len);	//Get sound data
-//    memcpy(stream, blockSound, len);        //put it in the buffer
-    SDL_MixAudio(stream, blockSound, len, volume); //mix it to the buffer
-
-    if(dacLBufferCount >= len)
-    {
-        //dac_update((_u16*)blockDAC, len);	//Get DAC data
-        //SDL_MixAudio(stream, blockDAC, len, volume); //mix it to the buffer
-
-        dac_mixer((_u16*)stream, len);	//Get DAC data
-    }
-#endif
-}
-#endif /* __LIBRETRO__ */
-
-int sound_system_init()
-{
-#if !defined(__GP32__) && !defined(__LIBRETRO__)
-    //set up SDL sound here?
-    SDL_AudioSpec fmt, retFmt;
-
-    fmt.freq = chip_freq;  //11025 is good for dac_ sound
-    fmt.format = AUDIO_S16;
-    fmt.channels = 1;
-#ifdef __LIBRETRO__
-    fmt.samples = 512;
-#else
-    fmt.samples = 512;
-#endif
-    fmt.callback = mixaudioCallback;
-    fmt.userdata = NULL;
-
-    /* Open the audio device and start playing sound! */
-    if ( SDL_OpenAudio(&fmt, &retFmt) < 0 ) {
-        fprintf(stderr, "Unable to open audio: %s\n", SDL_GetError());
-        exit(1);
-    }
-
-    chip_freq = retFmt.freq;
-
-	system_sound_chipreset();	//Resets chips
-
-    SDL_PauseAudio(0);
-#else
-	system_sound_chipreset();	//Resets chips
-#endif
-  return 1;
+   system_sound_chipreset();	//Resets chips
+   return 1;
 }
 
 
