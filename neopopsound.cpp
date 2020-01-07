@@ -363,49 +363,43 @@ void WriteSoundChip(SoundChip* chip, _u8 data)
 
 //=============================================================================
 
-//#ifdef __LIBRETRO__
 void dac_writeL(unsigned char data)
 {
-    static int conv=5;
+   static int conv=5;
 
-#ifdef __LIBRETRO__
-    //pretend that conv=5.5 (44100/8000) conversion factor
-    
-    if(conv==5)
-        conv=6;
-    else
-    {
-    conv=5;
-        
-        //Arregla el sonido del Super Real Mahjong
-        if (fixsoundmahjong>500)
-           conv=3;
-           }    
-        
-#else
-	conv=1;
-#endif
+   /* pretend that conv=5.5 (44100/8000) conversion factor */
 
-    for(int i=0;i<conv;i++)
-    {
-        //Write to buffer
-        dacBufferL[dacLBufferWrite++] = (data-0x80)<<8;
+   if(conv==5)
+      conv=6;
+   else
+   {
+      conv=5;
 
-        //dacLBufferWrite++;
-        if (dacLBufferWrite == DAC_BUFFERSIZE)
-            dacLBufferWrite = 0;
+      /* Arregla el sonido del Super Real Mahjong */
+      if (fixsoundmahjong>500)
+         conv=3;
+   }    
 
-        //Overflow?
-        dacLBufferCount++;
-        if (dacLBufferCount == DAC_BUFFERSIZE)
-        {
-            //dbg_printf("dac_write: DAC buffer overflow\nPlease report this to the author.");
-            dacLBufferCount = 0;
-        }
-    }
+
+   for(int i=0;i<conv;i++)
+   {
+      //Write to buffer
+      dacBufferL[dacLBufferWrite++] = (data-0x80)<<8;
+
+      //dacLBufferWrite++;
+      if (dacLBufferWrite == DAC_BUFFERSIZE)
+         dacLBufferWrite = 0;
+
+      //Overflow?
+      dacLBufferCount++;
+      if (dacLBufferCount == DAC_BUFFERSIZE)
+      {
+         //dbg_printf("dac_write: DAC buffer overflow\nPlease report this to the author.");
+         dacLBufferCount = 0;
+      }
+   }
 
 }
-//#endif
 
 /*void dac_writeR(unsigned char data)
 {
@@ -434,11 +428,7 @@ void dac_update(_u16* dac_buffer, int length_bytes)
 	while (length_bytes > 1)
 	{
 		//Copy then clear DAC data
-#ifdef __LIBRETRO__
 		*(dac_buffer++) |= dacBufferL[dacLBufferRead];
-#else
-		*(dac_buffer++) = dacBufferL[dacLBufferRead];
-#endif
 		dacBufferL[dacLBufferRead] = 0;  //silence?
 
 		length_bytes -= 2;	// 1 byte = 8 bits
@@ -518,14 +508,8 @@ void sound_init(int SampleRate)
 //=============================================================================
 
 
-
-
-#ifdef __LIBRETRO__
 #define NGPC_CHIP_FREQUENCY		44100
-#else
-#define NGPC_CHIP_FREQUENCY		8000
-#endif
-int chip_freq=NGPC_CHIP_FREQUENCY;//what we'd prefer
+int chip_freq=NGPC_CHIP_FREQUENCY; /* what we'd prefer */
 
 #define CHIPBUFFERLENGTH	35280
 

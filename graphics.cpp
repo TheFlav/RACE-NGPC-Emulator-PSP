@@ -15,17 +15,11 @@
 
 #include "StdAfx.h"
 #include "main.h"
-#ifndef __LIBRETRO__
-#include "menu.h"
-#include "GP2X.h"
-#endif
 #include "graphics.h"
 #include "memory.h"
 
-#ifdef __LIBRETRO__
 extern ngp_screen* screen;
 extern int gfx_hacks;
-#endif
 
 #define INITGUID
 
@@ -157,9 +151,8 @@ unsigned short p2[16] = {
 
 #ifndef __LIBRETRO__
 #define DO_PERIODIC_FLASH_SAVES
-#define DO_FPS_DISPLAY
 #endif
-#if defined(DO_FPS_DISPLAY) || defined(DO_PERIODIC_FLASH_SAVES)
+#if defined(DO_PERIODIC_FLASH_SAVES)
 static unsigned int frameCount = 0;
 #endif
 
@@ -181,7 +174,7 @@ void graphicsBlitEnd(void)
 
 void graphics_paint(void);
 
-#if defined(DO_FPS_DISPLAY) || defined(DO_PERIODIC_FLASH_SAVES)
+#if defined(DO_PERIODIC_FLASH_SAVES)
 inline void incFrameCount()
 {
     frameCount++;
@@ -470,15 +463,13 @@ void palette_init16(DWORD dwRBitMask, DWORD dwGBitMask, DWORD dwBBitMask)
  */
 void graphicsSetDarkFilterLevel(unsigned filterLevel)
 {
-#ifdef __LIBRETRO__
-    unsigned prev_dark_filter_level = dark_filter_level;
+   unsigned prev_dark_filter_level = dark_filter_level;
 
-    dark_filter_level = filterLevel;
-    dark_filter_level = (dark_filter_level > 100) ? 100 : dark_filter_level;
+   dark_filter_level = filterLevel;
+   dark_filter_level = (dark_filter_level > 100) ? 100 : dark_filter_level;
 
-    if (dark_filter_level != prev_dark_filter_level)
-        palette_init16(0xf800,0x7e0,0x1f);
-#endif
+   if (dark_filter_level != prev_dark_filter_level)
+      palette_init16(0xf800,0x7e0,0x1f);
 }
 
 void palette_init8(DWORD dwRBitMask, DWORD dwGBitMask, DWORD dwBBitMask)
@@ -1141,7 +1132,7 @@ void graphicsBlitLine(unsigned char render)
         tlcsMemWriteB(0x00008010,tlcsMemReadB(0x00008010) & ~0x40);
         graphicsBlitInit();
 
-#if defined(DO_FPS_DISPLAY) || defined(DO_PERIODIC_FLASH_SAVES)
+#if defined(DO_PERIODIC_FLASH_SAVES)
         incFrameCount();
 #endif
 

@@ -57,12 +57,8 @@ unsigned int cartAddrMask = 0x3FFFFF;
 /* with selector, I get
 * writeSaveGameFile: Couldn't open Battery//mnt/sd/Games/race/ChryMast.ngf file
 */
-#ifdef __LIBRETRO__
 extern char retro_save_directory[2048];
 #define SAVEGAME_DIR retro_save_directory
-#else
-  #define SAVEGAME_DIR "states/"
-#endif
 
 unsigned char currentWriteCycle = 1;  /* can be 1 through 6 */
 unsigned char currentCommand = NO_COMMAND;

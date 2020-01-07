@@ -6983,7 +6983,7 @@ inline unsigned char makeBCD(int i)
 
 //extern "C" int 	sceUtilityGetSystemParamInt (int id, int *value);
 
-void initTimezone()
+void initTimezone(void)
 {
 #ifdef __LIBRETRO__
 /*#define PSP_SYSTEMPARAM_ID_INT_TIMEZONE         6
@@ -9181,10 +9181,6 @@ void tlcs_execute(int cycles)
     static unsigned int steps=1;
 #endif
 
-#ifndef __LIBRETRO__
-    UpdateInputState();
-#endif
-
     while(cycles > 0)
     {
         /* AKTODO */
@@ -9281,13 +9277,8 @@ void tlcs_execute(int cycles)
 
 
 //Flavor, this auto-frameskip code is messed up
-void ngpc_run()
+void ngpc_run(void)
 {
-#ifndef __LIBRETRO__
-    int currTick=0,lastTick=0;
-    u32 ticks_per_sec = 1000;
-#endif /* !__LIBRETRO__ */
-
 #ifdef AUTO_FRAMESKIP
     unsigned int skipFrames=0;
 #endif /* AUTO_FRAMESKIP */
