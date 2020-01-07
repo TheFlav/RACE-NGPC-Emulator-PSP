@@ -51,7 +51,7 @@ FILE	*outputRam = NULL;
 
 #define numberof(a)		(sizeof(a)/sizeof(*(a)))
 
-void mainemuinit()
+void mainemuinit(void)
 {
 	// initialize cpu memory
 	mem_init();
@@ -90,7 +90,6 @@ void mainemuinit()
             break;
     }
     ngpSoundOff();
-    //Flavor sound_start();
 }
 
 void	SetActive(BOOL bActive)
@@ -104,7 +103,7 @@ void	SetEmu(int machine)
 	m_emuInfo.drv = &m_sysInfo[machine];
 }
 
-bool initRom()
+bool initRom(void)
 {
 	char	*licenseInfo = " BY SNK CORPORATION";
 	char	*ggLicenseInfo = "TMR SEGA";
@@ -173,7 +172,7 @@ bool initRom()
 	return FALSE;
 }
 
-void initSysInfo()
+void initSysInfo(void)
 {
 	m_bIsActive = FALSE;
 
@@ -232,14 +231,16 @@ void initSysInfo()
 	m_sysInfo[NGPC].Sprites = TRUE;*/
 }
 
-char *getFileNameExtension(char *nom_fichier)		{
-	char *ptrPoint = nom_fichier;
-	while(*nom_fichier)		{
-		if (*nom_fichier == '.')
-			ptrPoint = nom_fichier;
-		nom_fichier++;
-	}
-	return ptrPoint;
+char *getFileNameExtension(char *nom_fichier)
+{
+   char *ptrPoint = nom_fichier;
+   while(*nom_fichier)
+   {
+      if (*nom_fichier == '.')
+         ptrPoint = nom_fichier;
+      nom_fichier++;
+   }
+   return ptrPoint;
 }
 
 #ifdef WANT_ZIP
@@ -338,22 +339,23 @@ int loadFromZipByName(unsigned char *buffer, char *archive, char *filename, int 
 */
 int check_zip(char *filename)
 {
-    unsigned char buf[2];
-    FILE *fd = NULL;
-    fd = fopen(filename, "rb");
-    if(!fd) return (0);
-    fread(buf, 2, 1, fd);
-    fclose(fd);
-    if(memcmp(buf, "PK", 2) == 0) return (1);
-    return (0);
+   unsigned char buf[2];
+   FILE *fd = fopen(filename, "rb");
+   if(!fd)
+      return (0);
+   fread(buf, 2, 1, fd);
+   fclose(fd);
+   if(memcmp(buf, "PK", 2) == 0)
+      return (1);
+   return (0);
 }
 
 int strrchr2(const char *src, int c)
 {
-  size_t len;
+  size_t len=strlen(src);
 
-  len=strlen(src);
-  while(len>0){
+  while(len>0)
+  {
     len--;
     if(*(src+len) == c)
       return len;
