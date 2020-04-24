@@ -55,7 +55,7 @@ static map btn_map[] = {
    { RETRO_DEVICE_ID_JOYPAD_LEFT, 0x04 },
    { RETRO_DEVICE_ID_JOYPAD_UP, 0x01 },
    { RETRO_DEVICE_ID_JOYPAD_DOWN, 0x02 },
-   { RETRO_DEVICE_ID_JOYPAD_SELECT, 0x40 },
+   { RETRO_DEVICE_ID_JOYPAD_START, 0x40 },
 };
 
 unsigned retro_api_version(void)
