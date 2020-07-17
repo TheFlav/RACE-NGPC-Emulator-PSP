@@ -149,11 +149,7 @@ else ifeq ($(platform),ps2)
 	CC = ee-gcc$(EXE_EXT)
 	CXX = ee-g++$(EXE_EXT)
 	AR = ee-ar$(EXE_EXT)
-	FLAGS += -DPS2 -G0 -I$(PS2SDK)/ports/include
-	FLAGS += -Wall
-	FLAGS += -fomit-frame-pointer -ffast-math
-	FLAGS += -fno-unwind-tables -fno-asynchronous-unwind-tables 
-	FLAGS += -fno-optimize-sibling-calls
+	FLAGS += -DPS2 -G0 -DABGR1555 -DHAVE_NO_LANGEXTRA
 	STATIC_LINKING := 1
 	LIBS :=
 

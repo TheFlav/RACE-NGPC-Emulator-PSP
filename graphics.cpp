@@ -14,6 +14,16 @@
 #include "graphics.h"
 #include "memory.h"
 
+#if defined(ABGR1555)
+#define RMASK 0x001f
+#define GMASK 0x03e0
+#define BMASK 0x7c00
+#else
+#define RMASK 0xf800
+#define GMASK 0x07e0
+#define BMASK 0x001f
+#endif
+
 extern ngp_screen* screen;
 extern int gfx_hacks;
 
@@ -443,13 +453,13 @@ void palette_init16(DWORD dwRBitMask, DWORD dwGBitMask, DWORD dwBBitMask)
  */
 void graphicsSetDarkFilterLevel(unsigned filterLevel)
 {
-   unsigned prev_dark_filter_level = dark_filter_level;
+    unsigned prev_dark_filter_level = dark_filter_level;
 
-   dark_filter_level = filterLevel;
-   dark_filter_level = (dark_filter_level > 100) ? 100 : dark_filter_level;
+    dark_filter_level = filterLevel;
+    dark_filter_level = (dark_filter_level > 100) ? 100 : dark_filter_level;
 
-   if (dark_filter_level != prev_dark_filter_level)
-      palette_init16(0xf800,0x7e0,0x1f);
+    if (dark_filter_level != prev_dark_filter_level)
+        palette_init16(RMASK, GMASK, BMASK);      
 }
 
 void palette_init8(DWORD dwRBitMask, DWORD dwGBitMask, DWORD dwBBitMask)
@@ -1571,7 +1581,7 @@ BOOL graphics_init(void)
 {
 #ifdef __LIBRETRO__
     palette_init = palette_init16;
-    palette_init(0xf800,0x7e0,0x1f);
+    palette_init(RMASK, GMASK, BMASK);
     drawBuffer = (unsigned short*)screen->pixels;
 #else
     dbg_print("in graphics_init\n");
