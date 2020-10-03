@@ -20,7 +20,6 @@
 #include "neopopsound.h"
 
 #include <string.h>
-#include <stdio.h>
 #include "state.h"
 #include "tlcs900h.h"
 #include "memory.h"
@@ -424,18 +423,6 @@ int state_store(char* filename)
     return 0;
 
   int status = state_store_file(stream);
-  fclose(stream);
-
-  return status;
-}
-
-int state_restore(char* filename)
-{
-  FILE *stream;
-  if (!(stream = fopen(filename, "r")))
-    return 0;
-
-  int status = state_restore_file(stream);
   fclose(stream);
 
   return status;

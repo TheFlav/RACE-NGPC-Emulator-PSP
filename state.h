@@ -20,8 +20,5 @@ int state_get_size(void);
 int state_store_mem(void *state);
 int state_restore_mem(void *state);
 
-int state_store(char* filename);
-int state_restore(char* filename);
-
 #endif /* _STATE_H */
 
