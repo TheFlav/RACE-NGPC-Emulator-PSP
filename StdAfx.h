@@ -10,7 +10,6 @@
 #ifndef STDAFX_H
 #define STDAFX_H
 
-#include <stdio.h>
 #include <stdint.h>
 
 #define DWORD unsigned int
