@@ -7,9 +7,11 @@ ifneq (,$(findstring msvc2003,$(platform)))
 INCFLAGS += -I$(LIBRETRO_COMM_DIR)/include/compat/msvc
 endif
 
+SOURCES_C :=
+
 ifeq ($(WANT_ZIP),1)
  INCFLAGS += -I$(DEPS_DIR)/zlib-1.2.8
-SOURCES_C := \
+SOURCES_C += \
 	$(CORE_DIR)/unzip.c \
 	$(CORE_DIR)/ioapi.c
 endif
@@ -33,7 +35,6 @@ endif
 
 SOURCES_CXX := \
 	$(CORE_DIR)/input.cpp \
-	$(CORE_DIR)/neopopsound.cpp \
 	$(CORE_DIR)/ngpBios.cpp \
 	$(CORE_DIR)/tlcs900h.cpp \
 	$(CORE_DIR)/memory.cpp \
@@ -45,6 +46,8 @@ SOURCES_CXX := \
 	$(CORE_DIR)/libretro/libretro.cpp \
 	$(CORE_DIR)/libretro/log.cpp
 
+SOURCES_C += \
+	$(CORE_DIR)/neopopsound.c
 
 ifeq ($(DRZ80),1)
 	FLAGS += -DDRZ80

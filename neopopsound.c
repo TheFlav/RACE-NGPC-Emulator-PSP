@@ -29,12 +29,9 @@
 
 #include "StdAfx.h"
 
+#include <string.h>
+
 #include "neopopsound.h"
-
-
-#include "main.h"
-#include "memory.h"
-
 
 /* ============================================================================= */
 
@@ -546,6 +543,3 @@ int sound_system_init(void)
 void system_sound_update(int nframes)
 {
 }
-
-
-
