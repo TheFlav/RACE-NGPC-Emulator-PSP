@@ -23,17 +23,6 @@
 #include "types.h"
 #include "flash.h"
 
-#if 0
-#define DEBUG_FLASH
-#endif
-
-#ifdef DEBUG_FLASH
-FILE *debugFile = NULL;
-#define stderr debugFile
-#define stdout debugFile
-#endif
-
-
 /* Manuf ID's
 Supported
 0x98		Toshiba
@@ -153,10 +142,6 @@ unsigned char blockNumFromAddr(unsigned int addr)
             return (bootBlockStartAddr / 0x10000) + 3;
     }
 
-#ifdef DEBUG_FLASH
-    fprintf(debugFile, "blockNumFromAddr: addr=0x%08X returning=%d\n", addr, addr / 0x10000);
-#endif
-
     return addr / 0x10000;
 }
 
@@ -182,10 +167,6 @@ unsigned int blockNumToAddr(unsigned char chip, unsigned char blockNum)
     if(chip)
         addr+=0x200000;
 
-#ifdef DEBUG_FLASH
-    fprintf(debugFile, "blockNumToAddr: chip=%d blockNum=%d addr=0x%08X\n", chip, blockNum, addr);
-#endif
-
 	return addr;
 }
 
@@ -207,49 +188,41 @@ unsigned int blockSize(unsigned char blockNum)
     return 0x10000;
 }
 
-void setupNGFfilename()
+void setupNGFfilename(void)
 {
-	int dotSpot = -1, pos = 0;
-	int slashSpot = -1;
+   int dotSpot = -1, pos = 0;
+   int slashSpot = -1;
 
-    if(strlen(ngfFilename) != 0)
-    {
-#ifdef DEBUG_FLASH
-		fprintf(debugFile, "setupNGFfilename: %s file already opened\n", ngfFilename);
-        return;  /* already set up */
-#endif
-    }
+   strcpy(ngfFilename, SAVEGAME_DIR);
 
-    strcpy(ngfFilename, SAVEGAME_DIR);
+   pos = strlen(m_emuInfo.RomFileName);
 
-    pos = strlen(m_emuInfo.RomFileName);
+   while(pos>=0)
+   {
+      if(m_emuInfo.RomFileName[pos] == path_default_slash_c())
+      {
+         slashSpot = pos;
+         break;
+      }
 
-    while(pos>=0)
-    {
-        if(m_emuInfo.RomFileName[pos] == path_default_slash_c())
-        {
-            slashSpot = pos;
-            break;
-        }
+      pos--;
+   }
 
-        pos--;
-    }
+   strcat(ngfFilename, &m_emuInfo.RomFileName[slashSpot+1]);
 
-	strcat(ngfFilename, &m_emuInfo.RomFileName[slashSpot+1]);
+   for(pos=strlen(ngfFilename);pos>=0 && dotSpot == -1; pos--)
+   {
+      if(ngfFilename[pos] == '.')
+         dotSpot = pos;
+   }
+   if(dotSpot == -1)
+   {
+      fprintf(stderr, "setupNGFfilename: Couldn't find the . in %s file\n", ngfFilename);
+      return;
+   }
 
-	for(pos=strlen(ngfFilename);pos>=0 && dotSpot == -1; pos--)
-	{
-		if(ngfFilename[pos] == '.')
-			dotSpot = pos;
-	}
-	if(dotSpot == -1)
-	{
-		fprintf(stderr, "setupNGFfilename: Couldn't find the . in %s file\n", ngfFilename);
-		return;
-	}
-
-	strcpy(&ngfFilename[dotSpot+1], "ngf");
-	fprintf(stdout, "setupNGFfilename: using %s for save-game info\n", ngfFilename);
+   strcpy(&ngfFilename[dotSpot+1], "ngf");
+   fprintf(stdout, "setupNGFfilename: using %s for save-game info\n", ngfFilename);
 }
 
 /* write all the dirty blocks out to a file */
@@ -264,12 +237,7 @@ void writeSaveGameFile(void)
 	NGFheaderStruct NGFheader;
 	blockStruct block;
 
-#ifdef DEBUG_FLASH
-	fprintf(debugFile, "writeSaveGameFile: entry totalBlocks=%d\n", totalBlocks);
-#endif
-
-    setupNGFfilename();
-
+   setupNGFfilename();
 
 	ngfFile = fopen(ngfFilename, "wb");
 	if(!ngfFile)
@@ -287,9 +255,6 @@ void writeSaveGameFile(void)
 	{
 		if(blocksDirty[0][i])
 		{
-#ifdef DEBUG_FLASH
-			fprintf(debugFile, "writeSaveGameFile: found 1st chip dirty block %d\n", i);
-#endif
 			NGFheader.numBlocks++;
 			NGFheader.fileLen += blockSize(i);
 		}
@@ -301,9 +266,6 @@ void writeSaveGameFile(void)
 		{
 			if(blocksDirty[1][i])
 			{
-#ifdef DEBUG_FLASH
-				fprintf(debugFile, "writeSaveGameFile: found 2nd chip dirty block %d\n", i);
-#endif	
 				NGFheader.numBlocks++;
 				NGFheader.fileLen += blockSize(i);
 			}
@@ -329,9 +291,6 @@ void writeSaveGameFile(void)
 			block.NGPCaddr = blockNumToAddr(0, i)+0x200000;
 			block.len = blockSize(i);
 
-#ifdef DEBUG_FLASH
-            fprintf(debugFile, "writeSaveGameFile: writing 1st chip block=%d addr=0x%08X len=0x%X\n", i, block.NGPCaddr, block.len);
-#endif
 
 			bytes = fwrite(&block, 1, sizeof(blockStruct), ngfFile);
 			if(bytes != sizeof(blockStruct))
@@ -359,10 +318,6 @@ void writeSaveGameFile(void)
 			{
 				block.NGPCaddr = blockNumToAddr(1, i)+0x600000;
 				block.len = blockSize(i);
-
-#ifdef DEBUG_FLASH
-                fprintf(debugFile, "writeSaveGameFile: writing 2nd chip block=%d addr=0x%08X len=0x%X\n", i, block.NGPCaddr, block.len);
-#endif
 
 				bytes = fwrite(&block, 1, sizeof(blockStruct), ngfFile);
 				if(bytes != sizeof(blockStruct))
@@ -394,10 +349,6 @@ void writeSaveGameFile(void)
    system("sync");
 #endif
 #endif
-
-#ifdef DEBUG_FLASH
-	fprintf(debugFile, "writeSaveGameFile: exit\n");
-#endif
 }
 
 /* read the save-game file and overlay it onto mainrom */
@@ -411,11 +362,7 @@ void loadSaveGameFile(void)
 	NGFheaderStruct NGFheader;
 	blockStruct *blockHeader;
 
-#ifdef DEBUG_FLASH
-	fprintf(debugFile, "loadSaveGameFile: entry\n");
-#endif
-
-    setupNGFfilename();
+   setupNGFfilename();
 
 	ngfFile = fopen(ngfFilename, "rb");
 	if(!ngfFile)
@@ -507,9 +454,6 @@ void loadSaveGameFile(void)
 
 	free(blockMem);
 
-#ifdef DEBUG_FLASH
-	fprintf(debugFile, "loadSaveGameFile: exit\n");
-#endif
 }
 
 void flashWriteByte(unsigned int addr, unsigned char data, unsigned char operation)
@@ -520,13 +464,6 @@ void flashWriteByte(unsigned int addr, unsigned char data, unsigned char operati
 
 	if(blockNumFromAddr(addr) == 0)  /* hack because DWARP writes to bank 0 */
 		return;
-
-#ifdef DEBUG_FLASH
-    if(debugFile != NULL && operation == FLASH_WRITE)
-    {
-        fprintf(debugFile, "fWB: addr=0x%08X data=0x%02X\n", addr, data);
-    }
-#endif
 
 	/* set a dirty flag for the block that we are writing to */
 	if(addr < 0x200000)
@@ -573,12 +510,6 @@ unsigned char flashReadInfo(unsigned int addr)
 
 void flashChipWrite(unsigned int addr, unsigned char data)
 {
-#ifdef DEBUG_FLASH
-    if(debugFile != NULL)
-    {
-        fprintf(debugFile, "fCW: addr=0x%08X data=0x%02X cycle=%02d command=%02d\n", addr, data, currentWriteCycle, currentCommand);
-    }
-#endif
     if(addr >= 0x800000 && cartSize != 32)
         return;
 
@@ -711,20 +642,11 @@ void flashChipWrite(unsigned int addr, unsigned char data)
 void flashShutdown(void)
 {
 	writeSaveGameFile();
-#ifdef DEBUG_FLASH
-    fclose(debugFile);
-#endif
 }
 
 /* this should be called when a ROM is loaded */
 void flashStartup(void)
 {
-#ifdef DEBUG_FLASH
-    if(debugFile == NULL)
-    {
-        debugFile = fopen("flashDebug.txt", "wt");
-    }
-#endif
 	memset(blocksDirty[0], 0, MAX_BLOCKS*sizeof(blocksDirty[0][0]));
 	memset(blocksDirty[1], 0, MAX_BLOCKS*sizeof(blocksDirty[0][0]));
 	needToWriteFile = 0;
@@ -734,12 +656,6 @@ void flashStartup(void)
 
 void vectFlashWrite(unsigned char chip, unsigned int to, unsigned char *fromAddr, unsigned int numBytes)
 {
-#ifdef DEBUG_FLASH
-   if(debugFile != NULL)
-   {
-      fprintf(debugFile, "vFW: chip=%d to=0x%08X *fromAddr=%02x num=%d\n", chip, to, *fromAddr, numBytes);
-   }
-#endif
 
    if(chip)
       to+=0x200000;
@@ -768,13 +684,6 @@ void vectFlashErase(unsigned char chip, unsigned char blockNum)
    unsigned int blockAddr = blockNumToAddr(chip, blockNum);
    unsigned int numBytes = blockSize(blockNum);
 
-#ifdef DEBUG_FLASH
-   if(debugFile != NULL)
-   {
-      fprintf(debugFile, "vectFlashErase: chip=%d blockNum=%d\n", chip, blockNum);
-   }
-#endif
-
 #if 0
    /* memset block to 0xFF */
    memset(&mainrom[blockAddr], 0xFF, numBytes);
@@ -788,12 +697,6 @@ void vectFlashErase(unsigned char chip, unsigned char blockNum)
 
 void vectFlashChipErase(unsigned char chip)
 {
-#ifdef DEBUG_FLASH
-    if(debugFile != NULL)
-    {
-        fprintf(debugFile, "vectFlashChipErase: chip=%d\n", chip);
-    }
-#endif
 }
 
 void setFlashSize(unsigned int romSize)
