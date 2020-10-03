@@ -147,27 +147,27 @@ unsigned char blockNumFromAddr(unsigned int addr)
 
 unsigned int blockNumToAddr(unsigned char chip, unsigned char blockNum)
 {
-    unsigned int addr;
+   unsigned int addr;
 
-    if(blockNum >= bootBlockStartNum)
-    {
-        addr = bootBlockStartNum * 0x10000;
+   if(blockNum >= bootBlockStartNum)
+   {
+      addr = bootBlockStartNum * 0x10000;
 
-        unsigned char bootBlock = blockNum - bootBlockStartNum;
-        if(bootBlock>=1)
-            addr+= 0x8000;
-        if(bootBlock>=2)
-            addr+= 0x2000;
-        if(bootBlock>=3)
-            addr+= 0x2000;
-    }
-    else
-        addr = blockNum * 0x10000;
+      unsigned char bootBlock = blockNum - bootBlockStartNum;
+      if(bootBlock>=1)
+         addr+= 0x8000;
+      if(bootBlock>=2)
+         addr+= 0x2000;
+      if(bootBlock>=3)
+         addr+= 0x2000;
+   }
+   else
+      addr = blockNum * 0x10000;
 
-    if(chip)
-        addr+=0x200000;
+   if (chip)
+      addr+=0x200000;
 
-	return addr;
+   return addr;
 }
 
 unsigned int blockSize(unsigned char blockNum)
@@ -301,12 +301,12 @@ void writeSaveGameFile(void)
 			}
 
 			bytes = fwrite(&mainrom[blockNumToAddr(0, i)], 1, blockSize(i), ngfFile);
-			if(bytes != blockSize(i))
-			{
-				fprintf(stderr, "writeSaveGameFile: wrote %d bytes, but exptected %d bytes\n", bytes, blockSize(i));
-				fclose(ngfFile);
-				return;
-			}
+         if(bytes != blockSize(i))
+         {
+            fprintf(stderr, "writeSaveGameFile: wrote %d bytes, but exptected %d bytes\n", bytes, blockSize(i));
+            fclose(ngfFile);
+            return;
+         }
 		}
 	}
 
@@ -328,12 +328,12 @@ void writeSaveGameFile(void)
 				}
 
 				bytes = fwrite(&mainrom[blockNumToAddr(1, i)], 1, blockSize(i), ngfFile);
-				if(bytes != blockSize(i))
-				{
-					fprintf(stderr, "writeSaveGameFile: wrote %d bytes, but exptected %d bytes\n", bytes, blockSize(i));
-					fclose(ngfFile);
-					return;
-				}
+            if(bytes != blockSize(i))
+            {
+               fprintf(stderr, "writeSaveGameFile: wrote %d bytes, but exptected %d bytes\n", bytes, blockSize(i));
+               fclose(ngfFile);
+               return;
+            }
 			}
 		}
 	}
