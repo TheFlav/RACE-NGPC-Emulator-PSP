@@ -13,7 +13,7 @@
 
 #include "types.h"
 #include "main.h"
-#include "memory.h"
+#include "race-memory.h"
 
 #include "DrZ80_support.h"
 
