@@ -9,10 +9,7 @@
 
 /* sound.cpp: implementation of the sound class. */
 
-#include "main.h"
 #include "types.h"
-#include "sound.h"
-#include "memory.h"
 
 #ifdef DRZ80
 #include "DrZ80_support.h"

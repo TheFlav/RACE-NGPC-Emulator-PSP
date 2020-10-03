@@ -12,12 +12,12 @@
 #ifndef AFX_SOUND_H
 #define AFX_SOUND_H
 
-#if _MSC_VER > 1000
-#pragma once
-#endif /* _MSC_VER > 1000 */
-
 #include "types.h"
 #include "main.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 int initSound(void);
 void soundCleanup(void);
@@ -47,5 +47,9 @@ void ngpSoundStart(void);
 void ngpSoundExecute(void);
 void ngpSoundOff(void);
 void ngpSoundInterrupt(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* !defined(AFX_SOUND_H) */

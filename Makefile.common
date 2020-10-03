@@ -39,7 +39,6 @@ SOURCES_CXX := \
 	$(CORE_DIR)/graphics.cpp \
 	$(CORE_DIR)/main.cpp \
 	$(CORE_DIR)/state.cpp \
-	$(CORE_DIR)/sound.cpp \
 	$(CORE_DIR)/libretro/libretro.cpp \
 	$(CORE_DIR)/libretro/log.cpp
 
@@ -47,6 +46,7 @@ SOURCES_C += \
 	$(CORE_DIR)/input.c \
 	$(CORE_DIR)/race-memory.c \
 	$(CORE_DIR)/ngpBios.c \
+	$(CORE_DIR)/sound.c \
 	$(CORE_DIR)/neopopsound.c
 
 ifeq ($(DRZ80),1)
