@@ -12,7 +12,7 @@
 
 #include "unzip.h"
 
-#include "StdAfx.h"
+#include "types.h"
 #include "main.h"
 
 
@@ -39,11 +39,11 @@ extern int finscan;
 extern int language;
 extern int tipo_consola;
 
-BOOL		m_bIsActive;
+int		m_bIsActive;
 EMUINFO		m_emuInfo;
 SYSTEMINFO	m_sysInfo[NR_OF_SYSTEMS];
 
-#define numberof(a)		(sizeof(a)/sizeof(*(a)))
+#define ARRAY_SIZE(a)		(sizeof(a)/sizeof(*(a)))
 
 void mainemuinit(void)
 {
@@ -245,11 +245,12 @@ int loadFromZipByName(unsigned char *buffer, char *archive,
       //Vérifions que c'est la bonne extension
       char *extension = getFileNameExtension(name);
 
-      for (i=0;i<numberof(recognizedExtensions);i++)		{
+      for (i=0;i < ARRAY_SIZE(recognizedExtensions);i++)
+      {
          if (!strcmp(extension, recognizedExtensions[i]))
             break;
       }
-      if (i < numberof(recognizedExtensions))
+      if (i < ARRAY_SIZE(recognizedExtensions))
          break;
 
       zerror = unzGoToNextFile(zhandle);

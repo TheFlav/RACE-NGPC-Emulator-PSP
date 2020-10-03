@@ -14,8 +14,8 @@
  * TODO:
  */
 
-#include "StdAfx.h"
 #include "race-memory.h"
+#include "types.h"
 #include "input.h"		/* for Gameboy Input */
 #include "graphics.h"	/* for i/o ports of the game gear */
 #include "tlcs900h.h"

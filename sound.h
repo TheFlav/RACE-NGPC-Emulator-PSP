@@ -9,14 +9,14 @@
 
 /* sound.h: interface for the sound class. */
 
-#if !defined(AFX_SOUND_H__15E0A182_A0FD_11D4_8645_0050DA4EEEA0__INCLUDED_)
-#define AFX_SOUND_H__15E0A182_A0FD_11D4_8645_0050DA4EEEA0__INCLUDED_
+#ifndef AFX_SOUND_H
+#define AFX_SOUND_H
 
 #if _MSC_VER > 1000
 #pragma once
 #endif /* _MSC_VER > 1000 */
 
-#include "StdAfx.h"
+#include "types.h"
 #include "main.h"
 
 int initSound(void);
@@ -49,4 +49,4 @@ void ngpSoundExecute(void);
 void ngpSoundOff(void);
 void ngpSoundInterrupt(void);
 
-#endif /* !defined(AFX_SOUND_H__15E0A182_A0FD_11D4_8645_0050DA4EEEA0__INCLUDED_) */
+#endif /* !defined(AFX_SOUND_H) */

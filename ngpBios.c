@@ -9,7 +9,7 @@
 
 /* ngpBios.cpp: implementation of the ngpBios class. */
 
-#include "StdAfx.h"
+#include "types.h"
 #include "ngpBios.h"
 
 unsigned char sysfont[8*256] =

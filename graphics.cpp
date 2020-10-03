@@ -9,7 +9,7 @@
 
 /* graphics.cpp: implementation of the graphics class. */
 
-#include "StdAfx.h"
+#include "types.h"
 #include "graphics.h"
 #include "race-memory.h"
 

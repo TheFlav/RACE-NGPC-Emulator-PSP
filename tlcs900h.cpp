@@ -29,13 +29,12 @@
 //////////////////////////////////////////////////////////////////////
 
 
-#include "StdAfx.h"
-
 #include <stdlib.h>
 #include <time.h>
 #include "tlcs900h.h"
 #include "race-memory.h"
 #include "ngpBios.h"
+#include "types.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -117,7 +116,7 @@ gen_regsXHL3, gen_regsXIX, gen_regsXIY, gen_regsXIZ, gen_regsXSP,
 gen_regsSP, gen_regsXSSP, gen_regsXNSP;
 
 #ifdef TARGET_GP2X
-//it's defined in StdAfx.h
+//it's defined in types.h
 #ifndef GENREGSPC_AS_REG
 unsigned int gen_regsPC;
 #endif
@@ -168,7 +167,7 @@ unsigned int gen_regsPC, gen_regsSR;
 unsigned char F2;
 
 #ifdef TARGET_GP2X
-//it's defined in StdAfx.h
+//it's defined in types.h
 #else
 unsigned char *my_pc = NULL;
 #endif

@@ -11,7 +11,7 @@
  * Support functions for interfacing with DrZ80
  */
 
-#include "StdAfx.h"
+#include "types.h"
 #include "main.h"
 #include "memory.h"
 

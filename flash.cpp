@@ -13,15 +13,15 @@
  * for emulation of NGPC carts
  */
 
-#include "StdAfx.h"
-#include "race-memory.h"
-#include "flash.h"
 #include <string.h>
 #ifdef _WIN32
 #include <direct.h>
 #else
 #include <unistd.h>
 #endif
+#include "race-memory.h"
+#include "types.h"
+#include "flash.h"
 
 #if 0
 #define DEBUG_FLASH

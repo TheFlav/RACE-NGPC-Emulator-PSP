@@ -23,7 +23,7 @@
 #ifndef __NEOPOPSOUND__
 #define __NEOPOPSOUND__
 
-#include "StdAfx.h"
+#include "types.h"
 
 typedef struct
 {

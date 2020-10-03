@@ -14,10 +14,6 @@ struct SYSTEMINFO {
 	int		vSize;
 	int		Ticks;
 	int		InputKeys[12];
-	/* Dynamic System Info */
-	BOOL	Back0;
-	BOOL	Back1;
-	BOOL	Sprites;
 };
 
 struct EMUINFO
@@ -50,7 +46,7 @@ struct EMUINFO
 #define NR_OF_SYSTEMS	2
 
 
-extern BOOL		m_bIsActive;
+extern int		m_bIsActive;
 extern EMUINFO		m_emuInfo;
 extern SYSTEMINFO	m_sysInfo[NR_OF_SYSTEMS];
 extern int romSize;

@@ -3,7 +3,7 @@
 #include "log.h"
 #include <string.h>
 
-#include "../StdAfx.h"
+#include "../types.h"
 #include "../state.h"
 #include "../neopopsound.h"
 #include "../sound.h"

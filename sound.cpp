@@ -9,8 +9,8 @@
 
 /* sound.cpp: implementation of the sound class. */
 
-#include "StdAfx.h"
 #include "main.h"
+#include "types.h"
 #include "sound.h"
 #include "memory.h"
 

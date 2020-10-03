@@ -11,7 +11,7 @@
 #ifndef _MEMORYH_
 #define _MEMORYH_
 
-#include "StdAfx.h"
+#include "types.h"
 #include "neopopsound.h"
 #include "sound.h"
 #include "input.h"

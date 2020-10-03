@@ -9,13 +9,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-/*#ifdef GP2X
-#include "gp2x/minimal.h"
-#else
-#include "sdl/minimal.h"
-#endif*/
 
-#include "StdAfx.h"
+#include "types.h"
 #include "main.h"
 #include "memory.h"
 
