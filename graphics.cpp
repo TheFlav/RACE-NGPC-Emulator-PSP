@@ -158,18 +158,6 @@ unsigned short p2[16] = {
 #define NO_SCREEN_OUTPUT  /* seems to give about 4-6FPS on GP2X */
 #endif
 
-/* flip buffers and indicate that one of the buffers is ready
- * for blitting to the screen. */
-void graphicsBlitEnd(void)
-{
-#if 0
-    displayDirty=1;
-#endif
-}
-
-
-void graphics_paint(void);
-
 /*
  *
  * Palette Initialization
@@ -880,7 +868,7 @@ static inline void spriteSortAll(unsigned int bw)
 
 
 /* initialize drawing/blitting of a screen */
-void graphicsBlitInit(void)
+static void graphicsBlitInit(void)
 {
     /* buffers 0 and 1
      * definitions for the back frame */
@@ -945,128 +933,6 @@ static inline void RenderTileCache(TILECACHE *tC, unsigned int bw)
             tC->tilept[i]+= ((tC->tile[i]&0x4000) ? 7-line : line);
         }
     }
-}
-
-void graphicsBlitLine(unsigned char render)
-{
-#if 0
-    dbg_print("in graphicsBlitLine *scanlineY = %d\n", *scanlineY);
-#endif
-
-    if (*scanlineY < 152)
-    {
-        //if(*scanlineY == 0)  //Flavor moved set_palette off of every line.  Helps speed, hurts hi-color apps
-        /* Flavor now only changes palette when dirty */
-
-        /* this is currently broken for BW games */
-        //if(*scanlineY == 0)
-
-
-        /* set the palettes, background color, and outside window color
-         * Flavor moving to scanline 0 set_palette(palette_table,&palettes[0],&palettes[16*4],&palettes[16*4+16*4]);
-         * sort sprites by priority */
-        if(render)
-        {
-            unsigned int bw = (m_emuInfo.machine == NGP);
-            unsigned short OOWCol = NGPC_TO_SDL16(oowTable[*oowSelect & 0x07]);
-
-            if(*scanlineY == 0)
-            {
-                if(bw)
-                    set_paletteBW(palette_table,&palettes[0],&palettes[16*4],&palettes[16*4+16*4]);
-                else
-                    set_paletteCol(palette_table,&palettes[0],&palettes[16*4],&palettes[16*4+16*4]);
-
-                /*if(spritesDirty)
-                {
-                    spriteSortAll(bw);
-                    spritesDirty = false;
-                }*/
-                spriteSortAll(bw);
-            }
-
-#if 0
-            spriteSort(bw);  /* this needs to be re-done faster.  We shouldn't need to sort them every scanline */
-#endif
-
-            /* change the tile caches if needed */
-            RenderTileCache(&tCBack, bw);
-            RenderTileCache(&tCFront, bw);
-
-            /* blit the planes, take priority registers into account */
-
-            if(*bgSelect & 0x80) /*== 0x80)*/
-                lineClear(&tCBack, NGPC_TO_SDL16(bgTable[*bgSelect & 0x07]));
-            else if(bw)
-                lineClear(&tCBack, NGPC_TO_SDL16(bwTable[0]));  /* in 8-bit mode, this would be the index of BGCol in the SDL palette */
-            else
-                lineClear(&tCBack, 0);  /* in 8-bit mode, this would be the index of BGCol in the SDL palette */
-
-
-            lineSprite(&spriteDefs[0]);
-
-            if (*frame1Pri & 0x80)
-            {
-                lineFront(&tCFront);
-                lineSprite(&spriteDefs[1]);
-                lineFront(&tCBack);
-            }
-            else
-            {
-                lineFront(&tCBack);
-                lineSprite(&spriteDefs[1]);
-                lineFront(&tCFront);
-            }
-
-            lineSprite(&spriteDefs[2]);
-
-
-            /* clip left and right sides of screen if necessary */
-            clipLeftRight(&spriteDefs[2], OOWCol);
-
-            if (*wndTopLeftY > *scanlineY || *scanlineY >= (*wndTopLeftY + *wndSizeY))
-            {
-#if 0
-                tCBack.gbp  -= SIZEX;  /* Flavor, I don't get why these were here */
-#endif
-                lineClear(&tCBack, OOWCol);  /* in 8-bit mode, this would be the index of OOWCol in the SDL palette */
-#if 0
-                tCBack.gbp  += SIZEX;  /* Flavor, I don't get why these were here */
-#endif
-            }
-        }
-
-        /* increase scanline count */
-        tCFront.gbp+= SIZEX;
-        tCBack.gbp+= SIZEX;
-        spriteDefs[0].gbp+= SIZEX;
-        spriteDefs[1].gbp+= SIZEX;
-        spriteDefs[2].gbp+= SIZEX;
-#if 0
-        spriteDefs[3].gbp+= SIZEX;
-#endif
-
-        if (*scanlineY == 151)
-        {
-            /* start VBlank period */
-            tlcsMemWriteB(0x00008010,tlcsMemReadB(0x00008010) | 0x40);
-            if(render)
-                graphics_paint(); /* displayDirty = 1; */
-        }
-
-        *scanlineY+= 1;
-    }
-    else if (*scanlineY == 198)
-    {
-        /* stop VBlank period */
-        tlcsMemWriteB(0x00008010,tlcsMemReadB(0x00008010) & ~0x40);
-        graphicsBlitInit();
-
-        *scanlineY = 0;
-    }
-    else
-        *scanlineY+= 1;
-
 }
 
 /*
@@ -1569,8 +1435,4 @@ extern "C" BOOL graphics_init(void)
          break;
     }
     return TRUE;
-}
-
-void graphics_cleanup(void)
-{
 }
