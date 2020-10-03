@@ -92,18 +92,18 @@ void mainemuinit(void)
    ngpSoundOff();
 }
 
-void	SetActive(BOOL bActive)
+static void	SetActive(BOOL bActive)
 {
 	m_bIsActive = bActive;
 }
 
-void	SetEmu(int machine)
+static void	SetEmu(int machine)
 {
 	m_emuInfo.machine = machine;
 	m_emuInfo.drv = &m_sysInfo[machine];
 }
 
-bool initRom(void)
+static bool initRom(void)
 {
    int		i, m;
    char	*licenseInfo   = " BY SNK CORPORATION";
@@ -178,7 +178,7 @@ bool initRom(void)
    return FALSE;
 }
 
-void initSysInfo(void)
+static void initSysInfo(void)
 {
 	m_bIsActive = FALSE;
 
@@ -197,7 +197,7 @@ void initSysInfo(void)
 	m_sysInfo[NGPC].Ticks = 6*1024*1024;
 }
 
-char *getFileNameExtension(char *nom_fichier)
+static char *getFileNameExtension(char *nom_fichier)
 {
    char *ptrPoint = nom_fichier;
    while(*nom_fichier)
@@ -210,7 +210,7 @@ char *getFileNameExtension(char *nom_fichier)
 }
 
 #ifdef WANT_ZIP
-int loadFromZipByName(unsigned char *buffer, char *archive,
+static int loadFromZipByName(unsigned char *buffer, char *archive,
       char *filename, int *filesize)
 {
    char name[_MAX_PATH];
@@ -304,7 +304,7 @@ int loadFromZipByName(unsigned char *buffer, char *archive,
     Verifies if a file is a ZIP archive or not.
     Returns: 1= ZIP archive, 0= not a ZIP archive
 */
-int check_zip(char *filename)
+static int check_zip(char *filename)
 {
    unsigned char buf[2];
    FILE *fd = fopen(filename, "rb");
@@ -317,7 +317,7 @@ int check_zip(char *filename)
    return (0);
 }
 
-int strrchr2(const char *src, int c)
+static int strrchr2(const char *src, int c)
 {
   size_t len=strlen(src);
 
