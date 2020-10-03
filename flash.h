@@ -19,6 +19,13 @@
 #define COMMAND_CHIP_ERASE      0x10
 #define COMMAND_INFO_READ       0x90
 
+/* we found a dirty one, so write the file */
+#define WRITE_SAVEGAME_IF_DIRTY if(needToWriteFile) writeSaveGameFile(); 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* what command are we currently on (if any) */
 extern unsigned char currentCommand; 
 
@@ -28,20 +35,14 @@ void vectFlashWrite(unsigned char chip, unsigned int to,
 void vectFlashErase(unsigned char chip, unsigned char blockNum);
 void vectFlashChipErase(unsigned char chip);
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 void setFlashSize(unsigned int romSize);
 unsigned char flashReadInfo(unsigned int addr);
 void flashShutdown(void);
-#ifdef __cplusplus
-}
-#endif
-
 
 extern unsigned char needToWriteFile;
 void writeSaveGameFile(void);
 
-/* we found a dirty one, so write the file */
-#define WRITE_SAVEGAME_IF_DIRTY if(needToWriteFile) writeSaveGameFile(); 
+#ifdef __cplusplus
+}
+#endif
 

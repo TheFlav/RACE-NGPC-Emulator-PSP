@@ -234,8 +234,8 @@ void writeSaveGameFile(void)
 	FILE *ngfFile;
 
 	int bytes;
-	NGFheaderStruct NGFheader;
-	blockStruct block;
+	struct NGFheaderStruct NGFheader;
+	struct blockStruct block;
 
    setupNGFfilename();
 
@@ -249,7 +249,7 @@ void writeSaveGameFile(void)
 
 	NGFheader.version = 0x53;
 	NGFheader.numBlocks = 0;
-	NGFheader.fileLen = sizeof(NGFheaderStruct);
+	NGFheader.fileLen = sizeof(struct NGFheaderStruct);
 	/* add them all up, first */
 	for(i=0;i<totalBlocks;i++)
 	{
@@ -272,12 +272,12 @@ void writeSaveGameFile(void)
 		}
 	}
 
-	NGFheader.fileLen += NGFheader.numBlocks * sizeof(blockStruct);
+	NGFheader.fileLen += NGFheader.numBlocks * sizeof(struct blockStruct);
 
-	bytes = fwrite(&NGFheader, 1, sizeof(NGFheaderStruct), ngfFile);
-	if(bytes != sizeof(NGFheaderStruct))
+	bytes = fwrite(&NGFheader, 1, sizeof(struct NGFheaderStruct), ngfFile);
+	if(bytes != sizeof(struct NGFheaderStruct))
 	{
-		fprintf(stderr, "writeSaveGameFile: wrote %d bytes, but exptected %d bytes\n", bytes, sizeof(NGFheaderStruct));
+		fprintf(stderr, "writeSaveGameFile: wrote %d bytes, but exptected %d bytes\n", bytes, sizeof(struct NGFheaderStruct));
 		fclose(ngfFile);
 		return;
 	}
@@ -292,10 +292,10 @@ void writeSaveGameFile(void)
 			block.len = blockSize(i);
 
 
-			bytes = fwrite(&block, 1, sizeof(blockStruct), ngfFile);
-			if(bytes != sizeof(blockStruct))
+			bytes = fwrite(&block, 1, sizeof(struct blockStruct), ngfFile);
+			if(bytes != sizeof(struct blockStruct))
 			{
-				fprintf(stderr, "writeSaveGameFile: wrote %d bytes, but exptected %d bytes\n", bytes, sizeof(blockStruct));
+				fprintf(stderr, "writeSaveGameFile: wrote %d bytes, but exptected %d bytes\n", bytes, sizeof(struct blockStruct));
 				fclose(ngfFile);
 				return;
 			}
@@ -319,10 +319,10 @@ void writeSaveGameFile(void)
 				block.NGPCaddr = blockNumToAddr(1, i)+0x600000;
 				block.len = blockSize(i);
 
-				bytes = fwrite(&block, 1, sizeof(blockStruct), ngfFile);
-				if(bytes != sizeof(blockStruct))
+				bytes = fwrite(&block, 1, sizeof(struct blockStruct), ngfFile);
+				if(bytes != sizeof(struct blockStruct))
 				{
-					fprintf(stderr, "writeSaveGameFile: wrote %d bytes, but exptected %d bytes\n", bytes, sizeof(blockStruct));
+					fprintf(stderr, "writeSaveGameFile: wrote %d bytes, but exptected %d bytes\n", bytes, sizeof(struct blockStruct));
 					fclose(ngfFile);
 					return;
 				}
@@ -359,8 +359,8 @@ void loadSaveGameFile(void)
 	int bytes, i;
 	unsigned char *blocks;
 	void *blockMem;
-	NGFheaderStruct NGFheader;
-	blockStruct *blockHeader;
+	struct NGFheaderStruct NGFheader;
+	struct blockStruct *blockHeader;
 
    setupNGFfilename();
 
@@ -371,9 +371,9 @@ void loadSaveGameFile(void)
 		return;
 	}
 
-	bytes = fread(&NGFheader, 1, sizeof(NGFheaderStruct), ngfFile);
+	bytes = fread(&NGFheader, 1, sizeof(struct NGFheaderStruct), ngfFile);
 
-	if(bytes != sizeof(NGFheaderStruct))
+	if(bytes != sizeof(struct NGFheaderStruct))
 	{
 		fprintf(stderr, "loadSaveGameFile: Bad NGF file %s\n", ngfFilename);
 		fclose(ngfFile);
@@ -394,23 +394,23 @@ void loadSaveGameFile(void)
 		return;
 	}
 
-    blockMem = malloc(NGFheader.fileLen - sizeof(NGFheaderStruct));
+    blockMem = malloc(NGFheader.fileLen - sizeof(struct NGFheaderStruct));
     /* error handling? */
     if(!blockMem)
     {
-		fprintf(stderr, "loadSaveGameFile: can't malloc %d bytes\n", (NGFheader.fileLen - sizeof(NGFheaderStruct)));
+		fprintf(stderr, "loadSaveGameFile: can't malloc %d bytes\n", (NGFheader.fileLen - sizeof(struct NGFheaderStruct)));
         return;
     }
 
 
 	blocks = (unsigned char *)blockMem;
 
-	bytes = fread(blocks, 1, NGFheader.fileLen - sizeof(NGFheaderStruct), ngfFile);
+	bytes = fread(blocks, 1, NGFheader.fileLen - sizeof(struct NGFheaderStruct), ngfFile);
 	fclose(ngfFile);
 
-	if(bytes != (NGFheader.fileLen - sizeof(NGFheaderStruct)))
+	if(bytes != (NGFheader.fileLen - sizeof(struct NGFheaderStruct)))
 	{
-		fprintf(stderr, "loadSaveGameFile: read %d bytes, but exptected %d bytes\n", bytes, (NGFheader.fileLen - sizeof(NGFheaderStruct)));
+		fprintf(stderr, "loadSaveGameFile: read %d bytes, but exptected %d bytes\n", bytes, (NGFheader.fileLen - sizeof(struct NGFheaderStruct)));
 		free(blockMem);
 		return;
 	}
@@ -425,8 +425,8 @@ void loadSaveGameFile(void)
 	/* loop through the blocks and insert them into mainrom */
 	for(i=0; i < NGFheader.numBlocks; i++)
 	{
-	    blockHeader = (blockStruct*) blocks;
-		blocks += sizeof(blockStruct);
+	    blockHeader = (struct blockStruct*) blocks;
+		blocks += sizeof(struct blockStruct);
 
         if(!((blockHeader->NGPCaddr >= 0x200000 && blockHeader->NGPCaddr < 0x400000)
              ||
@@ -489,7 +489,7 @@ void flashWriteByte(unsigned int addr, unsigned char data, unsigned char operati
 		mainrom[addr] &= data;		/* actually writing data */
 }
 
-extern "C" unsigned char flashReadInfo(unsigned int addr)
+unsigned char flashReadInfo(unsigned int addr)
 {
     currentWriteCycle = 1;
     currentCommand = COMMAND_INFO_READ;
@@ -639,7 +639,7 @@ void flashChipWrite(unsigned int addr, unsigned char data)
 }
 
 /* this should be called when a ROM is unloaded */
-extern "C" void flashShutdown(void)
+void flashShutdown(void)
 {
 	writeSaveGameFile();
 }
@@ -699,7 +699,7 @@ void vectFlashChipErase(unsigned char chip)
 {
 }
 
-extern "C" void setFlashSize(unsigned int romSize)
+void setFlashSize(unsigned int romSize)
 {
     /* add individual hacks here. */
    
