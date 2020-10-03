@@ -29,6 +29,9 @@
 #endif
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 extern unsigned char mainram[];			/* All RAM areas */
 extern unsigned char mainrom[];			/* ROM image area */
@@ -451,5 +454,9 @@ static inline void tlcsMemWriteB(unsigned int addr, unsigned char data)
     else if (addr>=0x00800000 && addr<0x00A00000)
         flashChipWrite(addr, data);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  /* _MEMORYH_ */

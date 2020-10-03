@@ -9,14 +9,15 @@
 #include <ctype.h>
 #include <math.h>
 
-struct SYSTEMINFO {
+typedef struct SYSTEMINFO
+{
 	int		hSize;
 	int		vSize;
 	int		Ticks;
 	int		InputKeys[12];
-};
+} SYSTEMINFO;
 
-struct EMUINFO
+typedef struct EMUINFO
 {
 	char 	RomFileName[_MAX_PATH];
 
@@ -24,7 +25,7 @@ struct EMUINFO
 	int		romSize;		// what is the size of the currently loaded file
 	int		samples;
 	SYSTEMINFO	*drv;
-};
+} EMUINFO;
 
 #define KEY_UP			0
 #define KEY_DOWN		1

@@ -43,7 +43,6 @@ void gbSoundUpdate(void);
 void gbSoundWrite(int reg, unsigned char data);
 
 /* Neogeo pocket sound functions */
-void sound_update(void);
 void ngpSoundStart(void);
 void ngpSoundExecute(void);
 void ngpSoundOff(void);
