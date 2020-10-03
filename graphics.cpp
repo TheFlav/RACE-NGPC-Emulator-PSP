@@ -12,7 +12,7 @@
 #include "StdAfx.h"
 #include "main.h"
 #include "graphics.h"
-#include "memory.h"
+#include "race-memory.h"
 
 #if defined(ABGR1555)
 #define RMASK 0x001f

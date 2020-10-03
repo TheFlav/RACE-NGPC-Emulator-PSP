@@ -22,7 +22,7 @@
 #include <string.h>
 #include "state.h"
 #include "tlcs900h.h"
-#include "memory.h"
+#include "race-memory.h"
 
 #ifdef PC
 #undef PC

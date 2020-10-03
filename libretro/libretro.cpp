@@ -10,7 +10,7 @@
 #include "../input.h"
 #include "../flash.h"
 #include "../tlcs900h.h"
-#include "../memory.h"
+#include "../race-memory.h"
 #include "../graphics.h"
 #include "../state.h"
 

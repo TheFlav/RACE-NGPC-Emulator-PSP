@@ -4,7 +4,7 @@
 
 //#include "driver.h"
 //#include "cpuintrf.h"
-#include "memory.h"
+#include "race-memory.h"
 //#include "z80/z80.h"
 #include "cz80.h"
 
@@ -15,8 +15,6 @@ unsigned char *mame4all_cz80_ram = &mainram[0x3000];
 
 cz80_struc RACE_cz80_struc_alloc;
 cz80_struc *RACE_cz80_struc=&RACE_cz80_struc_alloc;
-
-#include "memory.h"
 
 void Z80_Init()
 {

@@ -14,7 +14,7 @@
  */
 
 #include "StdAfx.h"
-#include "memory.h"
+#include "race-memory.h"
 #include "flash.h"
 #include <string.h>
 #ifdef _WIN32

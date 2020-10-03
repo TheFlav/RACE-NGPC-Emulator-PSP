@@ -16,7 +16,7 @@
 #include "main.h"
 
 
-#include "memory.h"
+#include "race-memory.h"
 #include "tlcs900h.h"
 #include "input.h"
 
