@@ -38,7 +38,7 @@ static retro_input_state_t input_state_cb;
 /* core options */
 static int RETRO_SAMPLE_RATE = 44100;
 
-ngp_screen* screen;
+struct ngp_screen* screen;
 int setting_ngp_language; /* 0x6F87 - language */
 int gfx_hacks;
 int tipo_consola; /* 0x6F91 - OS version */
@@ -46,9 +46,13 @@ static bool libretro_supports_input_bitmasks;
 
 char retro_save_directory[2048];
 
-struct map { unsigned retro; unsigned ngp; };
+struct map
+{
+   unsigned retro;
+   unsigned ngp;
+};
 
-static map btn_map[] = {
+static struct map btn_map[] = {
    { RETRO_DEVICE_ID_JOYPAD_A, 0x20 },
    { RETRO_DEVICE_ID_JOYPAD_B, 0x10 },
    { RETRO_DEVICE_ID_JOYPAD_RIGHT, 0x08 },
@@ -92,7 +96,7 @@ static void check_variables(void)
    var.value = NULL;
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-      dark_filter_level = static_cast<unsigned>(atoi(var.value));
+      dark_filter_level = (unsigned)(atoi(var.value));
    graphicsSetDarkFilterLevel(dark_filter_level);
 }
 void retro_init(void)
@@ -166,7 +170,7 @@ static unsigned get_race_input_bitmasks(void)
    unsigned i = 0;
    unsigned res = 0;
    unsigned ret = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_MASK);
-   for (i = 0; i < sizeof(btn_map) / sizeof(map); i++)
+   for (i = 0; i < sizeof(btn_map) / sizeof(struct map); i++)
       res |= (ret & (1 << btn_map[i].retro)) ? btn_map[i].ngp : 0;
    return res;
 }
@@ -175,7 +179,7 @@ static unsigned get_race_input(void)
 {
    unsigned i = 0;
    unsigned res = 0;
-   for (i = 0; i < sizeof(btn_map) / sizeof(map); i++)
+   for (i = 0; i < sizeof(btn_map) / sizeof(struct map); i++)
       res |= input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, btn_map[i].retro) ? btn_map[i].ngp : 0;
    return res;
 }
@@ -208,9 +212,7 @@ static bool race_initialize_system(const char* gamepath)
    return true;
 }
 
-void retro_set_controller_port_device(unsigned, unsigned)
-{
-}
+void retro_set_controller_port_device(unsigned a, unsigned b) { }
 
 void retro_get_system_info(struct retro_system_info *info)
 {
@@ -311,7 +313,7 @@ bool retro_load_game(const struct retro_game_info *info)
 
    environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, desc);
 
-   screen         = (ngp_screen*)calloc(1, sizeof(*screen));
+   screen         = (struct ngp_screen*)calloc(1, sizeof(*screen));
 
    if (!screen)
       return false;
@@ -348,7 +350,7 @@ bool retro_load_game(const struct retro_game_info *info)
    return true;
 }
 
-bool retro_load_game_special(unsigned, const struct retro_game_info*, size_t)
+bool retro_load_game_special(unsigned a, const struct retro_game_info *b, size_t c)
 {
    return false;
 }

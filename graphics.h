@@ -30,13 +30,13 @@
 extern "C" {
 #endif
 BOOL graphics_init(void);
+void graphics_paint(void);
+void graphicsSetDarkFilterLevel(unsigned filterLevel);
 #ifdef __cplusplus
 }
 #endif
-void graphics_paint(void);
 /* new renderer (NeoGeo Pocket (Color)) */
 void myGraphicsBlitLine(unsigned char render);
-void graphicsSetDarkFilterLevel(unsigned filterLevel);
 
 /*
  * adventure vision stuff

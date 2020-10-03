@@ -379,7 +379,7 @@ void palette_init16(DWORD dwRBitMask, DWORD dwGBitMask, DWORD dwBBitMask)
  * Most interface functions seem to use camel case,
  * so do the same here...
  */
-void graphicsSetDarkFilterLevel(unsigned filterLevel)
+extern "C" void graphicsSetDarkFilterLevel(unsigned filterLevel)
 {
     unsigned prev_dark_filter_level = dark_filter_level;
 

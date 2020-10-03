@@ -639,7 +639,7 @@ void flashChipWrite(unsigned int addr, unsigned char data)
 }
 
 /* this should be called when a ROM is unloaded */
-void flashShutdown(void)
+extern "C" void flashShutdown(void)
 {
 	writeSaveGameFile();
 }

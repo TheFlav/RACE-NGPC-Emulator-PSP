@@ -36,13 +36,13 @@ endif
 SOURCES_CXX := \
 	$(CORE_DIR)/tlcs900h.cpp \
 	$(CORE_DIR)/flash.cpp \
-	$(CORE_DIR)/graphics.cpp \
-	$(CORE_DIR)/libretro/libretro.cpp \
-	$(CORE_DIR)/libretro/log.cpp
+	$(CORE_DIR)/graphics.cpp
 
 SOURCES_C += \
 	$(CORE_DIR)/main.c \
 	$(CORE_DIR)/input.c \
+	$(CORE_DIR)/libretro/libretro.c \
+	$(CORE_DIR)/libretro/log.c \
 	$(CORE_DIR)/race-memory.c \
 	$(CORE_DIR)/ngpBios.c \
 	$(CORE_DIR)/state.c \
