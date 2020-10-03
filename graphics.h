@@ -25,19 +25,13 @@
 #define SIZEX	260//480//368//320//480
 #define SIZEY	152//272//207//240//272
 
-//extern unsigned char bwPaletteDirty, spritePaletteDirty, frontPaletteDirty, backPaletteDirty;
-//extern unsigned char bgoowDirty;
-//extern unsigned int spritesDirty;
-
-
-// graphics buffer will hold the screen transformed to full RGB colors used by the emulated system
-//extern int *graphics_buffer;
-//extern unsigned short	*drawBuffer;
-//extern unsigned short	drawBuffer[SIZEX*SIZEY];
-//extern unsigned char *drawBuffer;
-//extern BITMAP myBitmap;
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 BOOL graphics_init(void);
+#ifdef __cplusplus
+}
+#endif
 void graphics_blit(void);
 void graphics_paint();
 void graphics_cleanup();

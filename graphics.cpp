@@ -1517,7 +1517,7 @@ void myGraphicsBlitLine(unsigned char render)  /* NOTA */
  *
  */
 
-BOOL graphics_init(void)
+extern "C" BOOL graphics_init(void)
 {
 #ifdef __LIBRETRO__
     palette_init = palette_init16;

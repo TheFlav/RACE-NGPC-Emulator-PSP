@@ -9,24 +9,6 @@
 #include <ctype.h>
 #include <math.h>
 
-typedef struct SYSTEMINFO
-{
-	int		hSize;
-	int		vSize;
-	int		Ticks;
-	int		InputKeys[12];
-} SYSTEMINFO;
-
-typedef struct EMUINFO
-{
-	char 	RomFileName[_MAX_PATH];
-
-	int		machine;		// what kind of machine should we emulate
-	int		romSize;		// what is the size of the currently loaded file
-	int		samples;
-	SYSTEMINFO	*drv;
-} EMUINFO;
-
 #define KEY_UP			0
 #define KEY_DOWN		1
 #define KEY_LEFT		2
@@ -46,6 +28,30 @@ typedef struct EMUINFO
 
 #define NR_OF_SYSTEMS	2
 
+/* to call these FPS is a bit of a misnomer */
+#define HOST_FPS 60  /* the number of frames we want to draw to the host's screen every second */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct SYSTEMINFO
+{
+	int		hSize;
+	int		vSize;
+	int		Ticks;
+	int		InputKeys[12];
+} SYSTEMINFO;
+
+typedef struct EMUINFO
+{
+	char 	RomFileName[_MAX_PATH];
+
+	int		machine;		// what kind of machine should we emulate
+	int		romSize;		// what is the size of the currently loaded file
+	int		samples;
+	SYSTEMINFO	*drv;
+} EMUINFO;
 
 extern int		m_bIsActive;
 extern EMUINFO		m_emuInfo;
@@ -55,7 +61,8 @@ extern int romSize;
 int handleInputFile(char *romName);
 void mainemuinit(void);
 
-/* to call these FPS is a bit of a misnomer */
-#define HOST_FPS 60  /* the number of frames we want to draw to the host's screen every second */
+#ifdef __cplusplus
+}
+#endif
 
 #endif

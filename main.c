@@ -103,7 +103,7 @@ static void	SetEmu(int machine)
 	m_emuInfo.drv = &m_sysInfo[machine];
 }
 
-static bool initRom(void)
+static int initRom(void)
 {
    int		i, m;
    char	*licenseInfo   = " BY SNK CORPORATION";

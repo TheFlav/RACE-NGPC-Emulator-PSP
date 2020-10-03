@@ -27,9 +27,16 @@ void vectFlashWrite(unsigned char chip, unsigned int to,
       unsigned char *fromAddr, unsigned int numBytes);
 void vectFlashErase(unsigned char chip, unsigned char blockNum);
 void vectFlashChipErase(unsigned char chip);
-void setFlashSize(unsigned int romSize);
 void flashShutdown(void);
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+void setFlashSize(unsigned int romSize);
 unsigned char flashReadInfo(unsigned int addr);
+#ifdef __cplusplus
+}
+#endif
 
 
 extern unsigned char needToWriteFile;

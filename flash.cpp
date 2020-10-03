@@ -489,7 +489,7 @@ void flashWriteByte(unsigned int addr, unsigned char data, unsigned char operati
 		mainrom[addr] &= data;		/* actually writing data */
 }
 
-unsigned char flashReadInfo(unsigned int addr)
+extern "C" unsigned char flashReadInfo(unsigned int addr)
 {
     currentWriteCycle = 1;
     currentCommand = COMMAND_INFO_READ;
@@ -699,7 +699,7 @@ void vectFlashChipErase(unsigned char chip)
 {
 }
 
-void setFlashSize(unsigned int romSize)
+extern "C" void setFlashSize(unsigned int romSize)
 {
     /* add individual hacks here. */
    
