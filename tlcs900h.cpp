@@ -35,7 +35,6 @@
 #include <time.h>
 #include "tlcs900h.h"
 #include "race-memory.h"
-#include "input.h"
 #include "ngpBios.h"
 
 #ifdef _DEBUG

@@ -9,12 +9,12 @@
  * tlcs900h.h: interface for the tlcs900h class.
  */
 
-#if !defined(AFX_TLCS900H_H__41E77E01_8224_11D3_8644_00A0241D2A65__INCLUDED_)
-#define AFX_TLCS900H_H__41E77E01_8224_11D3_8644_00A0241D2A65__INCLUDED_
+#ifndef AFX_TLCS900H_H
+#define AFX_TLCS900H_H
 
-#if _MSC_VER > 1000
-#pragma once
-#endif /* _MSC_VER > 1000 */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 extern unsigned int gen_regsPC, gen_regsSR;
 extern unsigned char F2;
@@ -65,4 +65,8 @@ void tlcs_execute(int cycles, int skipFrames); /* skipFrames=how many frames to 
 void tlcs_execute(int cycles);
 #endif
 
-#endif /* !defined(AFX_TLCS900H_H__41E77E01_8224_11D3_8644_00A0241D2A65__INCLUDED_) */
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* !defined(AFX_TLCS900H_H) */
