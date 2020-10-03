@@ -401,23 +401,25 @@ void dac_writeL(unsigned char data)
    }
 
 }
-
-/*void dac_writeR(unsigned char data)
+ 
+#if 0
+void dac_writeR(unsigned char data)
 {
-	//Write to buffer
+	/* Write to buffer */
 	dacBufferR[dacRBufferWrite] = data;
 	dacRBufferWrite++;
 	if (dacRBufferWrite == DAC_BUFFERSIZE)
 		dacRBufferWrite = 0;
 
-	//Overflow?
+	/* Overflow? */
 	dacRBufferCount++;
 	if (dacRBufferCount == DAC_BUFFERSIZE)
 	{
 		dbg_printf("dac_write: DAC buffer overflow\nPlease report this to the author.");
 		dacRBufferCount = 0;
 	}
-}*/
+}
+#endif
 
 void dac_mixer(_u16* stream, int length_bytes)
 {
