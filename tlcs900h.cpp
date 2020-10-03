@@ -31,16 +31,12 @@
 
 #include "StdAfx.h"
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include "main.h"
 #include "tlcs900h.h"
 #include "race-memory.h"
 #include "input.h"
-#include "graphics.h"
 #include "ngpBios.h"
-#include "neopopsound.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -105,604 +101,6 @@ unsigned char SZtable[256];            // zero and sign flags table for faster s
 //#define USE_PARITY_TABLE  //this is currently broken!
 #ifdef USE_PARITY_TABLE
 unsigned char parityVtable[256];            // zero and sign flags table for faster setting
-#endif
-
-//#define TCLS900H_PROFILING
-#ifdef TCLS900H_PROFILING
-struct profStruct
-{
-    unsigned int ticks, calls;
-    unsigned int decode[256];
-};
-
-struct profStruct profile[256];
-
-char *instr_names[256] =
-    {
-        "nop", "normal", "pushsr", "popsr", "tmax", "halt", "ei", "reti",
-        "ld8I", "pushI", "ldw8I", "pushwI", "incf", "decf", "ret", "retd",
-        "rcf", "scf", "ccf", "zcf", "pushA", "popA", "exFF", "ldf",
-        "pushF", "popF", "jp16", "jp24", "call16", "call24", "calr", "udef",
-        "ldRIB", "ldRIB", "ldRIB", "ldRIB", "ldRIB", "ldRIB", "ldRIB", "ldRIB",
-        "pushRW", "pushRW", "pushRW", "pushRW", "pushRW", "pushRW", "pushRW", "pushRW",
-        "ldRIW", "ldRIW", "ldRIW", "ldRIW", "ldRIW", "ldRIW", "ldRIW", "ldRIW",
-        "pushRL", "pushRL", "pushRL", "pushRL", "pushRL", "pushRL", "pushRL", "pushRL",
-        //
-        "ldRIL", "ldRIL", "ldRIL", "ldRIL", "ldRIL", "ldRIL", "ldRIL", "ldRIL",
-        "popRW", "popRW", "popRW", "popRW", "popRW", "popRW", "popRW", "popRW",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "popRL", "popRL", "popRL", "popRL", "popRL", "popRL", "popRL", "popRL",
-        "jrcc0", "jrcc1", "jrcc2", "jrcc3", "jrcc4", "jrcc5", "jrcc6", "jrcc7",
-        "jrcc8", "jrcc9", "jrccA", "jrccB", "jrccC", "jrccD", "jrccE", "jrccF",
-        "jrlcc0", "jrlcc1", "jrlcc2", "jrlcc3", "jrlcc4", "jrlcc5", "jrlcc6", "jrlcc7",
-        "jrlcc8", "jrlcc9", "jrlccA", "jrlccB", "jrlccC", "jrlccD", "jrlccE", "jrlccF",
-        //
-        "decode80", "decode80", "decode80", "decode80", "decode80", "decode80", "decode80", "decode80",
-        "decode88", "decode88", "decode88", "decode88", "decode88", "decode88", "decode88", "decode88",
-        "decode90", "decode90", "decode90", "decode90", "decode90", "decode90", "decode90", "decode90",
-        "decode98", "decode98", "decode98", "decode98", "decode98", "decode98", "decode98", "decode98",
-        "decodeA0", "decodeA0", "decodeA0", "decodeA0", "decodeA0", "decodeA0", "decodeA0", "decodeA0",
-        "decodeA8", "decodeA8", "decodeA8", "decodeA8", "decodeA8", "decodeA8", "decodeA8", "decodeA8",
-        "decodeB0", "decodeB0", "decodeB0", "decodeB0", "decodeB0", "decodeB0", "decodeB0", "decodeB0",
-        "decodeB8", "decodeB8", "decodeB8", "decodeBB", "decodeB8", "decodeB8", "decodeB8", "decodeB8",
-        //
-        "decodeC0", "decodeC1", "decodeC2", "decodeC3", "decodeC4", "decodeC5", "udef", "decodeC7",
-        "decodeC8", "decodeC8", "decodeC8", "decodeC8", "decodeC8", "decodeC8", "decodeC8", "decodeC8",
-        "decodeD0", "decodeD1", "decodeD2", "decodeD3", "decodeD4", "decodeD5", "udef", "decodeD7",
-        "decodeD8", "decodeD8", "decodeD8", "decodeD8", "decodeD8", "decodeD8", "decodeD8", "decodeD8",
-        "decodeE0", "decodeE1", "decodeE2", "decodeE3", "decodeE4", "decodeE5", "udef", "decodeE7",
-        "decodeE8", "decodeE8", "decodeE8", "decodeE8", "decodeE8", "decodeE8", "decodeE8", "decodeE8",
-        "decodeF0", "decodeF1", "decodeF2", "decodeF3", "decodeF4", "decodeF5", "udef", "ldx",
-        "swi", "swi", "swi", "swi", "swi", "swi", "swi", "swi"
-    };
-
-char *instr_table80[256] =
-    {
-        "udef", "udef", "udef", "udef", "pushM00", "udef", "rld00", "rrd00",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "ldi", "ldir", "ldd", "lddr", "cpiB", "cpirB", "cpdB", "cpdrB",
-        "udef", "ld16M00", "udef", "udef", "udef", "udef", "udef", "udef",
-        "ldRM00", "ldRM00", "ldRM00", "ldRM00", "ldRM00", "ldRM00", "ldRM00", "ldRM00",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "exMRB00", "exMRB00", "exMRB00", "exMRB00", "exMRB00", "exMRB00", "exMRB00", "exMRB00",
-        "addMI00", "adcMI00", "subMI00", "sbcMI00", "andMI00", "xorMI00", "orMI00", "cpMI00",
-        //
-        "mulRMB00", "mulRMB00", "mulRMB00", "mulRMB00", "mulRMB00", "mulRMB00", "mulRMB00", "mulRMB00",
-        "mulsRMB00", "mulsRMB00", "mulsRMB00", "mulsRMB00", "mulsRMB00", "mulsRMB00", "mulsRMB00", "mulsRMB00",
-        "divRMB00", "divRMB00", "divRMB00", "divRMB00", "divRMB00", "divRMB00", "divRMB00", "divRMB00",
-        "divsRMB00", "divsRMB00", "divsRMB00", "divsRMB00", "divsRMB00", "divsRMB00", "divsRMB00", "divsRMB00",
-        "inc3M00", "inc3M00", "inc3M00", "inc3M00", "inc3M00", "inc3M00", "inc3M00", "inc3M00",
-        "dec3M00", "dec3M00", "dec3M00", "dec3M00", "dec3M00", "dec3M00", "dec3M00", "dec3M00",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "rlcM00", "rrcM00", "rlM00", "rrM00", "slaM00", "sraM00", "sllM00", "srlM00",
-        //
-        "addRMB00", "addRMB00", "addRMB00", "addRMB00", "addRMB00", "addRMB00", "addRMB00", "addRMB00",
-        "addMRB00", "addMRB00", "addMRB00", "addMRB00", "addMRB00", "addMRB00", "addMRB00", "addMRB00",
-        "adcRMB00", "adcRMB00", "adcRMB00", "adcRMB00", "adcRMB00", "adcRMB00", "adcRMB00", "adcRMB00",
-        "adcMRB00", "adcMRB00", "adcMRB00", "adcMRB00", "adcMRB00", "adcMRB00", "adcMRB00", "adcMRB00",
-        "subRMB00", "subRMB00", "subRMB00", "subRMB00", "subRMB00", "subRMB00", "subRMB00", "subRMB00",
-        "subMRB00", "subMRB00", "subMRB00", "subMRB00", "subMRB00", "subMRB00", "subMRB00", "subMRB00",
-        "sbcRMB00", "sbcRMB00", "sbcRMB00", "sbcRMB00", "sbcRMB00", "sbcRMB00", "sbcRMB00", "sbcRMB00",
-        "sbcMRB00", "sbcMRB00", "sbcMRB00", "sbcMRB00", "sbcMRB00", "sbcMRB00", "sbcMRB00", "sbcMRB00",
-        //
-        "andRMB00", "andRMB00", "andRMB00", "andRMB00", "andRMB00", "andRMB00", "andRMB00", "andRMB00",
-        "andMRB00", "andMRB00", "andMRB00", "andMRB00", "andMRB00", "andMRB00", "andMRB00", "andMRB00",
-        "xorRMB00", "xorRMB00", "xorRMB00", "xorRMB00", "xorRMB00", "xorRMB00", "xorRMB00", "xorRMB00",
-        "xorMRB00", "xorMRB00", "xorMRB00", "xorMRB00", "xorMRB00", "xorMRB00", "xorMRB00", "xorMRB00",
-        "orRMB00", "orRMB00", "orRMB00", "orRMB00", "orRMB00", "orRMB00", "orRMB00", "orRMB00",
-        "orMRB00", "orMRB00", "orMRB00", "orMRB00", "orMRB00", "orMRB00", "orMRB00", "orMRB00",
-        "cpRMB00", "cpRMB00", "cpRMB00", "cpRMB00", "cpRMB00", "cpRMB00", "cpRMB00", "cpRMB00",
-        "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00"
-    };
-
-char *instr_table90[256] =
-    {
-        "udef", "udef", "udef", "udef", "pushwM10", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "ldiw", "ldirw", "lddw", "lddrw", "cpiW", "cpirW", "cpdW", "cpdrW",
-        "udef", "ldw16M10", "udef", "udef", "udef", "udef", "udef", "udef",
-        "ldRM10", "ldRM10", "ldRM10", "ldRM10", "ldRM10", "ldRM10", "ldRM10", "ldRM10",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "exMRW10", "exMRW10", "exMRW10", "exMRW10", "exMRW10", "exMRW10", "exMRW10", "exMRW10",
-        "addwMI10", "adcwMI10", "subwMI10", "sbcwMI10", "andwMI10", "xorwMI10", "orwMI10", "cpwMI10",
-        //
-        "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10",
-        "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10",
-        "divRMW10", "divRMW10", "divRMW10", "divRMW10", "divRMW10", "divRMW10", "divRMW10", "divRMW10",
-        "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10",
-        "incw3M10", "incw3M10", "incw3M10", "incw3M10", "incw3M10", "incw3M10", "incw3M10", "incw3M10",
-        "decw3M10", "decw3M10", "decw3M10", "decw3M10", "decw3M10", "decw3M10", "decw3M10", "decw3M10",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "rlcwM10", "rrcwM10", "rlwM10", "rrwM10", "slawM10", "srawM10", "sllwM10", "srlwM10",
-        //
-        "addRMW10", "addRMW10", "addRMW10", "addRMW10", "addRMW10", "addRMW10", "addRMW10", "addRMW10",
-        "addMRW10", "addMRW10", "addMRW10", "addMRW10", "addMRW10", "addMRW10", "addMRW10", "addMRW10",
-        "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10",
-        "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10",
-        "subRMW10", "subRMW10", "subRMW10", "subRMW10", "subRMW10", "subRMW10", "subRMW10", "subRMW10",
-        "subMRW10", "subMRW10", "subMRW10", "subMRW10", "subMRW10", "subMRW10", "subMRW10", "subMRW10",
-        "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10",
-        "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10",
-        //
-        "andRMW10", "andRMW10", "andRMW10", "andRMW10", "andRMW10", "andRMW10", "andRMW10", "andRMW10",
-        "andMRW10", "andMRW10", "andMRW10", "andMRW10", "andMRW10", "andMRW10", "andMRW10", "andMRW10",
-        "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10",
-        "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10",
-        "orRMW10", "orRMW10", "orRMW10", "orRMW10", "orRMW10", "orRMW10", "orRMW10", "orRMW10",
-        "orMRW10", "orMRW10", "orMRW10", "orMRW10", "orMRW10", "orMRW10", "orMRW10", "orMRW10",
-        "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10",
-        "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10"
-    };
-
-char *instr_table98[256] =
-    {
-        "udef", "udef", "udef", "udef", "pushwM10", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "ldw16M10", "udef", "udef", "udef", "udef", "udef", "udef",
-        "ldRM10", "ldRM10", "ldRM10", "ldRM10", "ldRM10", "ldRM10", "ldRM10", "ldRM10",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "exMRW10", "exMRW10", "exMRW10", "exMRW10", "exMRW10", "exMRW10", "exMRW10", "exMRW10",
-        "addwMI10", "adcwMI10", "subwMI10", "sbcwMI10", "andwMI10", "xorwMI10", "orwMI10", "cpwMI10",
-        //
-        "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10",
-        "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10",
-        "divRMW10", "divRMW10", "divRMW10", "divRMW10", "divRMW10", "divRMW10", "divRMW10", "divRMW10",
-        "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10",
-        "incw3M10", "incw3M10", "incw3M10", "incw3M10", "incw3M10", "incw3M10", "incw3M10", "incw3M10",
-        "decw3M10", "decw3M10", "decw3M10", "decw3M10", "decw3M10", "decw3M10", "decw3M10", "decw3M10",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "rlcwM10", "rrcwM10", "rlwM10", "rrwM10", "slawM10", "srawM10", "sllwM10", "srlwM10",
-        //
-        "addRMW10", "addRMW10", "addRMW10", "addRMW10", "addRMW10", "addRMW10", "addRMW10", "addRMW10",
-        "addMRW10", "addMRW10", "addMRW10", "addMRW10", "addMRW10", "addMRW10", "addMRW10", "addMRW10",
-        "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10",
-        "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10",
-        "subRMW10", "subRMW10", "subRMW10", "subRMW10", "subRMW10", "subRMW10", "subRMW10", "subRMW10",
-        "subMRW10", "subMRW10", "subMRW10", "subMRW10", "subMRW10", "subMRW10", "subMRW10", "subMRW10",
-        "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10",
-        "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10",
-        //
-        "andRMW10", "andRMW10", "andRMW10", "andRMW10", "andRMW10", "andRMW10", "andRMW10", "andRMW10",
-        "andMRW10", "andMRW10", "andMRW10", "andMRW10", "andMRW10", "andMRW10", "andMRW10", "andMRW10",
-        "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10",
-        "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10",
-        "orRMW10", "orRMW10", "orRMW10", "orRMW10", "orRMW10", "orRMW10", "orRMW10", "orRMW10",
-        "orMRW10", "orMRW10", "orMRW10", "orMRW10", "orMRW10", "orMRW10", "orMRW10", "orMRW10",
-        "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10",
-        "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10"
-    };
-
-char *instr_tableA0[256] =
-    {
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "ldRM20", "ldRM20", "ldRM20", "ldRM20", "ldRM20", "ldRM20", "ldRM20", "ldRM20",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        //
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef ", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        //
-        "addRML20", "addRML20", "addRML20", "addRML20", "addRML20", "addRML20", "addRML20", "addRML20",
-        "addMRL20", "addMRL20", "addMRL20", "addMRL20", "addMRL20", "addMRL20", "addMRL20", "addMRL20",
-        "adcRML20", "adcRML20", "adcRML20", "adcRML20", "adcRML20", "adcRML20", "adcRML20", "adcRML20",
-        "adcMRL20", "adcMRL20", "adcMRL20", "adcMRL20", "adcMRL20", "adcMRL20", "adcMRL20", "adcMRL20",
-        "subRML20", "subRML20", "subRML20", "subRML20", "subRML20", "subRML20", "subRML20", "subRML20",
-        "subMRL20", "subMRL20", "subMRL20", "subMRL20", "subMRL20", "subMRL20", "subMRL20", "subMRL20",
-        "sbcRML20", "sbcRML20", "sbcRML20", "sbcRML20", "sbcRML20", "sbcRML20", "sbcRML20", "sbcRML20",
-        "sbcMRL20", "sbcMRL20", "sbcMRL20", "sbcMRL20", "sbcMRL20", "sbcMRL20", "sbcMRL20", "sbcMRL20",
-        //
-        "andRML20", "andRML20", "andRML20", "andRML20", "andRML20", "andRML20", "andRML20", "andRML20",
-        "andMRL20", "andMRL20", "andMRL20", "andMRL20", "andMRL20", "andMRL20", "andMRL20", "andMRL20",
-        "xorRML20", "xorRML20", "xorRML20", "xorRML20", "xorRML20", "xorRML20", "xorRML20", "xorRML20",
-        "xorMRL20", "xorMRL20", "xorMRL20", "xorMRL20", "xorMRL20", "xorMRL20", "xorMRL20", "xorMRL20",
-        "orRML20", "orRML20", "orRML20", "orRML20", "orRML20", "orRML20", "orRML20", "orRML20",
-        "orMRL20", "orMRL20", "orMRL20", "orMRL20", "orMRL20", "orMRL20", "orMRL20", "orMRL20",
-        "cpRML20", "cpRML20", "cpRML20", "cpRML20", "cpRML20", "cpRML20", "cpRML20", "cpRML20",
-        "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20"
-    };
-
-char *instr_tableB0[256] =
-    {
-        "ldMI30", "udef", "ldwMI30", "udef", "popM30", "udef", "popwM30", "udef",
-        "udef", "udef", "udef", "udef", "udef ", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "ldM1630", "udef", "ldwM1630", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30",
-        "andcfAM30", "orcfAM30", "xorcfAM30", "ldcfAM30", "stcfAM30", "udef", "udef", "udef",
-        "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        //
-        "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W",
-        "udef", "udef", "udef ", "udef", "udef", "udef", "udef", "udef",
-        "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef ", "udef", "udef", "udef", "udef", "udef", "udef",
-        //
-        "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30",
-        "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30",
-        "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30",
-        "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30",
-        "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30",
-        "tset3M30", "tset3M30", "tset3M30", "tset3M30", "tset3M30", "tset3M30", "tset3M30", "tset3M30",
-        "res3M30", "res3M30", "res3M30", "res3M30", "res3M30", "res3M30", "res3M30", "res3M30",
-        "set3M30", "set3M30", "set3M30", "set3M30", "set3M30", "set3M30", "set3M30", "set3M30",
-        //
-        "chg3M30", "chg3M30", "chg3M30", "chg3M30", "chg3M30", "chg3M30", "chg3M30", "chg3M30",
-        "bit3M30", "bit3M30", "bit3M30", "bit3M30", "bit3M30", "bit3M30", "bit3M30", "bit3M30",
-        "jpccM300", "jpccM301", "jpccM302", "jpccM303", "jpccM304", "jpccM305", "jpccM306", "jpccM307",
-        "jpccM308", "jpccM309", "jpccM30A", "jpccM30B", "jpccM30C", "jpccM30D", "jpccM30E", "jpccM30F",
-        "callccM300", "callccM301", "callccM302", "callccM303", "callccM304", "callccM305", "callccM306", "callccM307",
-        "callccM308", "callccM309", "callccM30A", "callccM30B", "callccM30C", "callccM30D", "callccM30E", "callccM30F",
-        "retcc0", "retcc1", "retcc2", "retcc3", "retcc4", "retcc5", "retcc6", "retcc7",
-        "retcc8", "retcc9", "retccA", "retccB", "retccC", "retccD", "retccE", "retccF"
-    };
-
-char *instr_tableB8[256] =
-    {
-        "ldMI30", "udef", "ldwMI30", "udef", "popM30", "udef", "popwM30", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "ldM1630", "udef", "ldwM1630", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30",
-        "andcfAM30", "orcfAM30", "xorcfAM30", "ldcfAM30", "stcfAM30", "udef", "udef", "udef",
-        "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        //
-        "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        //
-        "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30",
-        "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30",
-        "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30",
-        "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30",
-        "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30",
-        "tset3M30", "tset3M30", "tset3M30", "tset3M30", "tset3M30", "tset3M30", "tset3M30", "tset3M30",
-        "res3M30", "res3M30", "res3M30", "res3M30", "res3M30", "res3M30", "res3M30", "res3M30",
-        "set3M30", "set3M30", "set3M30", "set3M30", "set3M30", "set3M30", "set3M30", "set3M30",
-        //
-        "chg3M30", "chg3M30", "chg3M30", "chg3M30", "chg3M30", "chg3M30", "chg3M30", "chg3M30",
-        "bit3M30", "bit3M30", "bit3M30", "bit3M30", "bit3M30", "bit3M30", "bit3M30", "bit3M30",
-        "jpccM300", "jpccM301", "jpccM302", "jpccM303", "jpccM304", "jpccM305", "jpccM306", "jpccM307",
-        "jpccM308", "jpccM309", "jpccM30A", "jpccM30B", "jpccM30C", "jpccM30D", "jpccM30E", "jpccM30F",
-        "callccM300", "callccM301", "callccM302", "callccM303", "callccM304", "callccM305", "callccM306", "callccM307",
-        "callccM308", "callccM309", "callccM30A", "callccM30B", "callccM30C", "callccM30D", "callccM30E", "callccM30F",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef"
-    };
-
-char *instr_tableC0[256] =
-    {
-        "udef", "udef", "udef", "udef", "pushM00", "udef", "rld00", "rrd00",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "ld16M00", "udef", "udef", "udef", "udef", "udef", "udef",
-        "ldRM00", "ldRM00", "ldRM00", "ldRM00", "ldRM00", "ldRM00", "ldRM00", "ldRM00",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "exMRB00", "exMRB00", "exMRB00", "exMRB00", "exMRB00", "exMRB00", "exMRB00", "exMRB00",
-        "addMI00", "adcMI00", "subMI00", "sbcMI00", "andMI00", "xorMI00", "orMI00", "cpMI00",
-        //
-        "mulRMB00", "mulRMB00", "mulRMB00", "mulRMB00", "mulRMB00", "mulRMB00", "mulRMB00", "mulRMB00",
-        "mulsRMB00", "mulsRMB00", "mulsRMB00", "mulsRMB00", "mulsRMB00", "mulsRMB00", "mulsRMB00", "mulsRMB00",
-        "divRMB00", "divRMB00", "divRMB00", "divRMB00", "divRMB00", "divRMB00", "divRMB00", "divRMB00",
-        "divsRMB00", "divsRMB00", "divsRMB00", "divsRMB00", "divsRMB00", "divsRMB00", "divsRMB00", "divsRMB00",
-        "inc3M00", "inc3M00", "inc3M00", "inc3M00", "inc3M00", "inc3M00", "inc3M00", "inc3M00",
-        "dec3M00", "dec3M00", "dec3M00", "dec3M00", "dec3M00", "dec3M00", "dec3M00", "dec3M00",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "rlcM00", "rrcM00", "rlM00", "rrM00", "slaM00", "sraM00", "sllM00", "srlM00",
-        //
-        "addRMB00", "addRMB00", "addRMB00", "addRMB00", "addRMB00", "addRMB00", "addRMB00", "addRMB00",
-        "addMRB00", "addMRB00", "addMRB00", "addMRB00", "addMRB00", "addMRB00", "addMRB00", "addMRB00",
-        "adcRMB00", "adcRMB00", "adcRMB00", "adcRMB00", "adcRMB00", "adcRMB00", "adcRMB00", "adcRMB00",
-        "adcMRB00", "adcMRB00", "adcMRB00", "adcMRB00", "adcMRB00", "adcMRB00", "adcMRB00", "adcMRB00",
-        "subRMB00", "subRMB00", "subRMB00", "subRMB00", "subRMB00", "subRMB00", "subRMB00", "subRMB00",
-        "subMRB00", "subMRB00", "subMRB00", "subMRB00", "subMRB00", "subMRB00", "subMRB00", "subMRB00",
-        "sbcRMB00", "sbcRMB00", "sbcRMB00", "sbcRMB00", "sbcRMB00", "sbcRMB00", "sbcRMB00", "sbcRMB00",
-        "sbcMRB00", "sbcMRB00", "sbcMRB00", "sbcMRB00", "sbcMRB00", "sbcMRB00", "sbcMRB00", "sbcMRB00",
-        //
-        "andRMB00", "andRMB00", "andRMB00", "andRMB00", "andRMB00", "andRMB00", "andRMB00", "andRMB00",
-        "andMRB00", "andMRB00", "andMRB00", "andMRB00", "andMRB00", "andMRB00", "andMRB00", "andMRB00",
-        "xorRMB00", "xorRMB00", "xorRMB00", "xorRMB00", "xorRMB00", "xorRMB00", "xorRMB00", "xorRMB00",
-        "xorMRB00", "xorMRB00", "xorMRB00", "xorMRB00", "xorMRB00", "xorMRB00", "xorMRB00", "xorMRB00",
-        "orRMB00", "orRMB00", "orRMB00", "orRMB00", "orRMB00", "orRMB00", "orRMB00", "orRMB00",
-        "orMRB00", "orMRB00", "orMRB00", "orMRB00", "orMRB00", "orMRB00", "orMRB00", "orMRB00",
-        "cpRMB00", "cpRMB00", "cpRMB00", "cpRMB00", "cpRMB00", "cpRMB00", "cpRMB00", "cpRMB00",
-        "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00"
-    };
-
-char *instr_tableC8[256] =
-    {
-        "udef", "udef", "udef", "ldrIB", "pushrB", "poprB", "cplrB", "negrB",
-        "mulrIB", "mulsrIB", "divrIB", "divsrIB", "udef", "udef", "udef", "udef",
-        "daar", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "bios", "udef", "djnzB", "udef", "udef", "udef",
-        "andcf4rB", "orcf4rB", "xorcf4rB", "ldcf4rB", "stcf4rB", "udef", "udef", "udef",
-        "andcfArB", "orcfArB", "xorcfArB", "ldcfArB", "stcfArB", "udef", "ldccrB", "ldcrcB",
-        "res4rB", "set4rB", "chg4rB", "bit4rB", "tset4rB", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        //
-        "mulRrB", "mulRrB", "mulRrB", "mulRrB", "mulRrB", "mulRrB", "mulRrB", "mulRrB",
-        "mulsRrB", "mulsRrB", "mulsRrB", "mulsRrB", "mulsRrB", "mulsRrB", "mulsRrB", "mulsRrB",
-        "divRrB", "divRrB", "divRrB", "divRrB", "divRrB", "divRrB", "divRrB", "divRrB",
-        "divsRrB", "divsRrB", "divsRrB", "divsRrB", "divsRrB", "divsRrB", "divsRrB", "divsRrB",
-        "inc3rB", "inc3rB", "inc3rB", "inc3rB", "inc3rB", "inc3rB", "inc3rB", "inc3rB",
-        "dec3rB", "dec3rB", "dec3rB", "dec3rB", "dec3rB", "dec3rB", "dec3rB", "dec3rB",
-        "sccB0", "sccB1", "sccB2", "sccB3", "sccB4", "sccB5", "sccB6", "sccB7",
-        "sccB8", "sccB9", "sccBA", "sccBB", "sccBC", "sccBD", "sccBE", "sccBF",
-        //
-        "addRrB", "addRrB", "addRrB", "addRrB", "addRrB", "addRrB", "addRrB", "addRrB",
-        "ldRrB", "ldRrB", "ldRrB", "ldRrB", "ldRrB", "ldRrB", "ldRrB", "ldRrB",
-        "adcRrB", "adcRrB", "adcRrB", "adcRrB", "adcRrB", "adcRrB", "adcRrB", "adcRrB",
-        "ldrRB", "ldrRB", "ldrRB", "ldrRB", "ldrRB", "ldrRB", "ldrRB", "ldrRB",
-        "subRrB", "subRrB", "subRrB", "subRrB", "subRrB", "subRrB", "subRrB", "subRrB",
-        "ldr3B", "ldr3B", "ldr3B", "ldr3B", "ldr3B", "ldr3B", "ldr3B", "ldr3B",
-        "sbcRrB", "sbcRrB", "sbcRrB", "sbcRrB", "sbcRrB", "sbcRrB", "sbcRrB", "sbcRrB",
-        "exRrB", "exRrB", "exRrB", "exRrB", "exRrB", "exRrB", "exRrB", "exRrB",
-        //
-        "andRrB", "andRrB", "andRrB", "andRrB", "andRrB", "andRrB", "andRrB", "andRrB",
-        "addrIB", "adcrIB", "subrIB", "sbcrIB", "andrIB", "xorrIB", "orrIB", "cprIB",
-        "xorRrB", "xorRrB", "xorRrB", "xorRrB", "xorRrB", "xorRrB", "xorRrB", "xorRrB",
-        "cpr3B", "cpr3B", "cpr3B", "cpr3B", "cpr3B", "cpr3B", "cpr3B", "cpr3B",
-        "orRrB", "orRrB", "orRrB", "orRrB", "orRrB", "orRrB", "orRrB", "orRrB",
-        "rlc4rB", "rrc4rB", "rl4rB", "rr4rB", "sla4rB", "sra4rB", "sll4rB", "srl4rB",
-        "cpRrB", "cpRrB", "cpRrB", "cpRrB", "cpRrB", "cpRrB", "cpRrB", "cpRrB",
-        "rlcArB", "rrcArB", "rlArB", "rrArB", "slaArB", "sraArB", "sllArB", "srlArB"
-    };
-
-char *instr_tableD0[256] =
-    {
-        "udef", "udef", "udef", "udef", "pushwM10", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "ldw16M10", "udef", "udef", "udef", "udef", "udef", "udef",
-        "ldRM10", "ldRM10", "ldRM10", "ldRM10", "ldRM10", "ldRM10", "ldRM10", "ldRM10",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "exMRW10", "exMRW10", "exMRW10", "exMRW10", "exMRW10", "exMRW10", "exMRW10", "exMRW10",
-        "addwMI10", "adcwMI10", "subwMI10", "sbcwMI10", "andwMI10", "xorwMI10", "orwMI10", "cpwMI10",
-        //
-        "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10",
-        "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10",
-        "divRMW10", "divRMW10", "divRMW10", "divRMW10", "divRMW10", "divRMW10", "divRMW10", "divRMW10",
-        "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10",
-        "incw3M10", "incw3M10", "incw3M10", "incw3M10", "incw3M10", "incw3M10", "incw3M10", "incw3M10",
-        "decw3M10", "decw3M10", "decw3M10", "decw3M10", "decw3M10", "decw3M10", "decw3M10", "decw3M10",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "rlcwM10", "rrcwM10", "rlwM10", "rrwM10", "slawM10", "srawM10", "sllwM10", "srlwM10",
-        //
-        "addRMW10", "addRMW10", "addRMW10", "addRMW10", "addRMW10", "addRMW10", "addRMW10", "addRMW10",
-        "addMRW10", "addMRW10", "addMRW10", "addMRW10", "addMRW10", "addMRW10", "addMRW10", "addMRW10",
-        "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10",
-        "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10",
-        "subRMW10", "subRMW10", "subRMW10", "subRMW10", "subRMW10", "subRMW10", "subRMW10", "subRMW10",
-        "subMRW10", "subMRW10", "subMRW10", "subMRW10", "subMRW10", "subMRW10", "subMRW10", "subMRW10",
-        "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10",
-        "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10",
-        //
-        "andRMW10", "andRMW10", "andRMW10", "andRMW10", "andRMW10", "andRMW10", "andRMW10", "andRMW10",
-        "andMRW10", "andMRW10", "andMRW10", "andMRW10", "andMRW10", "andMRW10", "andMRW10", "andMRW10",
-        "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10",
-        "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10",
-        "orRMW10", "orRMW10", "orRMW10", "orRMW10", "orRMW10", "orRMW10", "orRMW10", "orRMW10",
-        "orMRW10", "orMRW10", "orMRW10", "orMRW10", "orMRW10", "orMRW10", "orMRW10", "orMRW10",
-        "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10",
-        "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10"
-    };
-
-char *instr_tableD8[256] =
-    {
-        "udef", "udef", "udef", "ldrIW", "pushrW", "poprW", "cplrW", "negrW",
-        "mulrIW", "mulsrIW", "divrIW", "divsrIW", "udef", "udef", "bs1f", "bs1b",
-        "udef", "udef", "extzrW", "extsrW", "paarW", "udef", "mirrr", "udef",
-        "udef", "mular", "udef", "udef", "djnzW", "udef", "udef", "udef",
-        "andcf4rW", "orcf4rW", "xorcf4rW", "ldcf4rW", "stcf4rW", "udef", "udef", "udef",
-        "andcfArW", "orcfArW", "xorcfArW", "ldcfArW", "stcfArW", "udef", "ldccrW", "ldcrcW",
-        "res4rW", "set4rW", "chg4rW", "bit4rW", "tset4rW", "udef", "udef", "udef",
-        "minc1", "minc2", "minc4", "udef", "mdec1", "mdec2", "mdec4", "udef",
-        //
-        "mulRrW", "mulRrW", "mulRrW", "mulRrW", "mulRrW", "mulRrW", "mulRrW", "mulRrW",
-        "mulsRrW", "mulsRrW", "mulsRrW", "mulsRrW", "mulsRrW", "mulsRrW", "mulsRrW", "mulsRrW",
-        "divRrW", "divRrW", "divRrW", "divRrW", "divRrW", "divRrW", "divRrW", "divRrW",
-        "divsRrW", "divsRrW", "divsRrW", "divsRrW", "divsRrW", "divsRrW", "divsRrW", "divsRrW",
-        "inc3rW", "inc3rW", "inc3rW", "inc3rW", "inc3rW", "inc3rW", "inc3rW", "inc3rW",
-        "dec3rW", "dec3rW", "dec3rW", "dec3rW", "dec3rW", "dec3rW", "dec3rW", "dec3rW",
-        "sccW0", "sccW1", "sccW2", "sccW3", "sccW4", "sccW5", "sccW6", "sccW7",
-        "sccW8", "sccW9", "sccWA", "sccWB", "sccWC", "sccWD", "sccWE", "sccWF",
-        //
-        "addRrW", "addRrW", "addRrW", "addRrW", "addRrW", "addRrW", "addRrW", "addRrW",
-        "ldRrW", "ldRrW", "ldRrW", "ldRrW", "ldRrW", "ldRrW", "ldRrW", "ldRrW",
-        "adcRrW", "adcRrW", "adcRrW", "adcRrW", "adcRrW", "adcRrW", "adcRrW", "adcRrW",
-        "ldrRW", "ldrRW", "ldrRW", "ldrRW", "ldrRW", "ldrRW", "ldrRW", "ldrRW",
-        "subRrW", "subRrW", "subRrW", "subRrW", "subRrW", "subRrW", "subRrW", "subRrW",
-        "ldr3W", "ldr3W", "ldr3W", "ldr3W", "ldr3W", "ldr3W", "ldr3W", "ldr3W",
-        "sbcRrW", "sbcRrW", "sbcRrW", "sbcRrW", "sbcRrW", "sbcRrW", "sbcRrW", "sbcRrW",
-        "exRrW", "exRrW", "exRrW", "exRrW", "exRrW", "exRrW", "exRrW", "exRrW",
-        //
-        "andRrW", "andRrW", "andRrW", "andRrW", "andRrW", "andRrW", "andRrW", "andRrW",
-        "addrIW", "adcrIW", "subrIW", "sbcrIW", "andrIW", "xorrIW", "orrIW", "cprIW",
-        "xorRrW", "xorRrW", "xorRrW", "xorRrW", "xorRrW", "xorRrW", "xorRrW", "xorRrW",
-        "cpr3W", "cpr3W", "cpr3W", "cpr3W", "cpr3W", "cpr3W", "cpr3W", "cpr3W",
-        "orRrW", "orRrW", "orRrW", "orRrW", "orRrW", "orRrW", "orRrW", "orRrW",
-        "rlc4rW", "rrc4rW", "rl4rW", "rr4rW", "sla4rW", "sra4rW", "sll4rW", "srl4rW",
-        "cpRrW", "cpRrW", "cpRrW", "cpRrW", "cpRrW", "cpRrW", "cpRrW", "cpRrW",
-        "rlcArW", "rrcArW", "rlArW", "rrArW", "slaArW", "sraArW", "sllArW", "srlArW"
-    };
-
-char *instr_tableE0[256] =
-    {
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "ldRM20", "ldRM20", "ldRM20", "ldRM20", "ldRM20", "ldRM20", "ldRM20", "ldRM20",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        //
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef ", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        //
-        "addRML20", "addRML20", "addRML20", "addRML20", "addRML20", "addRML20", "addRML20", "addRML20",
-        "addMRL20", "addMRL20", "addMRL20", "addMRL20", "addMRL20", "addMRL20", "addMRL20", "addMRL20",
-        "adcRML20", "adcRML20", "adcRML20", "adcRML20", "adcRML20", "adcRML20", "adcRML20", "adcRML20",
-        "adcMRL20", "adcMRL20", "adcMRL20", "adcMRL20", "adcMRL20", "adcMRL20", "adcMRL20", "adcMRL20",
-        "subRML20", "subRML20", "subRML20", "subRML20", "subRML20", "subRML20", "subRML20", "subRML20",
-        "subMRL20", "subMRL20", "subMRL20", "subMRL20", "subMRL20", "subMRL20", "subMRL20", "subMRL20",
-        "sbcRML20", "sbcRML20", "sbcRML20", "sbcRML20", "sbcRML20", "sbcRML20", "sbcRML20", "sbcRML20",
-        "sbcMRL20", "sbcMRL20", "sbcMRL20", "sbcMRL20", "sbcMRL20", "sbcMRL20", "sbcMRL20", "sbcMRL20",
-        //
-        "andRML20", "andRML20", "andRML20", "andRML20", "andRML20", "andRML20", "andRML20", "andRML20",
-        "andMRL20", "andMRL20", "andMRL20", "andMRL20", "andMRL20", "andMRL20", "andMRL20", "andMRL20",
-        "xorRML20", "xorRML20", "xorRML20", "xorRML20", "xorRML20", "xorRML20", "xorRML20", "xorRML20",
-        "xorMRL20", "xorMRL20", "xorMRL20", "xorMRL20", "xorMRL20", "xorMRL20", "xorMRL20", "xorMRL20",
-        "orRML20", "orRML20", "orRML20", "orRML20", "orRML20", "orRML20", "orRML20", "orRML20",
-        "orMRL20", "orMRL20", "orMRL20", "orMRL20", "orMRL20", "orMRL20", "orMRL20", "orMRL20",
-        "cpRML20", "cpRML20", "cpRML20", "cpRML20", "cpRML20", "cpRML20", "cpRML20", "cpRML20",
-        "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20"
-    };
-
-char *instr_tableE8[256] =
-    {
-        "udef", "udef", "udef", "ldrIL", "pushrL", "poprL", "udef", "udef",
-        "udef", "udef", "udef", "udef", "link", "unlk", "udef", "udef",
-        "udef", "udef", "extzrL", "extsrL", "paarL", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "ldccrL", "ldcrcL",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        //
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "inc3rL", "inc3rL", "inc3rL", "inc3rL", "inc3rL", "inc3rL", "inc3rL", "inc3rL",
-        "dec3rL", "dec3rL", "dec3rL", "dec3rL", "dec3rL", "dec3rL", "dec3rL", "dec3rL",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        //
-        "addRrL", "addRrL", "addRrL", "addRrL", "addRrL", "addRrL", "addRrL", "addRrL",
-        "ldRrL", "ldRrL", "ldRrL", "ldRrL", "ldRrL", "ldRrL", "ldRrL", "ldRrL",
-        "adcRrL", "adcRrL", "adcRrL", "adcRrL", "adcRrL", "adcRrL", "adcRrL", "adcRrL",
-        "ldrRL", "ldrRL", "ldrRL", "ldrRL", "ldrRL", "ldrRL", "ldrRL", "ldrRL",
-        "subRrL", "subRrL", "subRrL", "subRrL", "subRrL", "subRrL", "subRrL", "subRrL",
-        "ldr3L", "ldr3L", "ldr3L", "ldr3L", "ldr3L", "ldr3L", "ldr3L", "ldr3L",
-        "sbcRrL", "sbcRrL", "sbcRrL", "sbcRrL", "sbcRrL", "sbcRrL", "sbcRrL", "sbcRrL",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        //
-        "andRrL", "andRrL", "andRrL", "andRrL", "andRrL", "andRrL", "andRrL", "andRrL",
-        "addrIL", "adcrIL", "subrIL", "sbcrIL", "andrIL", "xorrIL", "orrIL", "cprIL",
-        "xorRrL", "xorRrL", "xorRrL", "xorRrL", "xorRrL", "xorRrL", "xorRrL", "xorRrL",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "orRrL", "orRrL", "orRrL", "orRrL", "orRrL", "orRrL", "orRrL", "orRrL",
-        "rlc4rL", "rrc4rL", "rl4rL", "rr4rL", "sla4rL", "sra4rL", "sll4rL", "srl4rL",
-        "cpRrL", "cpRrL", "cpRrL", "cpRrL", "cpRrL", "cpRrL", "cpRrL", "cpRrL",
-        "rlcArL", "rrcArL", "rlArL", "rrArL", "slaArL", "sraArL", "sllArL", "srlArL"
-    };
-
-char *instr_tableF0[256] =
-    {
-        "ldMI30", "udef", "ldwMI30", "udef", "popM30", "udef", "popwM30", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "ldM1630", "udef", "ldwM1630", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30",
-        "andcfAM30", "orcfAM30", "xorcfAM30", "ldcfAM30", "stcfAM30", "udef", "udef", "udef",
-        "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        //
-        "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        //
-        "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30",
-        "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30",
-        "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30",
-        "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30",
-        "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30",
-        "tset3M30", "tset3M30", "tset3M30", "tset3M30", "tset3M30", "tset3M30", "tset3M30", "tset3M30",
-        "res3M30", "res3M30", "res3M30", "res3M30", "res3M30", "res3M30", "res3M30", "res3M30",
-        "set3M30", "set3M30", "set3M30", "set3M30", "set3M30", "set3M30", "set3M30", "set3M30",
-        //
-        "chg3M30", "chg3M30", "chg3M30", "chg3M30", "chg3M30", "chg3M30", "chg3M30", "chg3M30",
-        "bit3M30", "bit3M30", "bit3M30", "bit3M30", "bit3M30", "bit3M30", "bit3M30", "bit3M30",
-        "jpccM300", "jpccM301", "jpccM302", "jpccM303", "jpccM304", "jpccM305", "jpccM306", "jpccM307",
-        "jpccM308", "jpccM309", "jpccM30A", "jpccM30B", "jpccM30C", "jpccM30D", "jpccM30E", "jpccM30F",
-        "callccM300", "callccM301", "callccM302", "callccM303", "callccM304", "callccM305", "callccM306", "callccM307",
-        "callccM308", "callccM309", "callccM30A", "callccM30B", "callccM30C", "callccM30D", "callccM30E", "callccM30F",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef"
-    };
-
-void initTlcs900hProfile(void)
-{
-    memset(profile, 0, 256 * sizeof(profStruct));
-}
-
-void printTlcs900hProfile(void)
-{
-    FILE *profileFile;
-    profileFile = fopen("profile.csv", "wt");
-    if(!profileFile)
-    {
-        fprintf(stderr, "Couldn't open %s file\n", "profile.csv");
-        return;
-    }
-
-    fprintf(profileFile, "Opcode, Calls, Ticks, TicksPerCall, Name\n");
-    for(int op=0; op < 256; op++)
-    {
-        fprintf(profileFile, "0x%02X, %9d, %9d, %f, %s\n",
-                op, profile[op].calls, profile[op].ticks, profile[op].calls?((double)profile[op].ticks)/((double)profile[op].calls):0, instr_names[op]);
-    }
-
-    unsigned char decodes[13] = {0x80,0x90,0x98,0xa0,0xb0,0xb8,0xc0,0xc8,0xd0,0xd8,0xe0,0xe8,0xf0};
-    char** decodestr[13] = {instr_table80,instr_table90,instr_table98,instr_tableA0,
-                            instr_tableB0,instr_tableB8,instr_tableC0,instr_tableC8,
-                            instr_tableD0,instr_tableD8,instr_tableE0,instr_tableE8,
-                            instr_tableF0};
-    fprintf(profileFile, "\nDecodes\n");
-    for(int d=0; d < 13; d++)
-    {
-        fprintf(profileFile, "\nDecode 0x%02X\n",decodes[d]);
-        for(int sub=0; sub < 256; sub++)
-            if (profile[decodes[d]].decode[sub])
-            {
-                fprintf(profileFile, "0x%02X, %s, %9d\n",sub, decodestr[d][sub], profile[decodes[d]].decode[sub]);
-            }
-    }
-
-    fclose(profileFile);
-}
 #endif
 
 // declare all registers
@@ -7744,9 +7142,6 @@ int decode80()  // (XWA) (XBC) (XDE) (XHL) (XIX) (XIY) (XIZ) (XSP) scr.B
     mem = *cregsL[opcode&7];
     memB = mem_readB(mem);
     lastbyte = readbyte();
-#ifdef TCLS900H_PROFILING
-    profile[0x80].decode[lastbyte]++;
-#endif
     return decode_table80[lastbyte]();
 }
 
@@ -7755,9 +7150,6 @@ int decode88()  // (XWA+d) (XBC+d) (XDE+d) (XHL+d) (XIX+d) (XIY+d) (XIZ+d) (XSP+
     mem = (*cregsL[opcode&7])+(signed char)readbyteSetLastbyte();
     memB = mem_readB(mem);
     //lastbyte = readbyte();
-#ifdef TCLS900H_PROFILING
-    profile[0x80].decode[lastbyte]++;
-#endif
     return 2 + decode_table80[lastbyte]();
 }
 
@@ -7766,9 +7158,6 @@ int decode90()  // (XWA) (XBC) (XDE) (XHL) (XIX) (XIY) (XIZ) (XSP) scr.W
     mem = *cregsL[opcode&7];
     memW = mem_readW(mem);
     lastbyte = readbyte();
-#ifdef TCLS900H_PROFILING
-    profile[0x90].decode[lastbyte]++;
-#endif
     return decode_table90[lastbyte]();
 }
 
@@ -7777,9 +7166,6 @@ int decode98()  // (XWA+d) (XBC+d) (XDE+d) (XHL+d) (XIX+d) (XIY+d) (XIZ+d) (XSP+
     mem = (*cregsL[opcode&7])+(signed char)readbyteSetLastbyte();
     memW = mem_readW(mem);
     //lastbyte = readbyte();
-#ifdef TCLS900H_PROFILING
-    profile[0x98].decode[lastbyte]++;
-#endif
     return 2 + decode_table98[lastbyte]();
 }
 
@@ -7788,9 +7174,6 @@ int decodeA0()  // (XWA) (XBC) (XDE) (XHL) (XIX) (XIY) (XIZ) (XSP) scr.L
     mem = *cregsL[opcode&7];
     memL = mem_readL(mem);
     lastbyte = readbyte();
-#ifdef TCLS900H_PROFILING
-    profile[0xa0].decode[lastbyte]++;
-#endif
     return decode_tableA0[lastbyte]();
 }
 
@@ -7799,9 +7182,6 @@ int decodeA8()  // (XWA+d) (XBC+d) (XDE+d) (XHL+d) (XIX+d) (XIY+d) (XIZ+d) (XSP+
     mem = (*cregsL[opcode&7])+(signed char)readbyteSetLastbyte();
     memL = mem_readL(mem);
     //lastbyte = readbyte();
-#ifdef TCLS900H_PROFILING
-    profile[0xa0].decode[lastbyte]++;
-#endif
     return 2 + decode_tableA0[lastbyte]();
 }
 
@@ -7809,9 +7189,6 @@ int decodeB0()  // (XWA) (XBC) (XDE) (XHL) (XIX) (XIY) (XIZ) (XSP) dst
 {
     mem = *cregsL[opcode&7];
     lastbyte = readbyte();
-#ifdef TCLS900H_PROFILING
-    profile[0xb0].decode[lastbyte]++;
-#endif
     return decode_tableB0[lastbyte]();
 }
 
@@ -7819,9 +7196,6 @@ int decodeB8()  // (XWA+d) (XBC+d) (XDE+d) (XHL+d) (XIX+d) (XIY+d) (XIZ+d) (XSP+
 {
     mem = (*cregsL[opcode&7])+(signed char)readbyteSetLastbyte();
     //lastbyte = readbyte();
-#ifdef TCLS900H_PROFILING
-    profile[0xb8].decode[lastbyte]++;
-#endif
     return 2 + decode_tableB8[lastbyte]();
 }
 
@@ -7829,9 +7203,6 @@ int decodeBB()  // (XWA+d) (XBC+d) (XDE+d) (XHL+d) (XIX+d) (XIY+d) (XIZ+d) (XSP+
 {
     mem = (*cregsL[opcode&7])+(signed char)readbyteSetLastbyte();
     //lastbyte = readbyte();
-#ifdef TCLS900H_PROFILING
-    profile[0xb8].decode[lastbyte]++;
-#endif
     return 2 + decode_tableB8[lastbyte]();
 }
 
@@ -7839,9 +7210,6 @@ int decodeC0()  // (n)                scr.B
 {
     mem = readbyteSetLastbyte();
     memB = mem_readB(mem);
-#ifdef TCLS900H_PROFILING
-    profile[0xc0].decode[lastbyte]++;
-#endif
     return 2 + decode_tableC0[lastbyte]();
 }
 
@@ -7849,9 +7217,6 @@ int decodeC1()  //   (nn)             scr.B
 {
     mem = readwordSetLastbyte();
     memB = mem_readB(mem);
-#ifdef TCLS900H_PROFILING
-    profile[0xc0].decode[lastbyte]++;
-#endif
     return 2 + decode_tableC0[lastbyte]();
 }
 
@@ -7859,9 +7224,6 @@ int decodeC2()  //     (nnn)           scr.B
 {
     mem = read24SetLastbyte();
     memB = mem_readB(mem);
-#ifdef TCLS900H_PROFILING
-    profile[0xc0].decode[lastbyte]++;
-#endif
     return 3 + decode_tableC0[lastbyte]();
 }
 
@@ -7909,9 +7271,6 @@ int decodeC3()  //       (mem)         scr.B
     }
     memB = mem_readB(mem);
     lastbyte = readbyte();
-#ifdef TCLS900H_PROFILING
-    profile[0xc0].decode[lastbyte]++;
-#endif
     return retval + decode_tableC0[lastbyte]();
 }
 
@@ -7922,9 +7281,6 @@ int decodeC4()  //         (-xrr)       scr.B
     mem = ((*allregsL[reg])-= 1<<(reg&3));  // pre-decrement
     memB = mem_readB(mem);
     //lastbyte = readbyte();
-#ifdef TCLS900H_PROFILING
-    profile[0xc0].decode[lastbyte]++;
-#endif
     return 3 + decode_tableC0[lastbyte]();
 }
 
@@ -7936,9 +7292,6 @@ int decodeC5()  //           (xrr+)     scr.B
     memB = mem_readB(mem);
     *allregsL[reg]+= 1<<(reg&3);    // post-increment
     //lastbyte = readbyte();
-#ifdef TCLS900H_PROFILING
-    profile[0xc0].decode[lastbyte]++;
-#endif
     return 3 + decode_tableC0[lastbyte]();
 }
 
@@ -7946,9 +7299,6 @@ int decodeC7()  // r                reg.B
 {
     regB = allregsB[readbyteSetLastbyte()];
     //lastbyte = readbyte();
-#ifdef TCLS900H_PROFILING
-    profile[0xc8].decode[lastbyte]++;
-#endif
     return 1 + decode_tableC8[lastbyte]();
 }
 
@@ -7956,9 +7306,6 @@ int decodeC8()  // W  A  B  C  D  E  H  L  reg.B
 {
     regB = cregsB[opcode&7];
     lastbyte = readbyte();
-#ifdef TCLS900H_PROFILING
-    profile[0xc8].decode[lastbyte]++;
-#endif
     return decode_tableC8[lastbyte]();
 }
 
@@ -7967,9 +7314,6 @@ int decodeD0()  // (n)                scr.W
     mem = readbyteSetLastbyte();
     memW = mem_readW(mem);
     //lastbyte = readbyte();
-#ifdef TCLS900H_PROFILING
-    profile[0xd0].decode[lastbyte]++;
-#endif
     return 2 + decode_tableD0[lastbyte]();
 }
 
@@ -7978,9 +7322,6 @@ int decodeD1()  //   (nn)             scr.W
     mem = readwordSetLastbyte();
     memW = mem_readW(mem);
     //lastbyte = readbyte();
-#ifdef TCLS900H_PROFILING
-    profile[0xd0].decode[lastbyte]++;
-#endif
     return 2 + decode_tableD0[lastbyte]();
 }
 
@@ -7989,9 +7330,6 @@ int decodeD2()  //     (nnn)           scr.W
     mem = read24SetLastbyte();
     memW = mem_readW(mem);
     //lastbyte = readbyte();
-#ifdef TCLS900H_PROFILING
-    profile[0xd0].decode[lastbyte]++;
-#endif
     return 3 + decode_tableD0[lastbyte]();
 }
 
@@ -8039,9 +7377,6 @@ int decodeD3()  //       (mem)         scr.W
     }
     memW = mem_readW(mem);
     lastbyte = readbyte();
-#ifdef TCLS900H_PROFILING
-    profile[0xd0].decode[lastbyte]++;
-#endif
     return retval + decode_tableD0[lastbyte]();
 }
 
@@ -8052,9 +7387,6 @@ int decodeD4()  //         (-xrr)       scr.W
     mem = ((*allregsL[reg])-= 1<<(reg&3)); // pre-decrement
     memW = mem_readW(mem);
     //lastbyte = readbyte();
-#ifdef TCLS900H_PROFILING
-    profile[0xd0].decode[lastbyte]++;
-#endif
     return 3 + decode_tableD0[lastbyte]();
 }
 
@@ -8066,9 +7398,6 @@ int decodeD5()  //           (xrr+)     scr.W
     memW = mem_readW(mem);
     *allregsL[reg]+= 1<<(reg&3);   // post-increment
     //lastbyte = readbyte();
-#ifdef TCLS900H_PROFILING
-    profile[0xd0].decode[lastbyte]++;
-#endif
     return 3 + decode_tableD0[lastbyte]();
 }
 
@@ -8076,9 +7405,6 @@ int decodeD7()  // r                reg.W
 {
     regW = allregsW[readbyteSetLastbyte()];
     //lastbyte = readbyte();
-#ifdef TCLS900H_PROFILING
-    profile[0xd8].decode[lastbyte]++;
-#endif
     return 1 + decode_tableD8[lastbyte]();
 }
 
@@ -8086,9 +7412,6 @@ int decodeD8()  // WA  BC  DE  HL  IX  IY  IZ  SP  reg.W
 {
     regW = cregsW[opcode&7];
     lastbyte = readbyte();
-#ifdef TCLS900H_PROFILING
-    profile[0xd8].decode[lastbyte]++;
-#endif
     return decode_tableD8[lastbyte]();
 }
 
@@ -8097,9 +7420,6 @@ int decodeE0()  // (n)                scr.L
     mem = readbyteSetLastbyte();
     memL = mem_readL(mem);
     //lastbyte = readbyte();
-#ifdef TCLS900H_PROFILING
-    profile[0xe0].decode[lastbyte]++;
-#endif
     return 2 + decode_tableE0[lastbyte]();
 }
 
@@ -8108,9 +7428,6 @@ int decodeE1()  //   (nn)             scr.L
     mem = readwordSetLastbyte();
     memL = mem_readL(mem);
     //lastbyte = readbyte();
-#ifdef TCLS900H_PROFILING
-    profile[0xe0].decode[lastbyte]++;
-#endif
     return 2 + decode_tableE0[lastbyte]();
 }
 
@@ -8119,9 +7436,6 @@ int decodeE2()  //     (nnn)           scr.L
     mem = read24SetLastbyte();
     memL = mem_readL(mem);
     //lastbyte = readbyte();
-#ifdef TCLS900H_PROFILING
-    profile[0xe0].decode[lastbyte]++;
-#endif
     return 3 + decode_tableE0[lastbyte]();
 }
 
@@ -8169,9 +7483,6 @@ int decodeE3()  //       (mem)         scr.L
     }
     memL = mem_readL(mem);
     lastbyte = readbyte();
-#ifdef TCLS900H_PROFILING
-    profile[0xe0].decode[lastbyte]++;
-#endif
     return retval + decode_tableE0[lastbyte]();
 }
 
@@ -8182,9 +7493,6 @@ int decodeE4()  //         (-xrr)       scr.L
     mem = ((*allregsL[reg])-= 1<<(reg&3)); // pre-decrement
     memL = mem_readL(mem);
     //lastbyte = readbyte();
-#ifdef TCLS900H_PROFILING
-    profile[0xe0].decode[lastbyte]++;
-#endif
     return 3 + decode_tableE0[lastbyte]();
 }
 
@@ -8196,56 +7504,38 @@ int decodeE5()  //           (xrr+)     scr.L
     memL = mem_readL(mem);
     *allregsL[reg]+= 1<<(reg&3);   // post-increment
     //lastbyte = readbyte();
-#ifdef TCLS900H_PROFILING
-    profile[0xe0].decode[lastbyte]++;
-#endif
     return 3 + decode_tableE0[lastbyte]();
 }
 
-int decodeE7()  // r                reg.L
+int decodeE7(void)  // r                reg.L
 {
     regL = allregsL[readbyteSetLastbyte()];
     //lastbyte = readbyte();
-#ifdef TCLS900H_PROFILING
-    profile[0xe8].decode[lastbyte]++;
-#endif
     return 1 + decode_tableE8[lastbyte]();
 }
 
-int decodeE8()  // XWA  XBC  XDE  XHL  XIX  XIY  XIZ  XSP  reg.L
+int decodeE8(void)  // XWA  XBC  XDE  XHL  XIX  XIY  XIZ  XSP  reg.L
 {
     regL = cregsL[opcode&7];
     lastbyte = readbyte();
-#ifdef TCLS900H_PROFILING
-    profile[0xe8].decode[lastbyte]++;
-#endif
     return decode_tableE8[lastbyte]();
 }
 
 int decodeF0()  // (n)                dst
 {
     mem = readbyteSetLastbyte();
-#ifdef TCLS900H_PROFILING
-    profile[0xf0].decode[lastbyte]++;
-#endif
     return 2 + decode_tableF0[lastbyte]();
 }
 
 int decodeF1(void)  //   (nn)             dst
 {
    mem = readwordSetLastbyte();
-#ifdef TCLS900H_PROFILING
-   profile[0xf0].decode[lastbyte]++;
-#endif
    return 2 + decode_tableF0[lastbyte]();
 }
 
 int decodeF2(void)  //     (nnn)           dst
 {
    mem = read24SetLastbyte();
-#ifdef TCLS900H_PROFILING
-   profile[0xf0].decode[lastbyte]++;
-#endif
    return 3 + decode_tableF0[lastbyte]();
 }
 
@@ -8292,9 +7582,6 @@ int decodeF3(void)  //       (mem)         dst
          }
    }
    lastbyte = readbyte();
-#ifdef TCLS900H_PROFILING
-   profile[0xf0].decode[lastbyte]++;
-#endif
    return retval + decode_tableF0[lastbyte]();
 }
 
@@ -8304,9 +7591,6 @@ int decodeF4(void)  //         (-xrr)       dst
 
     reg = readbyteSetLastbyte();
     mem = (*allregsL[reg]-= 1<<(reg&3));
-#ifdef TCLS900H_PROFILING
-    profile[0xf0].decode[lastbyte]++;
-#endif
     return 3 + decode_tableF0[lastbyte]();
 }
 
@@ -8317,9 +7601,6 @@ int decodeF5(void)  //           (xrr+)     dst
 
    reg = readbyteSetLastbyte();
    mem = (*allregsL[reg]);
-#ifdef TCLS900H_PROFILING
-   profile[0xf0].decode[lastbyte]++;
-#endif
    retval = 3 + decode_tableF0[lastbyte]();
    *allregsL[reg]+= 1<<(reg&3);
    return retval;
@@ -8368,11 +7649,6 @@ int (*instr_table[256])()=
 void tlcs_init(void)
 {
     int i,j;
-
-#ifdef TCLS900H_PROFILING
-
-    initTlcs900hProfile();
-#endif
 
     // flags tables initialisation
     for (i = 0; i < 256; i++)
@@ -9059,10 +8335,6 @@ static void tlcsTI0(void)
 static int tlcs_step(void)
 {
     int clocks = DMAstate;
-#ifdef TCLS900H_PROFILING
-
-    unsigned int startTime = 0;
-#endif
 
     DMAstate = 0;
     memoryCycles = 0;
@@ -9107,18 +8379,7 @@ static int tlcs_step(void)
     //printf("tlcs_step: PC=0x%X opcode=0x%X\n", gen_regsPC-1, opcode);
 
 
-#ifdef TCLS900H_PROFILING
-
-    startTime = SDL_GetTicks();
-#endif
-
     clocks+= instr_table[opcode]();
-
-#ifdef TCLS900H_PROFILING
-
-    profile[opcode].ticks += SDL_GetTicks() - startTime;
-    profile[opcode].calls++;
-#endif
 
     clocks+= memoryCycles;
 
@@ -9165,11 +8426,6 @@ void tlcs_execute(int cycles)
 #endif
 #endif
 
-#ifdef TCLS900H_PROFILING
-
-    static unsigned int steps=1;
-#endif
-
     while(cycles > 0)
     {
         /* AKTODO */
@@ -9195,15 +8451,6 @@ void tlcs_execute(int cycles)
         hCounter-= elapsed;
 #if 0
         *ngpScX = hCounter>>2;
-#endif
-
-#ifdef TCLS900H_PROFILING
-
-        if(steps++ == 25000000)
-        {
-            m_bIsActive = false;
-            break;
-        }
 #endif
 
         if (hCounter < 0)
@@ -9283,8 +8530,4 @@ void ngpc_run(void)
 #endif
 
     }
-
-#ifdef TCLS900H_PROFILING
-    printTlcs900hProfile();
-#endif
 }
