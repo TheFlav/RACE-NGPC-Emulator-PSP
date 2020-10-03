@@ -16,9 +16,16 @@
 #ifndef _STATE_H
 #define _STATE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int state_get_size(void);
 int state_store_mem(void *state);
 int state_restore_mem(void *state);
 
-#endif /* _STATE_H */
+#ifdef __cplusplus
+}
+#endif
 
+#endif /* _STATE_H */
