@@ -118,7 +118,9 @@ Cz80_Exec:
     {
         Opcode = REAL_FETCH_BYTE;
 Cz80_Exec_direct:
+        {
         union16 *data = pzHL;
         #include "cz80_op.inc"
+     }
     }
 }

@@ -2,13 +2,8 @@
 #include<stdlib.h>
 #include<string.h>
 
-//#include "driver.h"
-//#include "cpuintrf.h"
 #include "race-memory.h"
-//#include "z80/z80.h"
 #include "cz80.h"
-
-// #include "hack.h"
 
 unsigned char *mame4all_cz80_rom = &mainram[0x3000];
 unsigned char *mame4all_cz80_ram = &mainram[0x3000];
@@ -16,35 +11,15 @@ unsigned char *mame4all_cz80_ram = &mainram[0x3000];
 cz80_struc RACE_cz80_struc_alloc;
 cz80_struc *RACE_cz80_struc=&RACE_cz80_struc_alloc;
 
-void Z80_Init()
+void Z80_Init(void)
 {
 	Cz80_Init(RACE_cz80_struc);
 }
 
-void Z80_Reset()
+void Z80_Reset(void)
 {
-	//unsigned *ctx=(unsigned *)(((unsigned)cpu_getcontext(cpu_getactivecpu())));
-
-	//RACE_cz80_struc=(cz80_struc *)&ctx[4];
-
-	//Cz80_Init(RACE_cz80_struc);
 	Cz80_Reset(RACE_cz80_struc);
-
-	//ctx[0]=(unsigned)Cz80_Get_PC(RACE_cz80_struc);
 }
-
-/*void Z80_GetRegs(Z80_Regs *Regs)
-{
-	unsigned *ctx=(unsigned *)Regs;
-	ctx[0] = (unsigned)Cz80_Get_PC(RACE_cz80_struc);
-}*/
-
-/*void Z80_SetRegs (Z80_Regs *Regs)
-{
-	unsigned *ctx=(unsigned *)Regs;
-	RACE_cz80_struc=(cz80_struc *)&ctx[4];
-	Cz80_Set_PC(RACE_cz80_struc,ctx[0]);
-}*/
 
 unsigned Z80_GetPC (void)
 {

@@ -55,8 +55,8 @@ ifeq ($(DRZ80),1)
 	SOURCES_ASM := $(CORE_DIR)/DrZ80.s
 else
 	FLAGS += -DCZ80
-	SOURCES_CXX += $(CORE_DIR)/cz80.cpp \
-						$(CORE_DIR)/cz80_support.cpp
+	SOURCES_C   += $(CORE_DIR)/cz80.c \
+						$(CORE_DIR)/cz80_support.c
 endif
 
 

@@ -9,10 +9,9 @@
 #ifndef _CZ80_H_
 #define _CZ80_H_
 
-#if defined(__cplusplus) && !defined(USE_CPLUS)
+#if defined(__cplusplus)
 extern "C" {
 #endif
-
 
 /******************************/
 /* Compiler dependant defines */
@@ -254,8 +253,8 @@ void    CZ80_FASTCALL Cz80_Set_IFF(cz80_struc *cpu, u32 value);
 void    CZ80_FASTCALL Cz80_Set_IM(cz80_struc *cpu, u32 value);
 void    CZ80_FASTCALL Cz80_Set_I(cz80_struc *cpu, u32 value);
 
-#if defined(__cplusplus) && !defined(USE_CPLUS)
-};
+#if defined(__cplusplus)
+}
 #endif
 
 #endif  // _CZ80_H_

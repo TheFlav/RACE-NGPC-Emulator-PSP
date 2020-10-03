@@ -5,17 +5,13 @@
 extern "C" {
 #endif
 
-
-//#include "osd_cpu.h"
-//#include "cpuintrf.h"
-//#include "DrZ80.h"
-
 /* daisy-chain link */
-typedef struct {
-    void (*reset)(int);             /* reset callback     */
-    int  (*interrupt_entry)(int);   /* entry callback     */
-    void (*interrupt_reti)(int);    /* reti callback      */
-    int irq_param;                  /* callback paramater */
+typedef struct
+{
+   void (*reset)(int);             /* reset callback     */
+   int  (*interrupt_entry)(int);   /* entry callback     */
+   void (*interrupt_reti)(int);    /* reti callback      */
+   int irq_param;                  /* callback paramater */
 } Z80_DaisyChain;
 
 #define Z80_MAXDAISY	4		/* maximum of daisy chan device */
