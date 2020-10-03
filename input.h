@@ -9,16 +9,17 @@
 
 /* input.h: interface for the input class. */
 
-#if !defined(AFX_INPUT_H__59701BE2_A97A_11D3_8645_00A0241D2A65__INCLUDED_)
-#define AFX_INPUT_H__59701BE2_A97A_11D3_8645_00A0241D2A65__INCLUDED_
+#ifndef AFX_INPUT_H
+#define AFX_INPUT_H
 
-#if _MSC_VER > 1000
-#pragma once
-#endif /* _MSC_VER > 1000 */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 extern unsigned char	ngpInputState;
 
-BOOL InitInput(void);
-void FreeInput(void);
+#ifdef __cplusplus
+}
+#endif
 
-#endif /* !defined(AFX_INPUT_H__59701BE2_A97A_11D3_8645_00A0241D2A65__INCLUDED_) */
+#endif /* !defined(AFX_INPUT_H) */

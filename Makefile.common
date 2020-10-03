@@ -34,7 +34,6 @@ endif
 endif
 
 SOURCES_CXX := \
-	$(CORE_DIR)/input.cpp \
 	$(CORE_DIR)/tlcs900h.cpp \
 	$(CORE_DIR)/flash.cpp \
 	$(CORE_DIR)/graphics.cpp \
@@ -45,6 +44,7 @@ SOURCES_CXX := \
 	$(CORE_DIR)/libretro/log.cpp
 
 SOURCES_C += \
+	$(CORE_DIR)/input.c \
 	$(CORE_DIR)/race-memory.c \
 	$(CORE_DIR)/ngpBios.c \
 	$(CORE_DIR)/neopopsound.c
