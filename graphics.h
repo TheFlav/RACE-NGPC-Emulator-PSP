@@ -41,7 +41,6 @@ BOOL graphics_init(void);
 void graphics_blit(void);
 void graphics_paint();
 void graphics_cleanup();
-void write_screenshot(FILE *f);
 // new renderer (NeoGeo Pocket (Color))
 void incFrameCount();
 void graphicsBlitInit();
@@ -60,9 +59,6 @@ void setBWPaletteEntry(unsigned char addr, unsigned short data);
 //
 // adventure vision stuff
 //
-void advGraphicsEnd();
-
-void graphics_debug(FILE *f);
 
 extern unsigned short palettes[16*4+16*4+16*4]; // placeholder for the converted palette
 extern int    totalpalette[32*32*32];

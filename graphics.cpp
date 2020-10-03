@@ -10,7 +10,6 @@
 /* graphics.cpp: implementation of the graphics class. */
 
 #include "StdAfx.h"
-#include "main.h"
 #include "graphics.h"
 #include "race-memory.h"
 
@@ -170,65 +169,6 @@ void graphicsBlitEnd(void)
 
 
 void graphics_paint(void);
-
-void write_screenshot(FILE *f)
-{
-#if 0
-    png_structp  png_ptr;
-    png_infop  info_ptr;
-    png_color_8  sig_bit;
-    png_byte  row[SIZEX*3];
-    int    x,y;
-    unsigned short *p, *gb;
-    png_byte  *rowpt;
-
-    if (NULL == (png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL)))
-        return;
-    if (NULL == (info_ptr = png_create_info_struct(png_ptr)))
-    {
-        png_destroy_write_struct(&png_ptr, png_infopp_NULL);
-        return;
-    }
-    if (setjmp(png_jmpbuf(png_ptr)))
-    {
-        png_destroy_write_struct(&png_ptr, &info_ptr);
-        return;
-    }
-    png_init_io(png_ptr, f);
-    png_set_IHDR(png_ptr, info_ptr,
-                 paintRect.right - paintRect.left,
-                 paintRect.bottom - paintRect.top,
-                 8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
-                 PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
-    sig_bit.red = 8;
-    sig_bit.green = 8;
-    sig_bit.blue = 8;
-    png_set_sBIT(png_ptr, info_ptr, &sig_bit);
-    png_write_info(png_ptr, info_ptr);
-    gb = &displayBuffer[SIZEX * 8];
-    for(y = paintRect.bottom - paintRect.top; y; y--)
-    {
-        rowpt = row;
-        p = gb + 8;
-        for(x = paintRect.right - paintRect.left; x; x--)
-        {
-            *rowpt = (totalpalette32[*p]>>16) & 0xFF;
-            rowpt++;
-            *rowpt = (totalpalette32[*p]>>8) & 0xFF;
-            rowpt++;
-            *rowpt = totalpalette32[*p] & 0xFF;
-            rowpt++;
-            p++;
-        }
-        gb+= SIZEX;
-        rowpt = row;
-        png_write_row(png_ptr, rowpt);
-    }
-    png_write_end(png_ptr, info_ptr);
-    png_destroy_write_struct(&png_ptr, &info_ptr);
-    return;
-#endif /* #if 0 */
-}
 
 /*
  *
