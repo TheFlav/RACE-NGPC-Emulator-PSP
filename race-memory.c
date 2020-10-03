@@ -30,13 +30,6 @@
 #include "z80.h"*/
 #endif
 
-#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-#define new DEBUG_NEW
-#endif
-
-
 /* define work memory for neogeo pocket color
  *
  * internal cpu ram and internal I/O register (2KB + 160 bytes)
