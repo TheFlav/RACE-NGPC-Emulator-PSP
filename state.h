@@ -22,8 +22,6 @@ int state_restore_mem(void *state);
 
 int state_store(char* filename);
 int state_restore(char* filename);
-int state_store(FILE *stream);
-int state_restore(FILE *stream);
 
 #endif /* _STATE_H */
 

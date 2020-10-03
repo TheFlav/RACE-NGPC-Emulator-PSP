@@ -348,22 +348,28 @@ static int state_restore_0x10(FILE *stream)
   return 1;
 }
 
-int state_store_mem(void *state)
+static int state_store_file(FILE *stream)
 {
-  return state_store((race_state_t*)state);
+  /* Set version & ROM signature information */
+  struct race_state_header rsh;
+  rsh.state_version = CURRENT_SAVE_STATE_VERSION;
+  memcpy(rsh.rom_signature, mainrom, sizeof(rsh.rom_signature));
+
+  /* Initialize state data */
+  race_state_t rs;
+  if (!state_store(&rs))
+    return 0;
+
+  /* Write to file */
+  if (fwrite(&rsh, sizeof(rsh), 1, stream) < 1)
+    return 0;
+  if (fwrite(&rs, sizeof(rs), 1, stream) < 1)
+    return 0;
+
+  return 1;
 }
 
-int state_restore_mem(void *state)
-{
-  return state_restore((race_state_t*)state);
-}
-
-int state_get_size(void)
-{
-  return sizeof(race_state_t);
-}
-
-int state_restore(FILE *stream)
+static int state_restore_file(FILE *stream)
 {
   /* Note current position (in case of compatibility rewinds */
   long read_pos = ftell(stream);
@@ -395,26 +401,21 @@ int state_restore(FILE *stream)
   return state_restore(&rs);
 }
 
-int state_store(FILE *stream)
+int state_store_mem(void *state)
 {
-  /* Set version & ROM signature information */
-  struct race_state_header rsh;
-  rsh.state_version = CURRENT_SAVE_STATE_VERSION;
-  memcpy(rsh.rom_signature, mainrom, sizeof(rsh.rom_signature));
-
-  /* Initialize state data */
-  race_state_t rs;
-  if (!state_store(&rs))
-    return 0;
-
-  /* Write to file */
-  if (fwrite(&rsh, sizeof(rsh), 1, stream) < 1)
-    return 0;
-  if (fwrite(&rs, sizeof(rs), 1, stream) < 1)
-    return 0;
-
-  return 1;
+  return state_store((race_state_t*)state);
 }
+
+int state_restore_mem(void *state)
+{
+  return state_restore((race_state_t*)state);
+}
+
+int state_get_size(void)
+{
+  return sizeof(race_state_t);
+}
+
 
 int state_store(char* filename)
 {
@@ -422,7 +423,7 @@ int state_store(char* filename)
   if (!(stream = fopen(filename, "w")))
     return 0;
 
-  int status = state_store(stream);
+  int status = state_store_file(stream);
   fclose(stream);
 
   return status;
@@ -434,7 +435,7 @@ int state_restore(char* filename)
   if (!(stream = fopen(filename, "r")))
     return 0;
 
-  int status = state_restore(stream);
+  int status = state_restore_file(stream);
   fclose(stream);
 
   return status;
