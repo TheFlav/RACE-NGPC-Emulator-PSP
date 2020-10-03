@@ -15,13 +15,11 @@
  */
 
 #include "StdAfx.h"
-#include "main.h"
 #include "memory.h"
 #include "input.h"		/* for Gameboy Input */
 #include "graphics.h"	/* for i/o ports of the game gear */
 #include "tlcs900h.h"
 #include "koyote_bin.h"
-
 
 #ifdef DRZ80
 #include "DrZ80_support.h"
@@ -344,30 +342,26 @@ const unsigned int ngpVectors[0x21] = {
 	0x00FFF89A										// 80
 };
 
-//return 0 on fail
-unsigned char loadBIOS()
+/* return 0 on fail */
+static unsigned char loadBIOS(void)
 {
-    FILE *biosFile;
-	int bytesRead;
+   int bytesRead;
+   FILE *biosFile = fopen("NPBIOS.BIN", "rb");
+   if(!biosFile)
+      return 0;
 
+   bytesRead = fread(cpurom, 1, 0x10000, biosFile);
+   fclose(biosFile);
 
-	biosFile = fopen("NPBIOS.BIN", "rb");
-    if(!biosFile)
-        return 0;
-
-
-	bytesRead = fread(cpurom, 1, 0x10000, biosFile);
-	fclose(biosFile);
-
-	if(bytesRead != 0x10000)
-	{
-		fprintf(stderr, "loadBIOS: Bad BIOS file %s\n", "NPBIOS.BIN");
-		return 0;
-	}
-	return 1;
+   if(bytesRead != 0x10000)
+   {
+      fprintf(stderr, "loadBIOS: Bad BIOS file %s\n", "NPBIOS.BIN");
+      return 0;
+   }
+   return 1;
 }
 
-void mem_init()
+void mem_init(void)
 {
 	int x;
 	unsigned int i;
@@ -519,9 +513,4 @@ void mem_init()
 		z80PortReadB = z80ngpPortReadB;
 		break;
 	}
-}
-
-void mem_dump_ram(FILE *output)
-{
-	fwrite(mainram,1,sizeof(mainram),output);
 }
