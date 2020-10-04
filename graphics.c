@@ -528,8 +528,9 @@ static inline void set_paletteBW(
 /* I think there's something wrong with this on the GP2X, because CFC2's intro screen is all red */
 static inline void lineClear(TILECACHE *tC, unsigned short col)
 {
-    for(int i=0; i<21*8; i++)
-        tC->gbp[i] = col;
+   int i;
+   for(i = 0; i < 21 * 8; i++)
+      tC->gbp[i] = col;
 }
 
 static inline void clipLeftRight(SPRITEDEFS *sprDef, unsigned short OOWCol)
@@ -615,63 +616,64 @@ static inline void lineFront(TILECACHE *tC)
 
 static inline void lineSprite(SPRITEDEFS *sprDefs)
 {
-    SPRITE   *spr;
-    unsigned short *gb;
-    unsigned char a,b;
-    const unsigned char *p2;
+   int i;
+   SPRITE   *spr;
+   unsigned short *gb;
+   unsigned char a,b;
+   const unsigned char *p2;
 
-    /* for 8bit SDL, this would set gb to the index of the proper color
-     * then, we'd set gb to p2[n] */
+   /* for 8bit SDL, this would set gb to the index of the proper color
+    * then, we'd set gb to p2[n] */
 
-    for (int i=sprDefs->count[*scanlineY];i>0;i--)
-    {
-        spr = &sprDefs->sprite[*scanlineY][i-1];
-        gb = &sprDefs->gbp[spr->offset];
-        a = *(((unsigned char *)spr->tilept)+1);
-        b = *((unsigned char *)spr->tilept);
-        if (spr->pattern&0x8000)
-        {
-            p2 = &mypatterns[b*4];
-            if (p2[3])
-                gb[0] = spr->palette[p2[3]];
-            if (p2[2])
-                gb[1] = spr->palette[p2[2]];
-            if (p2[1])
-                gb[2] = spr->palette[p2[1]];
-            if (p2[0])
-                gb[3] = spr->palette[p2[0]];
-            p2 = &mypatterns[a*4];
-            if (p2[3])
-                gb[4] = spr->palette[p2[3]];
-            if (p2[2])
-                gb[5] = spr->palette[p2[2]];
-            if (p2[1])
-                gb[6] = spr->palette[p2[1]];
-            if (p2[0])
-                gb[7] = spr->palette[p2[0]];
-        }
-        else
-        {
-            p2 = &mypatterns[a*4];
-            if (p2[0])
-                gb[0] = spr->palette[p2[0]];
-            if (p2[1])
-                gb[1] = spr->palette[p2[1]];
-            if (p2[2])
-                gb[2] = spr->palette[p2[2]];
-            if (p2[3])
-                gb[3] = spr->palette[p2[3]];
-            p2 = &mypatterns[b*4];
-            if (p2[0])
-                gb[4] = spr->palette[p2[0]];
-            if (p2[1])
-                gb[5] = spr->palette[p2[1]];
-            if (p2[2])
-                gb[6] = spr->palette[p2[2]];
-            if (p2[3])
-                gb[7] = spr->palette[p2[3]];
-        }
-    }
+   for (i=sprDefs->count[*scanlineY];i>0;i--)
+   {
+      spr = &sprDefs->sprite[*scanlineY][i-1];
+      gb = &sprDefs->gbp[spr->offset];
+      a = *(((unsigned char *)spr->tilept)+1);
+      b = *((unsigned char *)spr->tilept);
+      if (spr->pattern&0x8000)
+      {
+         p2 = &mypatterns[b*4];
+         if (p2[3])
+            gb[0] = spr->palette[p2[3]];
+         if (p2[2])
+            gb[1] = spr->palette[p2[2]];
+         if (p2[1])
+            gb[2] = spr->palette[p2[1]];
+         if (p2[0])
+            gb[3] = spr->palette[p2[0]];
+         p2 = &mypatterns[a*4];
+         if (p2[3])
+            gb[4] = spr->palette[p2[3]];
+         if (p2[2])
+            gb[5] = spr->palette[p2[2]];
+         if (p2[1])
+            gb[6] = spr->palette[p2[1]];
+         if (p2[0])
+            gb[7] = spr->palette[p2[0]];
+      }
+      else
+      {
+         p2 = &mypatterns[a*4];
+         if (p2[0])
+            gb[0] = spr->palette[p2[0]];
+         if (p2[1])
+            gb[1] = spr->palette[p2[1]];
+         if (p2[2])
+            gb[2] = spr->palette[p2[2]];
+         if (p2[3])
+            gb[3] = spr->palette[p2[3]];
+         p2 = &mypatterns[b*4];
+         if (p2[0])
+            gb[4] = spr->palette[p2[0]];
+         if (p2[1])
+            gb[5] = spr->palette[p2[1]];
+         if (p2[2])
+            gb[6] = spr->palette[p2[2]];
+         if (p2[3])
+            gb[7] = spr->palette[p2[3]];
+      }
+   }
 }
 
 /* sort all the sprites according to their priorities */
