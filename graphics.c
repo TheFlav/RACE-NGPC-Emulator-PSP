@@ -23,7 +23,7 @@
 #define BMASK 0x001f
 #endif
 
-extern ngp_screen* screen;
+extern struct ngp_screen* screen;
 extern int gfx_hacks;
 
 /*
@@ -196,7 +196,7 @@ void palette_init32(DWORD dwRBitMask, DWORD dwGBitMask, DWORD dwBBitMask)
 }
 
 /* RGB range: [0,1] */
-void darken_rgb(float &r, float &g, float &b)
+static void darken_rgb(float *r, float *g, float *b)
 {
     /* Note: This is *very* approximate...
      * - Should be done in linear colour space. It isn't.
@@ -219,17 +219,17 @@ void darken_rgb(float &r, float &g, float &b)
     static const float luma_g = 0.587f;
     static const float luma_b = 0.114f;
     /* Calculate luminosity */
-    float luma = (luma_r * r) + (luma_g * g) + (luma_b * b);
+    float luma = (luma_r * (*r)) + (luma_g * (*g)) + (luma_b * (*b));
     /* Get 'darkness' scaling factor
      * > User set 'dark filter' level scaled by current luminosity
      *   (i.e. lighter colours affected more than darker colours)
      */
-    float dark_factor = 1.0f - ((static_cast<float>(dark_filter_level) * 0.01f) * luma);
+    float dark_factor = 1.0f - (((float)(dark_filter_level) * 0.01f) * luma);
     dark_factor = dark_factor < 0.0f ? 0.0f : dark_factor;
     /* Perform scaling... */
-    r = r * dark_factor;
-    g = g * dark_factor;
-    b = b * dark_factor;
+    *r = (*r) * dark_factor;
+    *g = (*g) * dark_factor;
+    *b = (*b) * dark_factor;
 }
 
 void palette_init16(DWORD dwRBitMask, DWORD dwGBitMask, DWORD dwBBitMask)
@@ -295,15 +295,15 @@ void palette_init16(DWORD dwRBitMask, DWORD dwGBitMask, DWORD dwBBitMask)
                         for (r=0; r<16; r++)
                         {
                             /* Convert colour range from [0,0xF] to [0,1] */
-                            r_float = static_cast<float>(r) * rgb_max_inv;
-                            g_float = static_cast<float>(g) * rgb_max_inv;
-                            b_float = static_cast<float>(b) * rgb_max_inv;
+                            r_float = (float)(r) * rgb_max_inv;
+                            g_float = (float)(g) * rgb_max_inv;
+                            b_float = (float)(b) * rgb_max_inv;
                             /* Perform image darkening */
-                            darken_rgb(r_float, g_float, b_float);
+                            darken_rgb(&r_float, &g_float, &b_float);
                             /* Convert back to 4bit unsigned */
-                            r_final = static_cast<int>((r_float * rgb_max) + 0.5f) & 0xF;
-                            g_final = static_cast<int>((g_float * rgb_max) + 0.5f) & 0xF;
-                            b_final = static_cast<int>((b_float * rgb_max) + 0.5f) & 0xF;
+                            r_final = (int)((r_float * rgb_max) + 0.5f) & 0xF;
+                            g_final = (int)((g_float * rgb_max) + 0.5f) & 0xF;
+                            b_final = (int)((b_float * rgb_max) + 0.5f) & 0xF;
 
                             totalpalette[b*256+g*16+r] =
                                 (((b_final<<(BBitCount-4))+(b_final>>(4-(BBitCount-4))))<<BShiftCount) +
@@ -332,7 +332,7 @@ void palette_init16(DWORD dwRBitMask, DWORD dwGBitMask, DWORD dwBBitMask)
  * Most interface functions seem to use camel case,
  * so do the same here...
  */
-extern "C" void graphicsSetDarkFilterLevel(unsigned filterLevel)
+void graphicsSetDarkFilterLevel(unsigned filterLevel)
 {
     unsigned prev_dark_filter_level = dark_filter_level;
 
@@ -1200,7 +1200,7 @@ void drawScrollPlane(unsigned short* draw,
 	}
 }
 
-extern "C" void myGraphicsBlitLine(unsigned char render)  /* NOTA */
+void myGraphicsBlitLine(unsigned char render)  /* NOTA */
 {
 	int i,x0,x1;
     if (*scanlineY < 152)
@@ -1336,7 +1336,7 @@ extern "C" void myGraphicsBlitLine(unsigned char render)  /* NOTA */
  *
  */
 
-extern "C" BOOL graphics_init(void)
+BOOL graphics_init(void)
 {
 #ifdef __LIBRETRO__
     palette_init = palette_init16;

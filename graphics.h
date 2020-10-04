@@ -14,10 +14,6 @@
 #ifndef AFX_GRAPHICS_H
 #define AFX_GRAPHICS_H
 
-#if _MSC_VER > 1000
-#pragma once
-#endif /* _MSC_VER > 1000 */
-
 /* actual NGPC */
 #define NGPC_SIZEX 160
 #define NGPC_SIZEY 152
@@ -69,10 +65,6 @@ void graphicsSetDarkFilterLevel(unsigned filterLevel);
 /* new renderer (NeoGeo Pocket (Color)) */
 void myGraphicsBlitLine(unsigned char render);
 
-#ifdef __cplusplus
-}
-#endif
-
 /*
  * adventure vision stuff
  */
@@ -91,5 +83,9 @@ struct ngp_screen
    int w, h;                 
    void *pixels;
 };
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* !defined(AFX_GRAPHICS_H) */

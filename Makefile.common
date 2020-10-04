@@ -34,11 +34,11 @@ endif
 endif
 
 SOURCES_CXX := \
-	$(CORE_DIR)/graphics.cpp \
 	$(CORE_DIR)/race-globals.cpp
 
 SOURCES_C += \
 	$(CORE_DIR)/tlcs900h.c \
+	$(CORE_DIR)/graphics.c \
 	$(CORE_DIR)/main.c \
 	$(CORE_DIR)/flash.c \
 	$(CORE_DIR)/input.c \
