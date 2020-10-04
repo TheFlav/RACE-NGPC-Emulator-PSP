@@ -2927,63 +2927,65 @@ int mulsRMW10(void) // MULS RR,(mem)  10010mmm 01001RRR
 
 static INLINE unsigned short myDivB(unsigned short i, unsigned char j)
 {
-    if (!j)
-    {
-        gen_regsSR|= VF;
-        return (i<<8) | ((i>>8)^0xFF);
-    }
+   ldiv_t res;
+   if (!j)
+   {
+      gen_regsSR|= VF;
+      return (i<<8) | ((i>>8)^0xFF);
+   }
 
-/*    ldiv_t res;
+   /*    ldiv_t res;
 
-    if (i >= (0x0200 * j))
-    {
-        int diff = i - (0x0200 * j);
-        int range = 256 - j;
-        res = ldiv(diff, range);
-        res.quot = 0x1FF - res.quot;
-        res.rem = res.rem + j;
-    }
-    else
-    {
-        res = ldiv(i,j);
-    }
-	*/
-	ldiv_t res = ldiv(i,j);
-    if (res.quot>0xFF)
-        gen_regsSR|= VF;
-    else
-        gen_regsSR&= ~VF;
-    return ((unsigned short)(res.quot & 0xFF)) | ((unsigned short)((res.rem & 0xFF) << 8));
+         if (i >= (0x0200 * j))
+         {
+         int diff = i - (0x0200 * j);
+         int range = 256 - j;
+         res = ldiv(diff, range);
+         res.quot = 0x1FF - res.quot;
+         res.rem = res.rem + j;
+         }
+         else
+         {
+         res = ldiv(i,j);
+         }
+         */
+   res = ldiv(i,j);
+   if (res.quot>0xFF)
+      gen_regsSR|= VF;
+   else
+      gen_regsSR&= ~VF;
+   return ((unsigned short)(res.quot & 0xFF)) | ((unsigned short)((res.rem & 0xFF) << 8));
 }
 
 static INLINE unsigned int myDivW(unsigned int i, unsigned short j)
 {
-    if (!j)
-    {
-        gen_regsSR|= VF;
-        return (i<<16) | ((i>>16)^0xFFFF);
-    }
-/* PacMan fix : when j>=128 -> overflow
-    ldiv_t res;
-    if (i >= (0x02000000 * (unsigned int)j))
-    {
-        int diff = i - (0x02000000 * j);
-        int range = 0x1000000 - j;
-        res = ldiv(diff, range);
-        res.quot = 0x1FFFFFF - res.quot;
-        res.rem = res.rem + j;
-    }
-    else
-    {
-        res = ldiv(i,j);
-    }
-*/
-    ldiv_t res = ldiv(i,j);
-    if (res.quot>0xFFFF)
-        gen_regsSR|= VF;
-    else
-        gen_regsSR&= ~VF;
-    return (res.quot & 0xFFFF) | ((res.rem & 0xFFFF) << 16);
+   ldiv_t res;
+   if (!j)
+   {
+      gen_regsSR|= VF;
+      return (i<<16) | ((i>>16)^0xFFFF);
+   }
+   /* PacMan fix : when j>=128 -> overflow
+      ldiv_t res;
+      if (i >= (0x02000000 * (unsigned int)j))
+      {
+      int diff = i - (0x02000000 * j);
+      int range = 0x1000000 - j;
+      res = ldiv(diff, range);
+      res.quot = 0x1FFFFFF - res.quot;
+      res.rem = res.rem + j;
+      }
+      else
+      {
+      res = ldiv(i,j);
+      }
+      */
+   res = ldiv(i,j);
+   if (res.quot>0xFFFF)
+      gen_regsSR|= VF;
+   else
+      gen_regsSR&= ~VF;
+   return (res.quot & 0xFFFF) | ((res.rem & 0xFFFF) << 16);
 }
 
 int divRrB(void) // DIV RR,r    11001rrr 01010RRR
@@ -3043,37 +3045,38 @@ int divRMW10(void) // DIV RR,(mem)   10010mmm 01010RRR
 
 unsigned short myDivsB(signed short i, signed char j)
 {
-    if (!j)
-    {
-        gen_regsSR|= VF;
-        if (i<1)
-            return (i<<8) | (i^0xFF);
-        else
-            return (i<<8);
-    }
+   ldiv_t res;
+   if (!j)
+   {
+      gen_regsSR|= VF;
+      if (i<1)
+         return (i<<8) | (i^0xFF);
+      return (i<<8);
+   }
 
-    ldiv_t res = ldiv(i,j);
-    if (res.quot>0xFF)
-        gen_regsSR|= VF;
-    else
-        gen_regsSR&= ~VF;
-    return ((unsigned short)(res.quot & 0xFF)) | ((unsigned short)((res.rem & 0xFF) << 8));
+   res = ldiv(i,j);
+   if (res.quot>0xFF)
+      gen_regsSR|= VF;
+   else
+      gen_regsSR&= ~VF;
+   return ((unsigned short)(res.quot & 0xFF)) | ((unsigned short)((res.rem & 0xFF) << 8));
 }
 
 unsigned int myDivsW(signed int i, signed short j)
 {
-    if (!j)
-    {
-        gen_regsSR|= VF;
-        return (i<<16) | (i^0xFFFF);
-    }
+   ldiv_t res;
+   if (!j)
+   {
+      gen_regsSR|= VF;
+      return (i<<16) | (i^0xFFFF);
+   }
 
-    ldiv_t res = ldiv(i,j);
-    if (res.quot>0xFFFF)
-        gen_regsSR|= VF;
-    else
-        gen_regsSR&= ~VF;
-    return (res.quot & 0xFFFF) | ((res.rem & 0xFFFF) << 16);
+   res = ldiv(i,j);
+   if (res.quot>0xFFFF)
+      gen_regsSR|= VF;
+   else
+      gen_regsSR&= ~VF;
+   return (res.quot & 0xFFFF) | ((res.rem & 0xFFFF) << 16);
 }
 
 int divsRrB(void) // DIVS RR,r    11001rrr 01011RRR
@@ -3931,52 +3934,53 @@ int tset3M30(void) // TSET #3,(mem)  10110mmm 10101xxx
 
 int bs1b(void) // BS1B A,r     11011rrr 00001111
 {
-    unsigned short i = *regW;
+   unsigned char ret;
+   unsigned short i = *regW;
 
-    if (i==0)
-    {
-        gen_regsSR |= VF;
-        return 4;
-    }
+   if (i==0)
+   {
+      gen_regsSR |= VF;
+      return 4;
+   }
 
-    unsigned char ret = 15;
+   ret         = 15;
 
-    gen_regsSR &= ~VF;
+   gen_regsSR &= ~VF;
 
-    while (i<0x8000)
-    {
-        i = i<<1;
-        ret -= 1;
-    }
+   while (i<0x8000)
+   {
+      i = i<<1;
+      ret -= 1;
+   }
 
-    *cregsB[1] = ret;
-    return 4;
+   *cregsB[1] = ret;
+   return 4;
 }
 
 int bs1f(void) // BS1F A,r     11011rrr 00001110
 {
-    unsigned short i = *regW;
+   unsigned char ret = 0;
+   unsigned short i = *regW;
 
-    if (i==0)
-    {
-        gen_regsSR|= VF;
-        return 4;
-    }
-
-    unsigned char ret = 0;
-
-    gen_regsSR&= ~VF;
+   if (i==0)
+   {
+      gen_regsSR|= VF;
+      return 4;
+   }
 
 
-    while (!(i&1))
-    {
-        i = i>>1;
-        ret+=1;
-    }
+   gen_regsSR&= ~VF;
 
-    *cregsB[1] = ret;
 
-    return 4;
+   while (!(i&1))
+   {
+      i = i>>1;
+      ret+=1;
+   }
+
+   *cregsB[1] = ret;
+
+   return 4;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -6384,30 +6388,30 @@ void initTimezone(void)
 
 static INLINE int VECT_RTCGET(unsigned int dest)
 {
-    // dest+0 // year
-    // dest+1 // month  all in BCD
-    // dest+2 // day
-    // dest+3 // hours
-    // dest+4 // minutes
-    // dest+5 // nr year after leap : day of the week
-    unsigned char *d = get_address(dest);
+   // dest+0 // year
+   // dest+1 // month  all in BCD
+   // dest+2 // day
+   // dest+3 // hours
+   // dest+4 // minutes
+   // dest+5 // nr year after leap : day of the week
+   unsigned char *d = get_address(dest);
+   int year;
+   struct tm *lt;
+   time_t now = time(NULL);
+   initTimezone(); //make sure TZ is set up
+   lt = localtime(&now);
+   //int year = (lt->tm_year+1900) % 100;
+   year = lt->tm_year-100;
 
-    struct tm *lt;
-	time_t now = time(NULL);
-	initTimezone(); //make sure TZ is set up
-    lt = localtime(&now);
-    //int year = (lt->tm_year+1900) % 100;
-    int year = lt->tm_year-100;
+   d[0] = makeBCD(year);
+   d[1] = makeBCD(lt->tm_mon+1);
+   d[2] = makeBCD(lt->tm_mday);
+   d[3] = makeBCD(lt->tm_hour);
+   d[4] = makeBCD(lt->tm_min);
+   d[5] = makeBCD(lt->tm_sec);
+   d[6] = ((year % 4)<<4)|(lt->tm_wday & 0x0F);
 
-    d[0] = makeBCD(year);
-    d[1] = makeBCD(lt->tm_mon+1);
-    d[2] = makeBCD(lt->tm_mday);
-    d[3] = makeBCD(lt->tm_hour);
-    d[4] = makeBCD(lt->tm_min);
-    d[5] = makeBCD(lt->tm_sec);
-    d[6] = ((year % 4)<<4)|(lt->tm_wday & 0x0F);
-
-    return 100;
+   return 100;
 }
 
 

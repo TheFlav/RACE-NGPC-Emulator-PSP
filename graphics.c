@@ -282,8 +282,8 @@ void palette_init16(DWORD dwRBitMask, DWORD dwGBitMask, DWORD dwBBitMask)
         case NGPC:
             if (dark_filter_level > 0)
             {
-                static const float rgb_max = 15.0f;
-                static const float rgb_max_inv = 1.0f / rgb_max;
+                static const float rgb_max     = 15.0f;
+                static const float rgb_max_inv = 1.0f / 15.0f;
                 float r_float, g_float, b_float;
                 int r_final, g_final, b_final;
 
@@ -462,7 +462,7 @@ int    OOWCol;      /* placeholder for the outside window color this VSYNC */
 unsigned char SprPriLo, SprPriHi, SprPri = 0;
 #endif
 
-static inline void set_paletteCol(
+static INLINE void set_paletteCol(
       unsigned short *palette_table,
       unsigned short *sprite,
       unsigned short *front,
@@ -501,7 +501,7 @@ static inline void set_paletteCol(
    }
 }
 
-static inline void set_paletteBW(
+static INLINE void set_paletteBW(
       unsigned short *palette_table,
       unsigned short *sprite,
       unsigned short *front,
@@ -526,14 +526,14 @@ static inline void set_paletteBW(
 }
 
 /* I think there's something wrong with this on the GP2X, because CFC2's intro screen is all red */
-static inline void lineClear(TILECACHE *tC, unsigned short col)
+static INLINE void lineClear(TILECACHE *tC, unsigned short col)
 {
    int i;
    for(i = 0; i < 21 * 8; i++)
       tC->gbp[i] = col;
 }
 
-static inline void clipLeftRight(SPRITEDEFS *sprDef, unsigned short OOWCol)
+static INLINE void clipLeftRight(SPRITEDEFS *sprDef, unsigned short OOWCol)
 {
     int  i,j;
 
@@ -549,7 +549,7 @@ static inline void clipLeftRight(SPRITEDEFS *sprDef, unsigned short OOWCol)
         sprDef->gbp[i] = OOWCol;
 }
 
-static inline void lineFront(TILECACHE *tC)
+static INLINE void lineFront(TILECACHE *tC)
 {
     int    i;
     unsigned char a,b;
@@ -614,7 +614,7 @@ static inline void lineFront(TILECACHE *tC)
     }
 }
 
-static inline void lineSprite(SPRITEDEFS *sprDefs)
+static INLINE void lineSprite(SPRITEDEFS *sprDefs)
 {
    int i;
    SPRITE   *spr;
@@ -746,7 +746,7 @@ static void spriteSort(unsigned int bw)
    }
 #endif
 
-static inline void spriteSortAll(unsigned int bw)
+static INLINE void spriteSortAll(unsigned int bw)
 {
     unsigned int spriteCode;
     unsigned short *pt;
@@ -860,7 +860,7 @@ static void graphicsBlitInit(void)
 #endif
 }
 
-static inline void RenderTileCache(TILECACHE *tC, unsigned int bw)
+static INLINE void RenderTileCache(TILECACHE *tC, unsigned int bw)
 {
     int    i;
     unsigned char line;

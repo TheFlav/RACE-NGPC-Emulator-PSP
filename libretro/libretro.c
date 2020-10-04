@@ -101,10 +101,12 @@ static void check_variables(void)
 }
 void retro_init(void)
 {
+   char *dir = NULL;
+   enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_RGB565;
+
    /* set up some logging */
    init_log(environ_cb);
 
-   char *dir = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY, &dir) && dir)
       sprintf(retro_save_directory, "%s%c", dir, path_default_slash_c());
 
@@ -113,10 +115,9 @@ void retro_init(void)
 
    check_variables();
 
-   enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_RGB565;
    if(!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt) && log_cb)
       log_cb(RETRO_LOG_ERROR, "[could not set RGB565]\n");
-   
+
    if (environ_cb(RETRO_ENVIRONMENT_GET_INPUT_BITMASKS, NULL))
       libretro_supports_input_bitmasks = true;
 }
@@ -337,15 +338,17 @@ bool retro_load_game(const struct retro_game_info *info)
 
    check_variables();
 
-   /* TODO: Mappings might need updating
-    * Size is based on what is exposed in Mednafen NGP */
-   struct retro_memory_descriptor descs = {
-      RETRO_MEMDESC_SYSTEM_RAM, mainram, 0, 0, 0, 0, 16384, "RAM"
-   };
-   struct retro_memory_map retro_map = {
-      &descs, 1
-   };
-   environ_cb(RETRO_ENVIRONMENT_SET_MEMORY_MAPS, &retro_map);
+   {
+      /* TODO: Mappings might need updating
+       * Size is based on what is exposed in Mednafen NGP */
+      struct retro_memory_descriptor descs = {
+         RETRO_MEMDESC_SYSTEM_RAM, mainram, 0, 0, 0, 0, 16384, "RAM"
+      };
+      struct retro_memory_map retro_map = {
+         &descs, 1
+      };
+      environ_cb(RETRO_ENVIRONMENT_SET_MEMORY_MAPS, &retro_map);
+   }
 
    return true;
 }

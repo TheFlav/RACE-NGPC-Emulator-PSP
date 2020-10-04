@@ -151,9 +151,10 @@ unsigned int blockNumToAddr(unsigned char chip, unsigned char blockNum)
 
    if(blockNum >= bootBlockStartNum)
    {
-      addr = bootBlockStartNum * 0x10000;
+      unsigned char bootBlock;
 
-      unsigned char bootBlock = blockNum - bootBlockStartNum;
+      addr      = bootBlockStartNum * 0x10000;
+      bootBlock = blockNum - bootBlockStartNum;
       if(bootBlock>=1)
          addr+= 0x8000;
       if(bootBlock>=2)
