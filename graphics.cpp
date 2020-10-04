@@ -1200,7 +1200,7 @@ void drawScrollPlane(unsigned short* draw,
 	}
 }
 
-void myGraphicsBlitLine(unsigned char render)  /* NOTA */
+extern "C" void myGraphicsBlitLine(unsigned char render)  /* NOTA */
 {
 	int i,x0,x1;
     if (*scanlineY < 152)

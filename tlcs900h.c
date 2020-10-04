@@ -31,16 +31,11 @@
 
 #include <stdlib.h>
 #include <time.h>
+#include <retro_inline.h>
 #include "tlcs900h.h"
 #include "race-memory.h"
 #include "ngpBios.h"
 #include "types.h"
-
-#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-#define new DEBUG_NEW
-#endif
 
 int finscan;
 int contador;
@@ -226,40 +221,40 @@ int  debugIndex, debugCount;
 int  memoryCycles;
 
 
-inline unsigned char mem_readB(unsigned int addr)
+static INLINE unsigned char mem_readB(unsigned int addr)
 {
     if (addr > 0x200000)
         memoryCycles++;
     return tlcsMemReadB(addr);
 }
 
-inline unsigned short mem_readW(unsigned int addr)
+static INLINE unsigned short mem_readW(unsigned int addr)
 {
     if (addr > 0x200000)
         memoryCycles+=2;
     return tlcsMemReadW(addr);
 }
 
-inline unsigned int mem_readL(unsigned int addr)
+static INLINE unsigned int mem_readL(unsigned int addr)
 {
     if (addr > 0x200000)
         memoryCycles+=4;
     return tlcsMemReadL(addr);
 }
 
-inline void mem_writeB(unsigned int addr, unsigned char data)
+static INLINE void mem_writeB(unsigned int addr, unsigned char data)
 {
     // if (addr > 0x200000) memoryCycles++;
     tlcsMemWriteB(addr, data);
 }
 
-inline void tlcsFastMemWriteB(unsigned int addr,unsigned char data)
+static INLINE void tlcsFastMemWriteB(unsigned int addr,unsigned char data)
 {
     //Flavor:  I think we're getting carried away with this addr&0xFFFFFF junk.  It's all over, now.  :(
 	mainram[((addr&0xFFFFFF)-0x00004000)] = data;
 }
 
-inline void tlcsFastMemWriteW(unsigned int addr, unsigned short data)
+static INLINE void tlcsFastMemWriteW(unsigned int addr, unsigned short data)
 {
     //Flavor:  I think we're getting carried away with this addr&0xFFFFFF junk.  It's all over, now.  :(
     unsigned char*ram = mainram+((addr&0xFFFFFF)-0x00004000);
@@ -272,7 +267,7 @@ inline void tlcsFastMemWriteW(unsigned int addr, unsigned short data)
         *((unsigned short*)ram) = data;
 }
 
-inline void tlcsFastMemWriteL(unsigned int addr, unsigned int data)
+static INLINE void tlcsFastMemWriteL(unsigned int addr, unsigned int data)
 {
     //Flavor:  I think we're getting carried away with this addr&0xFFFFFF junk.  It's all over, now.  :(
     unsigned char*ram = mainram+((addr&0xFFFFFF)-0x00004000);
@@ -288,7 +283,7 @@ inline void tlcsFastMemWriteL(unsigned int addr, unsigned int data)
 }
 
 
-inline void tlcsMemWriteBaddrB(unsigned char addr, unsigned char data)
+static INLINE void tlcsMemWriteBaddrB(unsigned char addr, unsigned char data)
 {
     //NOTA Super Real Mahjong sound fix
     
@@ -345,7 +340,7 @@ inline void tlcsMemWriteBaddrB(unsigned char addr, unsigned char data)
 
 
 // write a word (data) to a memory address (addr)
-inline void tlcsMemWriteW(unsigned int addr, unsigned short data)
+static INLINE void tlcsMemWriteW(unsigned int addr, unsigned short data)
 {
     //Flavor:  I think we're getting carried away with this addr&0xFFFFFF junk.  It's all over, now.  :(
     if ((addr&0xFFFFFF)>0x00003fff && (addr&0xFFFFFF)<0x00018000)
@@ -360,7 +355,7 @@ inline void tlcsMemWriteW(unsigned int addr, unsigned short data)
 }
 
 // write a word (data) to a memory address (addr)
-inline void tlcsMemWriteWaddrB(unsigned int addr, unsigned short data)
+static INLINE void tlcsMemWriteWaddrB(unsigned int addr, unsigned short data)
 {
     tlcsMemWriteBaddrB(addr, data & 0xFF);
     tlcsMemWriteBaddrB(addr+1, data >> 8);
@@ -368,13 +363,13 @@ inline void tlcsMemWriteWaddrB(unsigned int addr, unsigned short data)
 
 
 #define mem_writeW tlcsMemWriteW
-/*inline void mem_writeW(unsigned int addr, unsigned short data) {
+/*static INLINE void mem_writeW(unsigned int addr, unsigned short data) {
 // if (addr > 0x200000) memoryCycles+= 2;
  tlcsMemWriteW(addr, data);
 }*/
 
 // write a long word (data) to a memory address (addr)
-inline void tlcsMemWriteL(unsigned int addr, unsigned int data)
+static INLINE void tlcsMemWriteL(unsigned int addr, unsigned int data)
 {
     //Flavor:  I think we're getting carried away with this addr&0xFFFFFF junk.  It's all over, now.  :(
     addr&=0xFFFFFF;
@@ -392,13 +387,13 @@ inline void tlcsMemWriteL(unsigned int addr, unsigned int data)
 }
 
 #define mem_writeL tlcsMemWriteL
-/*inline void mem_writeL(unsigned int addr, unsigned int data) {
+/*static INLINE void mem_writeL(unsigned int addr, unsigned int data) {
 // if (addr > 0x200000) memoryCycles+= 4;
  tlcsMemWriteL(addr, data);
 }*/
 
 
-inline unsigned char readbyte(void)
+static INLINE unsigned char readbyte(void)
 {
 #ifdef TARGET_GP2X
     unsigned char __val asm("r0");//%0 and r0 are the same, now
@@ -430,7 +425,7 @@ inline unsigned char readbyte(void)
 #endif
 }
 
-inline unsigned char readbyteSetLastbyte(void)
+static INLINE unsigned char readbyteSetLastbyte(void)
 {
 #ifdef TARGET_GP2X
     unsigned char __val asm("r0");//%0 and r0 are the same, now
@@ -481,7 +476,7 @@ inline unsigned char readbyteSetLastbyte(void)
 #endif
 }
 
-inline unsigned short readword(void)
+static INLINE unsigned short readword(void)
 {
 #ifdef TARGET_GP2X
     unsigned short __val asm("r0");//%0 and r0 are the same, now
@@ -533,7 +528,7 @@ inline unsigned short readword(void)
 #endif
 }
 
-inline unsigned short readwordSetLastbyte(void)
+static INLINE unsigned short readwordSetLastbyte(void)
 {
 #ifdef TARGET_GP2X
     unsigned short __val asm("r0");//%0 and r0 are the same, now
@@ -600,7 +595,7 @@ if it's 1, we read a byte and then a word
 
 Or, we could just read a dword and forget about the MSB
 */
-inline unsigned int read24(void)
+static INLINE unsigned int read24(void)
 {
 #ifdef TARGET_GP2X
     register unsigned int __val asm("r0");//%0 and r0 are the same, now
@@ -665,7 +660,7 @@ inline unsigned int read24(void)
 #endif
 }
 
-inline unsigned int read24SetLastbyte(void)
+static INLINE unsigned int read24SetLastbyte(void)
 {
 #ifdef TARGET_GP2X
     register unsigned int __val asm("r0");//%0 and r0 are the same, now
@@ -738,7 +733,7 @@ inline unsigned int read24SetLastbyte(void)
 #endif
 }
 
-inline unsigned int readlong(void)
+static INLINE unsigned int readlong(void)
 {
 #ifdef TARGET_GP2X
     register unsigned int __val asm("r0");//%0 and r0 are the same, now
@@ -802,7 +797,7 @@ inline unsigned int readlong(void)
 #endif
 }
 
-inline void doJumpByte(void)
+static INLINE void doJumpByte(void)
 {
 #ifdef TARGET_GP2X
  #ifdef GENREGSPC_AS_REG
@@ -827,7 +822,7 @@ inline void doJumpByte(void)
 #endif
 }
 
-inline void skipJumpByte(void)
+static INLINE void skipJumpByte(void)
 {
 #ifdef TARGET_GP2X
  #ifdef GENREGSPC_AS_REG
@@ -849,7 +844,7 @@ inline void skipJumpByte(void)
 #endif
 }
 
-inline void doJumpWord(void)
+static INLINE void doJumpWord(void)
 {
 #ifdef TARGET_GP2X
  #ifdef GENREGSPC_AS_REG
@@ -876,7 +871,7 @@ inline void doJumpWord(void)
 #endif
 }
 
-inline void skipJumpWord()
+static INLINE void skipJumpWord(void)
 {
 #ifdef TARGET_GP2X
  #ifdef GENREGSPC_AS_REG
@@ -924,78 +919,78 @@ inline void skipJumpWord()
 #define notCondF() (gen_regsSR & CF)
 
 // status register check functions
-inline unsigned char srF()
+static INLINE unsigned char srF(void)
 {
     return 0;
 }
-inline unsigned char srLT()
+static INLINE unsigned char srLT(void)
 {
     return ((((gen_regsSR & (SF|VF)) == SF)
              || ((gen_regsSR & (SF|VF)) == VF)) ? 1 : 0);
 }
-inline unsigned char srLE()
+static INLINE unsigned char srLE(void)
 {
     return (((((gen_regsSR & (SF|VF)) == SF)
               || ((gen_regsSR & (SF|VF)) == VF))
              || (gen_regsSR & ZF)) ? 1 : 0);
 }
-inline unsigned char srULE()
+static INLINE unsigned char srULE(void)
 {
     return ((gen_regsSR & (ZF|CF)) ? 1 : 0);
 }
-inline unsigned char srOV()
+static INLINE unsigned char srOV(void)
 {
     return ((gen_regsSR & VF) ? 1 : 0);
 }
-inline unsigned char srMI()
+static INLINE unsigned char srMI(void)
 {
     return ((gen_regsSR & SF) ? 1 : 0);
 }
-inline unsigned char srZ()
+static INLINE unsigned char srZ(void)
 {
     return ((gen_regsSR & ZF) ? 1 : 0);
 }
-inline unsigned char srC()
+static INLINE unsigned char srC(void)
 {
     return ((gen_regsSR & CF) ? 1 : 0);
 }
-inline unsigned char srT()
+static INLINE unsigned char srT(void)
 {
     return 1;
 }
-inline unsigned char srGE()
+static INLINE unsigned char srGE(void)
 {
     return ((((gen_regsSR & (SF|VF)) == SF)
              || ((gen_regsSR & (SF|VF)) == VF)) ? 0 : 1);
 }
-//unsigned char srGE() { return ((((gen_regsSR & (SF|VF)) == (VF|SF))
+//unsigned char srGE(void) { return ((((gen_regsSR & (SF|VF)) == (VF|SF))
 //          || ((gen_regsSR & (SF|VF)) == 0)) ? 1 : 0); }
-inline unsigned char srGT()
+static INLINE unsigned char srGT(void)
 {
     return (((((gen_regsSR & (SF|VF)) == SF)
               || ((gen_regsSR & (SF|VF)) == VF))
              || (gen_regsSR & ZF)) ? 0 : 1);
 }
-//unsigned char srGT() { return (((((gen_regsSR & (SF|VF)) == (VF|SF))
+//unsigned char srGT(void) { return (((((gen_regsSR & (SF|VF)) == (VF|SF))
 //          || ((gen_regsSR & (SF|VF)) == 0))
 //          && (gen_regsSR & ZF)) ? 1 : 0); }
-inline unsigned char srUGT()
+static INLINE unsigned char srUGT(void)
 {
     return ((gen_regsSR & (ZF|CF)) ? 0 : 1);
 }
-inline unsigned char srNOV()
+static INLINE unsigned char srNOV(void)
 {
     return ((gen_regsSR & VF) ? 0 : 1);
 }
-inline unsigned char srPL()
+static INLINE unsigned char srPL(void)
 {
     return ((gen_regsSR & SF) ? 0 : 1);
 }
-inline unsigned char srNZ()
+static INLINE unsigned char srNZ(void)
 {
     return ((gen_regsSR & ZF) ? 0 : 1);
 }
-inline unsigned char srNC()
+static INLINE unsigned char srNC(void)
 {
     return ((gen_regsSR & CF) ? 0 : 1);
 }
@@ -1018,7 +1013,7 @@ inline unsigned char srNC()
 #define valCondF srNC
 
 
-inline void set_cregs()  //optimized by Thor
+static INLINE void set_cregs(void)  //optimized by Thor
 {
     int i;
     static int lastbank = -1;
@@ -1069,149 +1064,149 @@ inline void set_cregs()  //optimized by Thor
 ////////////////////////////// LD ////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-int ldRrB()
+int ldRrB(void)
 {
     *cregsB[lastbyte&7] = *regB;
     return 4;
 }
-int ldRrW()
+int ldRrW(void)
 {
     *cregsW[lastbyte&7] = *regW;
     return 4;
 }
-int ldRrL()
+int ldRrL(void)
 {
     *cregsL[lastbyte&7] = *regL;
     return 4;
 }
-int ldrRB()
+int ldrRB(void)
 {
     *regB = *cregsB[lastbyte&7];
     return 4;
 }
-int ldrRW()
+int ldrRW(void)
 {
     *regW = *cregsW[lastbyte&7];
     return 4;
 }
-int ldrRL()
+int ldrRL(void)
 {
     *regL = *cregsL[lastbyte&7];
     return 4;
 }
-int ldr3B()
+int ldr3B(void)
 {
     *regB = lastbyte&7;
     return 4;
 }
-int ldr3W()
+int ldr3W(void)
 {
     *regW = lastbyte&7;
     return 4;
 }
-int ldr3L()
+int ldr3L(void)
 {
     *regL = lastbyte&7;
     return 4;
 }
-int ldRIB()
+int ldRIB(void)
 {
     *cregsB[opcode&7] = readbyte();
     return 2;
 }
-int ldRIW()
+int ldRIW(void)
 {
     *cregsW[opcode&7] = readword();
     return 3;
 }
-int ldRIL()
+int ldRIL(void)
 {
     *cregsL[opcode&7] = readlong();
     return 5;
 }
-int ldrIB()
+int ldrIB(void)
 {
     *regB = readbyte();
     return 4;
 }
-int ldrIW()
+int ldrIW(void)
 {
     *regW = readword();
     return 4;
 }
-int ldrIL()
+int ldrIL(void)
 {
     *regL = readlong();
     return 6;
 }
-int ldRM00()
+int ldRM00(void)
 {
     *cregsB[lastbyte&7] = memB;
     return 4;
 }
-int ldRM10()
+int ldRM10(void)
 {
     *cregsW[lastbyte&7] = memW;
     return 4;
 }
-int ldRM20()
+int ldRM20(void)
 {
     *cregsL[lastbyte&7] = memL;
     return 6;
 }
-int ldMR30B()
+int ldMR30B(void)
 {
     mem_writeB(mem,*cregsB[lastbyte&7]);
     return 4;
 }
-int ldMR30W()
+int ldMR30W(void)
 {
     mem_writeW(mem,*cregsW[lastbyte&7]);
     return 4;
 }
-int ldMR30L()
+int ldMR30L(void)
 {
     mem_writeL(mem,*cregsL[lastbyte&7]);
     return 6;
 }
-int ld8I()
+int ld8I(void)
 {
     unsigned int num8 = readbyte();
     tlcsMemWriteBaddrB(num8,readbyte());
     return 5;
 }
-int ldw8I()
+int ldw8I(void)
 {
     unsigned int num8 = readbyte();
     tlcsMemWriteWaddrB(num8,readword());
     return 6;
 }
-int ldMI30()
+int ldMI30(void)
 {
     mem_writeB(mem,readbyte());
     return 5;
 }
-int ldwMI30()
+int ldwMI30(void)
 {
     mem_writeW(mem,readword());
     return 6;
 }
-int ld16M00()
+int ld16M00(void)
 {
     mem_writeB(readword(),memB);
     return 8;
 }
-int ldw16M10()
+int ldw16M10(void)
 {
     mem_writeW(readword(),memW);
     return 8;
 }
-int ldM1630()
+int ldM1630(void)
 {
     mem_writeB(mem,mem_readB(readword()));
     return 8;
 }
-int ldwM1630()
+int ldwM1630(void)
 {
     mem_writeW(mem,mem_readW(readword()));
     return 8;
@@ -1225,51 +1220,51 @@ int ldwM1630()
 #define NG_PUSH_WORD(src,s) tlcsFastMemWriteW(gen_regsXSP-=2,src); return s;
 #define NG_PUSH_LONG(src,s) tlcsFastMemWriteL(gen_regsXSP-=4,src); return s;
 
-int pushsr()
+int pushsr(void)
 {
     NG_PUSH_WORD((unsigned short)gen_regsSR&0x0000ffff, 4);
 }
-int pushF()
+int pushF(void)
 {
     NG_PUSH_BYTE((unsigned char)gen_regsSR&0x000000ff, 3);
 }
-int pushA()
+int pushA(void)
 {
     NG_PUSH_BYTE(*cregsB[1], 3);
 }
-int pushRW()
+int pushRW(void)
 {
     NG_PUSH_WORD(*cregsW[opcode&7], 3);
 }
-int pushRL()
+int pushRL(void)
 {
     NG_PUSH_LONG(*cregsL[opcode&7], 5);
 }
-int pushrB()
+int pushrB(void)
 {
     NG_PUSH_BYTE(*regB, 5);
 }
-int pushrW()
+int pushrW(void)
 {
     NG_PUSH_WORD(*regW, 5);
 }
-int pushrL()
+int pushrL(void)
 {
     NG_PUSH_LONG(*regL, 7);
 }
-int pushI()
+int pushI(void)
 {
     NG_PUSH_BYTE(readbyte(), 4);
 }
-int pushwI()
+int pushwI(void)
 {
     NG_PUSH_WORD(readword(), 5);
 }
-int pushM00()
+int pushM00(void)
 {
     NG_PUSH_BYTE(memB, 7);
 }
-int pushwM10()
+int pushwM10(void)
 {
     NG_PUSH_WORD(memW, 7);
 }
@@ -1278,7 +1273,7 @@ int pushwM10()
 ////////////////////////////// POP ///////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-int popsr() // POP SR   00000011
+int popsr(void) // POP SR   00000011
 {
     gen_regsSR = mem_readW(gen_regsXSP);
     gen_regsXSP+=2;
@@ -1286,56 +1281,56 @@ int popsr() // POP SR   00000011
     return 6;
 }
 
-int popF()  // POP F   00011001
+int popF(void)  // POP F   00011001
 {
     gen_regsSR = (gen_regsSR&0xff00)|mem_readB(gen_regsXSP);
     gen_regsXSP+=1;
     return 4;
 }
 
-int popA()
+int popA(void)
 {
     *cregsB[1] = mem_readB(gen_regsXSP);
     gen_regsXSP+=1;
     return 4;
 }
-int popRW()
+int popRW(void)
 {
     *cregsW[opcode&7] = mem_readW(gen_regsXSP);
     gen_regsXSP+=2;
     return 4;
 }
-int popRL()
+int popRL(void)
 {
     *cregsL[opcode&7] = mem_readL(gen_regsXSP);
     gen_regsXSP+=4;
     return 6;
 }
-int poprB()
+int poprB(void)
 {
     *regB = mem_readB(gen_regsXSP);
     gen_regsXSP+=1;
     return 6;
 }
-int poprW()
+int poprW(void)
 {
     *regW = mem_readW(gen_regsXSP);
     gen_regsXSP+=2;
     return 6;
 }
-int poprL()
+int poprL(void)
 {
     *regL = mem_readL(gen_regsXSP);
     gen_regsXSP+=4;
     return 8;
 }
-int popM30()
+int popM30(void)
 {
     mem_writeB(mem,mem_readB(gen_regsXSP));
     gen_regsXSP+=1;
     return 6;
 }
-int popwM30()
+int popwM30(void)
 {
     mem_writeW(mem,mem_readW(gen_regsXSP));
     gen_regsXSP+=2;
@@ -1346,12 +1341,12 @@ int popwM30()
 ////////////////////////////// LDA ///////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-int ldaRMW30()
+int ldaRMW30(void)
 {
     *cregsW[lastbyte&7] = (unsigned short)(mem&0x0000ffff);
     return 4;
 }
-int ldaRML30()
+int ldaRML30(void)
 {
     *cregsL[lastbyte&7] = mem;
     return 4;
@@ -1361,7 +1356,7 @@ int ldaRML30()
 ////////////////////////////// LDAR //////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-int ldar() // LDAR R,$+4+d16 11110011 00010011 xxxxxxxx xxxxxxxx 001s0RRR
+int ldar(void) // LDAR R,$+4+d16 11110011 00010011 xxxxxxxx xxxxxxxx 001s0RRR
 {
     unsigned short i = readword();
     unsigned char j;
@@ -1383,7 +1378,7 @@ int ldar() // LDAR R,$+4+d16 11110011 00010011 xxxxxxxx xxxxxxxx 001s0RRR
 ////////////////////////////// EX ////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-int exFF()  // EX F,F'  00010110
+int exFF(void)  // EX F,F'  00010110
 {
     unsigned char i = F2;
 
@@ -1392,7 +1387,7 @@ int exFF()  // EX F,F'  00010110
     return 2;
 }
 
-int exRrB() // EX R,r  11001rrr 10111RRR
+int exRrB(void) // EX R,r  11001rrr 10111RRR
 {
     unsigned char i = *cregsB[lastbyte&7];
     *cregsB[lastbyte&7] = *regB;
@@ -1400,7 +1395,7 @@ int exRrB() // EX R,r  11001rrr 10111RRR
     return 5;
 }
 
-int exRrW() // EX R,r  11011rrr 10111RRR
+int exRrW(void) // EX R,r  11011rrr 10111RRR
 {
     unsigned short i = *cregsW[lastbyte&7];
     *cregsW[lastbyte&7] = *regW;
@@ -1408,7 +1403,7 @@ int exRrW() // EX R,r  11011rrr 10111RRR
     return 5;
 }
 
-int exMRB00() // EX (mem),R 10000mmm 00110RRR
+int exMRB00(void) // EX (mem),R 10000mmm 00110RRR
 {
     unsigned char i = memB;
     mem_writeB(mem,*cregsB[lastbyte&7]);
@@ -1416,7 +1411,7 @@ int exMRB00() // EX (mem),R 10000mmm 00110RRR
     return 6;
 }
 
-int exMRW10() // EX (mem),R 10010mmm 00110RRR
+int exMRW10(void) // EX (mem),R 10010mmm 00110RRR
 {
     unsigned short i = memW;
     mem_writeW(mem,*cregsW[lastbyte&7]);
@@ -1447,7 +1442,7 @@ const unsigned char mirrTable[256] = {  //Flavor speed hack
                                    0x0F, 0x8F, 0x4F, 0xCF, 0x2F, 0xAF, 0x6F, 0xEF, 0x1F, 0x9F, 0x5F, 0xDF, 0x3F, 0xBF, 0x7F, 0xFF};
 
 
-int mirrr() // MIRR r  11011rrr 00010110
+int mirrr(void) // MIRR r  11011rrr 00010110
 {
     unsigned short i=*regW;
 
@@ -1460,7 +1455,7 @@ int mirrr() // MIRR r  11011rrr 00010110
 ////////////////////////////// LDxx //////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-int ldi()  // LDI (XDE+),(XHL+) 10000011 00010000
+int ldi(void)  // LDI (XDE+),(XHL+) 10000011 00010000
 // LDI (XIX+),(XIY+) 10000101 00010000
 {
     if (opcode&2)
@@ -1484,7 +1479,7 @@ int ldi()  // LDI (XDE+),(XHL+) 10000011 00010000
     return 10;
 }
 
-int ldiw()  // LDIW (XDE+),(XHL+) 10010011 00010000
+int ldiw(void)  // LDIW (XDE+),(XHL+) 10010011 00010000
 // LDIW (XIX+),(XIY+) 10010101 00010000
 {
     if (opcode&2)
@@ -1512,7 +1507,7 @@ int ldiw()  // LDIW (XDE+),(XHL+) 10010011 00010000
     return 10;
 }
 
-int ldir()  // LDIR (XDE+),(XHL+) 10000011 00010001
+int ldir(void)  // LDIR (XDE+),(XHL+) 10000011 00010001
 // LDIR (XIX+),(XIY+) 10000101 00010001
 {
 #if 0  //causes problems when starting new game in CFC1
@@ -1587,7 +1582,7 @@ int ldir()  // LDIR (XDE+),(XHL+) 10000011 00010001
 #endif
 }
 
-int ldirw() // LDIRW (XDE+),(XHL+) 10010011 00010001
+int ldirw(void) // LDIRW (XDE+),(XHL+) 10010011 00010001
 // LDIRW (XIX+),(XIY+) 10010101 00010001
 {
 #if 0  //causes problems when starting new game in CFC1
@@ -1667,7 +1662,7 @@ int ldirw() // LDIRW (XDE+),(XHL+) 10010011 00010001
 #endif
 }
 
-int ldd()  // LDD (XDE-),(XHL-) 10000011 00010010
+int ldd(void)  // LDD (XDE-),(XHL-) 10000011 00010010
 // LDD (XIX-),(XIY-) 10000101 00010010
 {
     if (opcode&2)
@@ -1689,7 +1684,7 @@ int ldd()  // LDD (XDE-),(XHL-) 10000011 00010010
     return 10;
 }
 
-int lddw()  // LDDW (XDE-),(XHL-) 10010011 00010010
+int lddw(void)  // LDDW (XDE-),(XHL-) 10010011 00010010
 // LDDW (XIX-),(XIY-) 10010101 00010010
 {
     if (opcode&2)
@@ -1713,7 +1708,7 @@ int lddw()  // LDDW (XDE-),(XHL-) 10010011 00010010
     return 10;
 }
 
-int lddr()  // LDDR (XDE-),(XHL-) 10000011 00010011
+int lddr(void)  // LDDR (XDE-),(XHL-) 10000011 00010011
 // LDDR (XIX-),(XIY-) 10000101 00010011
 {
     if (opcode&2)
@@ -1744,7 +1739,7 @@ int lddr()  // LDDR (XDE-),(XHL-) 10000011 00010011
     }
 }
 
-int lddrw() // LDDRW (XDE-),(XHL-) 10010011 00010011
+int lddrw(void) // LDDRW (XDE-),(XHL-) 10010011 00010011
 // LDDRW (XIX-),(XIY-) 10010101 00010011
 {
     if (opcode&2)
@@ -1785,7 +1780,7 @@ int lddrw() // LDDRW (XDE-),(XHL-) 10010011 00010011
 //   3 to bit 4 occurs as a result of src1-src2
 // just hoping this never happens :/
 
-int cpiB()  // CPI A,(R+)   10000RRR 00010100
+int cpiB(void)  // CPI A,(R+)   10000RRR 00010100
 {
     unsigned char i = (*cregsB[1]) - memB;
 
@@ -1799,7 +1794,7 @@ int cpiB()  // CPI A,(R+)   10000RRR 00010100
     return 8;
 }
 
-int cpiW()  // CPI WA,(R+)   10010RRR 00010100
+int cpiW(void)  // CPI WA,(R+)   10010RRR 00010100
 {
     unsigned short i = (*cregsW[0]) - memW;
 
@@ -1813,7 +1808,7 @@ int cpiW()  // CPI WA,(R+)   10010RRR 00010100
     return 8;
 }
 
-int cpirB() // CPIR A,(R+)   10000RRR 00010101
+int cpirB(void) // CPIR A,(R+)   10000RRR 00010101
 {
     unsigned char i = (*cregsB[1]) - memB;
 
@@ -1836,7 +1831,7 @@ int cpirB() // CPIR A,(R+)   10000RRR 00010101
     }
 }
 
-int cpirW() // CPIR WA,(R+)   10010RRR 00010101
+int cpirW(void) // CPIR WA,(R+)   10010RRR 00010101
 {
     unsigned short i = (*cregsW[0]) - memW;
 
@@ -1859,7 +1854,7 @@ int cpirW() // CPIR WA,(R+)   10010RRR 00010101
     }
 }
 
-int cpdB()  // CPD A,(R-)   10000RRR 00010110
+int cpdB(void)  // CPD A,(R-)   10000RRR 00010110
 {
     unsigned char i = (*cregsB[1]) - memB;
 
@@ -1873,7 +1868,7 @@ int cpdB()  // CPD A,(R-)   10000RRR 00010110
     return 8;
 }
 
-int cpdW()  // CPD WA,(R-)   10010RRR 00010110
+int cpdW(void)  // CPD WA,(R-)   10010RRR 00010110
 {
     unsigned short i = (*cregsW[0]) - memW;
 
@@ -1887,7 +1882,7 @@ int cpdW()  // CPD WA,(R-)   10010RRR 00010110
     return 8;
 }
 
-int cpdrB() // CPDR A,(R-)   10000RRR 00010111
+int cpdrB(void) // CPDR A,(R-)   10000RRR 00010111
 {
     unsigned char i = (*cregsB[1]) - memB;
 
@@ -1910,7 +1905,7 @@ int cpdrB() // CPDR A,(R-)   10000RRR 00010111
     }
 }
 
-int cpdrW() // CPDR WA,(R-)   10010RRR 00010111
+int cpdrW(void) // CPDR WA,(R-)   10010RRR 00010111
 {
     unsigned short i = (*cregsW[0]) - memW;
 
@@ -1937,7 +1932,7 @@ int cpdrW() // CPDR WA,(R-)   10010RRR 00010111
 ////////////////////////////// ADD ///////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-inline unsigned char MyAddB(unsigned char i, unsigned char j)
+static INLINE unsigned char MyAddB(unsigned char i, unsigned char j)
 {
     // 100% correct
     unsigned char oldi = i;
@@ -1953,7 +1948,7 @@ inline unsigned char MyAddB(unsigned char i, unsigned char j)
     return i;
 }
 
-inline unsigned short MyAddW(unsigned short i, unsigned short j)
+static INLINE unsigned short MyAddW(unsigned short i, unsigned short j)
 {
     unsigned short oldi = i;
 
@@ -1968,7 +1963,7 @@ inline unsigned short MyAddW(unsigned short i, unsigned short j)
     return i;
 }
 
-inline unsigned int MyAddL(unsigned int i, unsigned int j)
+static INLINE unsigned int MyAddL(unsigned int i, unsigned int j)
 {
     unsigned int oldi = i;
 
@@ -1982,72 +1977,72 @@ inline unsigned int MyAddL(unsigned int i, unsigned int j)
     return i;
 }
 
-int addRrB()
+int addRrB(void)
 {
     *cregsB[lastbyte&7] = MyAddB(*cregsB[lastbyte&7],*regB);
     return 4;
 }
-int addRrW()
+int addRrW(void)
 {
     *cregsW[lastbyte&7] = MyAddW(*cregsW[lastbyte&7],*regW);
     return 4;
 }
-int addRrL()
+int addRrL(void)
 {
     *cregsL[lastbyte&7] = MyAddL(*cregsL[lastbyte&7],*regL);
     return 7;
 }
-int addrIB()
+int addrIB(void)
 {
     *regB = MyAddB(*regB,readbyte());
     return 4;
 }
-int addrIW()
+int addrIW(void)
 {
     *regW = MyAddW(*regW,readword());
     return 4;
 }
-int addrIL()
+int addrIL(void)
 {
     *regL = MyAddL(*regL,readlong());
     return 7;
 }
-int addRMB00()
+int addRMB00(void)
 {
     *cregsB[lastbyte&7] = MyAddB(*cregsB[lastbyte&7],memB);
     return 4;
 }
-int addRMW10()
+int addRMW10(void)
 {
     *cregsW[lastbyte&7] = MyAddW(*cregsW[lastbyte&7],memW);
     return 4;
 }
-int addRML20()
+int addRML20(void)
 {
     *cregsL[lastbyte&7] = MyAddL(*cregsL[lastbyte&7],memL);
     return 6;
 }
-int addMRB00()
+int addMRB00(void)
 {
     mem_writeB(mem,MyAddB(memB,*cregsB[lastbyte&7]));
     return 6;
 }
-int addMRW10()
+int addMRW10(void)
 {
     mem_writeW(mem,MyAddW(memW,*cregsW[lastbyte&7]));
     return 6;
 }
-int addMRL20()
+int addMRL20(void)
 {
     mem_writeL(mem,MyAddL(memL,*cregsL[lastbyte&7]));
     return 10;
 }
-int addMI00()
+int addMI00(void)
 {
     mem_writeB(mem,MyAddB(memB,readbyte()));
     return 7;
 }
-int addwMI10()
+int addwMI10(void)
 {
     mem_writeW(mem,MyAddW(memW,readword()));
     return 8;
@@ -2057,7 +2052,7 @@ int addwMI10()
 ////////////////////////////// ADC ///////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-inline unsigned char MyAdcB(unsigned char i, unsigned char j)
+static INLINE unsigned char MyAdcB(unsigned char i, unsigned char j)
 {
     // 100% correct
     unsigned char oldi = i;
@@ -2074,7 +2069,7 @@ inline unsigned char MyAdcB(unsigned char i, unsigned char j)
     return i;
 }
 
-inline unsigned short MyAdcW(unsigned short i, unsigned short j)
+static INLINE unsigned short MyAdcW(unsigned short i, unsigned short j)
 {
     unsigned short oldi = i;
     unsigned short oldC = (unsigned short)(gen_regsSR & CF);
@@ -2090,7 +2085,7 @@ inline unsigned short MyAdcW(unsigned short i, unsigned short j)
     return i;
 }
 
-inline unsigned int MyAdcL(unsigned int i, unsigned int j)
+static INLINE unsigned int MyAdcL(unsigned int i, unsigned int j)
 {
     unsigned int oldi = i;
     unsigned int oldC = gen_regsSR & CF;
@@ -2105,72 +2100,72 @@ inline unsigned int MyAdcL(unsigned int i, unsigned int j)
     return i;
 }
 
-int adcRrB()
+int adcRrB(void)
 {
     *cregsB[lastbyte&7] = MyAdcB(*cregsB[lastbyte&7],*regB);
     return 4;
 }
-int adcRrW()
+int adcRrW(void)
 {
     *cregsW[lastbyte&7] = MyAdcW(*cregsW[lastbyte&7],*regW);
     return 4;
 }
-int adcRrL()
+int adcRrL(void)
 {
     *cregsL[lastbyte&7] = MyAdcL(*cregsL[lastbyte&7],*regL);
     return 7;
 }
-int adcrIB()
+int adcrIB(void)
 {
     *regB = MyAdcB(*regB,readbyte());
     return 4;
 }
-int adcrIW()
+int adcrIW(void)
 {
     *regW = MyAdcW(*regW,readword());
     return 4;
 }
-int adcrIL()
+int adcrIL(void)
 {
     *regL = MyAdcL(*regL,readlong());
     return 7;
 }
-int adcRMB00()
+int adcRMB00(void)
 {
     *cregsB[lastbyte&7] = MyAdcB(*cregsB[lastbyte&7],memB);
     return 4;
 }
-int adcRMW10()
+int adcRMW10(void)
 {
     *cregsW[lastbyte&7] = MyAdcW(*cregsW[lastbyte&7],memW);
     return 4;
 }
-int adcRML20()
+int adcRML20(void)
 {
     *cregsL[lastbyte&7] = MyAdcL(*cregsL[lastbyte&7],memL);
     return 6;
 }
-int adcMRB00()
+int adcMRB00(void)
 {
     mem_writeB(mem,MyAdcB(memB,*cregsB[lastbyte&7]));
     return 6;
 }
-int adcMRW10()
+int adcMRW10(void)
 {
     mem_writeW(mem,MyAdcW(memW,*cregsW[lastbyte&7]));
     return 6;
 }
-int adcMRL20()
+int adcMRL20(void)
 {
     mem_writeL(mem,MyAdcL(memL,*cregsL[lastbyte&7]));
     return 10;
 }
-int adcMI00()
+int adcMI00(void)
 {
     mem_writeB(mem,MyAdcB(memB,readbyte()));
     return 7;
 }
-int adcwMI10()
+int adcwMI10(void)
 {
     mem_writeW(mem,MyAdcW(memW,readword()));
     return 8;
@@ -2180,7 +2175,7 @@ int adcwMI10()
 ////////////////////////////// SUB ///////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-inline unsigned char MySubB(unsigned char i, unsigned char j)
+static INLINE unsigned char MySubB(unsigned char i, unsigned char j)
 {
 #if 1//speed hack
     int res = i - j;
@@ -2207,7 +2202,7 @@ inline unsigned char MySubB(unsigned char i, unsigned char j)
 #endif
 }
 
-inline unsigned short MySubW(unsigned short i, unsigned short j)
+static INLINE unsigned short MySubW(unsigned short i, unsigned short j)
 {
 #if 1//speed hack
     int res = i - j;
@@ -2234,7 +2229,7 @@ inline unsigned short MySubW(unsigned short i, unsigned short j)
 #endif
 }
 
-inline unsigned int MySubL(unsigned int i, unsigned int j)
+static INLINE unsigned int MySubL(unsigned int i, unsigned int j)
 {
 #if 1//speed hack
     unsigned int oldi = i;
@@ -2261,72 +2256,72 @@ inline unsigned int MySubL(unsigned int i, unsigned int j)
 #endif
 }
 
-int subRrB()
+int subRrB(void)
 {
     *cregsB[lastbyte&7] = MySubB(*cregsB[lastbyte&7],*regB);
     return 4;
 }
-int subRrW()
+int subRrW(void)
 {
     *cregsW[lastbyte&7] = MySubW(*cregsW[lastbyte&7],*regW);
     return 4;
 }
-int subRrL()
+int subRrL(void)
 {
     *cregsL[lastbyte&7] = MySubL(*cregsL[lastbyte&7],*regL);
     return 7;
 }
-int subrIB()
+int subrIB(void)
 {
     *regB = MySubB(*regB,readbyte());
     return 4;
 }
-int subrIW()
+int subrIW(void)
 {
     *regW = MySubW(*regW,readword());
     return 4;
 }
-int subrIL()
+int subrIL(void)
 {
     *regL = MySubL(*regL,readlong());
     return 7;
 }
-int subRMB00()
+int subRMB00(void)
 {
     *cregsB[lastbyte&7] = MySubB(*cregsB[lastbyte&7],memB);
     return 4;
 }
-int subRMW10()
+int subRMW10(void)
 {
     *cregsW[lastbyte&7] = MySubW(*cregsW[lastbyte&7],memW);
     return 4;
 }
-int subRML20()
+int subRML20(void)
 {
     *cregsL[lastbyte&7] = MySubL(*cregsL[lastbyte&7],memL);
     return 6;
 }
-int subMRB00()
+int subMRB00(void)
 {
     mem_writeB(mem,MySubB(memB,*cregsB[lastbyte&7]));
     return 6;
 }
-int subMRW10()
+int subMRW10(void)
 {
     mem_writeW(mem,MySubW(memW,*cregsW[lastbyte&7]));
     return 6;
 }
-int subMRL20()
+int subMRL20(void)
 {
     mem_writeL(mem,MySubL(memL,*cregsL[lastbyte&7]));
     return 10;
 }
-int subMI00()
+int subMI00(void)
 {
     mem_writeB(mem,MySubB(memB,readbyte()));
     return 7;
 }
-int subwMI10()
+int subwMI10(void)
 {
     mem_writeW(mem,MySubW(memW,readword()));
     return 8;
@@ -2336,7 +2331,7 @@ int subwMI10()
 ////////////////////////////// SBC ///////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-inline unsigned char MySbcB(unsigned char i, unsigned char j)
+static INLINE unsigned char MySbcB(unsigned char i, unsigned char j)
 {
     // 100% correct
     unsigned char oldi = i;
@@ -2352,7 +2347,7 @@ inline unsigned char MySbcB(unsigned char i, unsigned char j)
     return i;
 }
 
-inline unsigned short MySbcW(unsigned short i, unsigned short j)
+static INLINE unsigned short MySbcW(unsigned short i, unsigned short j)
 {
     unsigned short oldi = i;
     unsigned short oldC = (unsigned short)(gen_regsSR & CF);
@@ -2368,7 +2363,7 @@ inline unsigned short MySbcW(unsigned short i, unsigned short j)
     return i;
 }
 
-inline unsigned int MySbcL(unsigned int i, unsigned int j)
+static INLINE unsigned int MySbcL(unsigned int i, unsigned int j)
 {
     unsigned int oldi = i;
     unsigned int oldC = gen_regsSR & CF;
@@ -2383,72 +2378,72 @@ inline unsigned int MySbcL(unsigned int i, unsigned int j)
     return i;
 }
 
-int sbcRrB()
+int sbcRrB(void)
 {
     *cregsB[lastbyte&7] = MySbcB(*cregsB[lastbyte&7],*regB);
     return 4;
 }
-int sbcRrW()
+int sbcRrW(void)
 {
     *cregsW[lastbyte&7] = MySbcW(*cregsW[lastbyte&7],*regW);
     return 4;
 }
-int sbcRrL()
+int sbcRrL(void)
 {
     *cregsL[lastbyte&7] = MySbcL(*cregsL[lastbyte&7],*regL);
     return 7;
 }
-int sbcrIB()
+int sbcrIB(void)
 {
     *regB = MySbcB(*regB,readbyte());
     return 4;
 }
-int sbcrIW()
+int sbcrIW(void)
 {
     *regW = MySbcW(*regW,readword());
     return 4;
 }
-int sbcrIL()
+int sbcrIL(void)
 {
     *regL = MySbcL(*regL,readlong());
     return 7;
 }
-int sbcRMB00()
+int sbcRMB00(void)
 {
     *cregsB[lastbyte&7] = MySbcB(*cregsB[lastbyte&7],memB);
     return 4;
 }
-int sbcRMW10()
+int sbcRMW10(void)
 {
     *cregsW[lastbyte&7] = MySbcW(*cregsW[lastbyte&7],memW);
     return 4;
 }
-int sbcRML20()
+int sbcRML20(void)
 {
     *cregsL[lastbyte&7] = MySbcL(*cregsL[lastbyte&7],memL);
     return 6;
 }
-int sbcMRB00()
+int sbcMRB00(void)
 {
     mem_writeB(mem,MySbcB(memB,*cregsB[lastbyte&7]));
     return 6;
 }
-int sbcMRW10()
+int sbcMRW10(void)
 {
     mem_writeW(mem,MySbcW(memW,*cregsW[lastbyte&7]));
     return 6;
 }
-int sbcMRL20()
+int sbcMRL20(void)
 {
     mem_writeL(mem,MySbcL(memL,*cregsL[lastbyte&7]));
     return 10;
 }
-int sbcMI00()
+int sbcMI00(void)
 {
     mem_writeB(mem,MySbcB(memB,readbyte()));
     return 7;
 }
-int sbcwMI10()
+int sbcwMI10(void)
 {
     mem_writeW(mem,MySbcW(memW,readword()));
     return 8;
@@ -2458,82 +2453,82 @@ int sbcwMI10()
 ////////////////////////////// CP ////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-int cpRrB()
+int cpRrB(void)
 {
     MySubB(*cregsB[lastbyte&7],*regB);
     return 4;
 }
-int cpRrW()
+int cpRrW(void)
 {
     MySubW(*cregsW[lastbyte&7],*regW);
     return 4;
 }
-int cpRrL()
+int cpRrL(void)
 {
     MySubL(*cregsL[lastbyte&7],*regL);
     return 7;
 }
-int cpr3B()
+int cpr3B(void)
 {
     MySubB(*regB,lastbyte&7);
     return 4;
 }
-int cpr3W()
+int cpr3W(void)
 {
     MySubW(*regW,lastbyte&7);
     return 4;
 }
-int cprIB()
+int cprIB(void)
 {
     MySubB(*regB,readbyte());
     return 4;
 }
-int cprIW()
+int cprIW(void)
 {
     MySubW(*regW,readword());
     return 4;
 }
-int cprIL()
+int cprIL(void)
 {
     MySubL(*regL,readlong());
     return 7;
 }
-int cpRMB00()
+int cpRMB00(void)
 {
     MySubB(*cregsB[lastbyte&7],memB);
     return 4;
 }
-int cpRMW10()
+int cpRMW10(void)
 {
     MySubW(*cregsW[lastbyte&7],memW);
     return 4;
 }
-int cpRML20()
+int cpRML20(void)
 {
     MySubL(*cregsL[lastbyte&7],memL);
     return 6;
 }
-int cpMRB00()
+int cpMRB00(void)
 {
     MySubB(memB,*cregsB[lastbyte&7]);
     return 6;
 }
-int cpMRW10()
+int cpMRW10(void)
 {
     MySubW(memW,*cregsW[lastbyte&7]);
     return 6;
 }
-int cpMRL20()
+int cpMRL20(void)
 {
     MySubL(memL,*cregsL[lastbyte&7]);
     return 6;
 }
-int cpMI00()
+int cpMI00(void)
 {
     MySubB(memB,readbyte());
     return 6;
 }
-int cpwMI10()
+int cpwMI10(void)
 {
     MySubW(memW,readword());
     return 6;
@@ -2543,7 +2538,7 @@ int cpwMI10()
 ////////////////////////////// INC ///////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-int inc3rB() // INC #3,r    11001rrr 01100xxx
+int inc3rB(void) // INC #3,r    11001rrr 01100xxx
 {
     unsigned int oldC = gen_regsSR & CF;
 
@@ -2552,19 +2547,19 @@ int inc3rB() // INC #3,r    11001rrr 01100xxx
     return 4;
 }
 
-int inc3rW() // INC #3,r    11011rrr 01100xxx
+int inc3rW(void) // INC #3,r    11011rrr 01100xxx
 {
     *regW+= ((lastbyte&7) ? (lastbyte&7) : 8);
     return 4;
 }
 
-int inc3rL() // INC #3,r    11101rrr 01100xxx
+int inc3rL(void) // INC #3,r    11101rrr 01100xxx
 {
     *regL+= ((lastbyte&7) ? (lastbyte&7) : 8);
     return 4;
 }
 
-int inc3M00() // INC #3,(mem)   10000mmm 01100xxx
+int inc3M00(void) // INC #3,(mem)   10000mmm 01100xxx
 {
     unsigned int oldC = gen_regsSR & CF;
 
@@ -2573,7 +2568,7 @@ int inc3M00() // INC #3,(mem)   10000mmm 01100xxx
     return 6;
 }
 
-int incw3M10() // INCW #3,(mem)  10010mmm 01100xxx
+int incw3M10(void) // INCW #3,(mem)  10010mmm 01100xxx
 {
     unsigned int oldC = gen_regsSR & CF;
 
@@ -2586,7 +2581,7 @@ int incw3M10() // INCW #3,(mem)  10010mmm 01100xxx
 ////////////////////////////// DEC ///////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-int dec3rB() // DEC #3,r    11001rrr 01101xxx
+int dec3rB(void) // DEC #3,r    11001rrr 01101xxx
 {
     unsigned int oldC = gen_regsSR & CF;
 
@@ -2595,19 +2590,19 @@ int dec3rB() // DEC #3,r    11001rrr 01101xxx
     return 4;
 }
 
-int dec3rW() // DEC #3,r    11011rrr 01101xxx
+int dec3rW(void) // DEC #3,r    11011rrr 01101xxx
 {
     *regW-= ((lastbyte&7) ? (lastbyte&7) : 8);
     return 4;
 }
 
-int dec3rL() // DEC #3,r    11101rrr 01101xxx
+int dec3rL(void) // DEC #3,r    11101rrr 01101xxx
 {
     *regL-= ((lastbyte&7) ? (lastbyte&7) : 8);
     return 5;
 }
 
-int dec3M00() // DEC #3,(mem)   10000mmm 01101xxx
+int dec3M00(void) // DEC #3,(mem)   10000mmm 01101xxx
 {
     unsigned int oldC = gen_regsSR & CF;
 
@@ -2616,7 +2611,7 @@ int dec3M00() // DEC #3,(mem)   10000mmm 01101xxx
     return 6;
 }
 
-int decw3M10() // DECW #3,(mem)  10010mmm 01101xxx
+int decw3M10(void) // DECW #3,(mem)  10010mmm 01101xxx
 {
     unsigned int oldC = gen_regsSR & CF;
 
@@ -2629,12 +2624,12 @@ int decw3M10() // DECW #3,(mem)  10010mmm 01101xxx
 ////////////////////////////// NEG ///////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-int negrB()
+int negrB(void)
 {
     *regB = MySubB(0,*regB);
     return 5;
 }
-int negrW()
+int negrW(void)
 {
     *regW = MySubW(0,*regW);
     return 5;
@@ -2644,12 +2639,12 @@ int negrW()
 ////////////////////////////// EXTZ //////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-int extzrW()
+int extzrW(void)
 {
     *regW&=0x00ff;
     return 4;
 }
-int extzrL()
+int extzrL(void)
 {
     *regL&=0x0000ffff;
     return 4;
@@ -2659,7 +2654,7 @@ int extzrL()
 ////////////////////////////// EXTS //////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-int extsrW() // EXTS r    11011rrr 00010011
+int extsrW(void) // EXTS r    11011rrr 00010011
 {
     if (*regW&0x80)
         *regW|=0xff00;
@@ -2668,7 +2663,7 @@ int extsrW() // EXTS r    11011rrr 00010011
     return 5;
 }
 
-int extsrL() // EXTS r    11101rrr 00010011
+int extsrL(void) // EXTS r    11101rrr 00010011
 {
     if (*regL&0x8000)
         *regL|=0xffff0000;
@@ -2681,7 +2676,7 @@ int extsrL() // EXTS r    11101rrr 00010011
 ////////////////////////////// DAA ///////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-inline void parityB(unsigned char j)
+static INLINE void parityB(unsigned char j)
 {
 #ifdef USE_PARITY_TABLE //speed hack
     gen_regsSR = (gen_regsSR & ~VF) | parityVtable[j];
@@ -2698,7 +2693,7 @@ inline void parityB(unsigned char j)
 #endif
 }
 
-inline void parityW(unsigned short j)
+static INLINE void parityW(unsigned short j)
 {
 #ifdef USE_PARITY_TABLE //speed hack
     gen_regsSR = (gen_regsSR & ~VF) | (parityVtable[j>>8] ^ parityVtable[j&0xFF]);
@@ -2715,7 +2710,7 @@ inline void parityW(unsigned short j)
 #endif
 }
 
-inline void parityL(unsigned int j)
+static INLINE void parityL(unsigned int j)
 {
 #ifdef USE_PARITY_TABLE //speed hack
     gen_regsSR = (gen_regsSR & ~VF) | (parityVtable[(j>>24)&0xFF] ^ parityVtable[(j>>16)&0xFF] ^ parityVtable[(j>>8)&0xFF] ^ parityVtable[j&0xFF]);
@@ -2732,7 +2727,7 @@ inline void parityL(unsigned int j)
 #endif
 }
 
-int daar()  // DAA r    11001rrr 00010000
+int daar(void)  // DAA r    11001rrr 00010000
 {
     // 100% with hardware
     unsigned char oldB = *regB;
@@ -2819,13 +2814,13 @@ int daar()  // DAA r    11001rrr 00010000
 ////////////////////////////// PAA ///////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-int paarW()
+int paarW(void)
 {
     if (*regW&1)
         *regW+=1;
     return 4;
 }
-int paarL()
+int paarL(void)
 {
     if (*regL&1)
         *regL+=1;
@@ -2836,19 +2831,19 @@ int paarL()
 ////////////////////////////// MUL ///////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-int mulRrB() // MUL RR,r    11001rrr 01000RRR
+int mulRrB(void) // MUL RR,r    11001rrr 01000RRR
 {
     *cregsW[(lastbyte&7)>>1] = (*cregsB[lastbyte&7]) * (*regB);
     return 18;
 }
 
-int mulRrW() // MUL RR,r    11011rrr 01000RRR
+int mulRrW(void) // MUL RR,r    11011rrr 01000RRR
 {
     *cregsL[lastbyte&7] = (*cregsW[lastbyte&7]) * (*regW);
     return 26;
 }
 
-int mulrIB() // MUL rr,#    11001rrr 00001000 xxxxxxxx
+int mulrIB(void) // MUL rr,#    11001rrr 00001000 xxxxxxxx
 {
     if (opcode>=0xc8)
     {
@@ -2861,19 +2856,19 @@ int mulrIB() // MUL rr,#    11001rrr 00001000 xxxxxxxx
     return 18;
 }
 
-int mulrIW() // MUL rr,#    11011rrr 00001000 xxxxxxxx xxxxxxxx
+int mulrIW(void) // MUL rr,#    11011rrr 00001000 xxxxxxxx xxxxxxxx
 {
     *((unsigned int *)regW) = (*regW) * readword();
     return 26;
 }
 
-int mulRMB00() // MUL RR,(mem)   10000mmm 01000RRR
+int mulRMB00(void) // MUL RR,(mem)   10000mmm 01000RRR
 {
     *cregsW[(lastbyte&7)>>1] = (*cregsB[lastbyte&7]) * memB;
     return 18;
 }
 
-int mulRMW10() // MUL RR,(mem)   10010mmm 01000RRR
+int mulRMW10(void) // MUL RR,(mem)   10010mmm 01000RRR
 {
     *cregsL[lastbyte&7] = (*cregsW[lastbyte&7]) * memW;
     return 26;
@@ -2883,19 +2878,19 @@ int mulRMW10() // MUL RR,(mem)   10010mmm 01000RRR
 ////////////////////////////// MULS //////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-int mulsRrB() // MULS RR,r    11001rrr 01001RRR
+int mulsRrB(void) // MULS RR,r    11001rrr 01001RRR
 {
     *cregsW[(lastbyte&7)>>1] = (signed char)(*cregsB[lastbyte&7]) * (signed char)(*regB);
     return 18;
 }
 
-int mulsRrW() // MULS RR,r    11011rrr 01001RRR
+int mulsRrW(void) // MULS RR,r    11011rrr 01001RRR
 {
     *cregsL[lastbyte&7] = (signed short)(*cregsW[lastbyte&7]) * (signed short)(*regW);
     return 26;
 }
 
-int mulsrIB() // MULS rr,#    11001rrr 00001001 xxxxxxxx
+int mulsrIB(void) // MULS rr,#    11001rrr 00001001 xxxxxxxx
 {
     if (opcode>=0xc8)
     {
@@ -2908,19 +2903,19 @@ int mulsrIB() // MULS rr,#    11001rrr 00001001 xxxxxxxx
     return 18;
 }
 
-int mulsrIW() // MULS rr,#    11011rrr 00001001 xxxxxxxx xxxxxxxx
+int mulsrIW(void) // MULS rr,#    11011rrr 00001001 xxxxxxxx xxxxxxxx
 {
     *((unsigned int *)regW) = (signed short)(*regW) * (signed short)readword();
     return 26;
 }
 
-int mulsRMB00() // MULS RR,(mem)  10000mmm 01001RRR
+int mulsRMB00(void) // MULS RR,(mem)  10000mmm 01001RRR
 {
     *cregsW[(lastbyte&7)>>1] = (signed char)(*cregsB[lastbyte&7]) * (signed char)memB;
     return 18;
 }
 
-int mulsRMW10() // MULS RR,(mem)  10010mmm 01001RRR
+int mulsRMW10(void) // MULS RR,(mem)  10010mmm 01001RRR
 {
     *cregsL[lastbyte&7] = (signed short)(*cregsW[lastbyte&7]) * (signed short)memW;
     return 26;
@@ -2930,7 +2925,7 @@ int mulsRMW10() // MULS RR,(mem)  10010mmm 01001RRR
 ////////////////////////////// DIV ///////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-inline unsigned short myDivB(unsigned short i, unsigned char j)
+static INLINE unsigned short myDivB(unsigned short i, unsigned char j)
 {
     if (!j)
     {
@@ -2961,7 +2956,7 @@ inline unsigned short myDivB(unsigned short i, unsigned char j)
     return ((unsigned short)(res.quot & 0xFF)) | ((unsigned short)((res.rem & 0xFF) << 8));
 }
 
-inline unsigned int myDivW(unsigned int i, unsigned short j)
+static INLINE unsigned int myDivW(unsigned int i, unsigned short j)
 {
     if (!j)
     {
@@ -2991,19 +2986,19 @@ inline unsigned int myDivW(unsigned int i, unsigned short j)
     return (res.quot & 0xFFFF) | ((res.rem & 0xFFFF) << 16);
 }
 
-int divRrB() // DIV RR,r    11001rrr 01010RRR
+int divRrB(void) // DIV RR,r    11001rrr 01010RRR
 {
     *cregsW[(lastbyte&7)>>1] = myDivB(*cregsW[(lastbyte&7)>>1], *regB);
     return 22;
 }
 
-int divRrW() // DIV RR,r    11011rrr 01010RRR
+int divRrW(void) // DIV RR,r    11011rrr 01010RRR
 {
     *cregsL[lastbyte&7] = myDivW(*cregsL[lastbyte&7], *regW);
     return 30;
 }
 
-int divrIB() // DIV rr,#    11001rrr 00001010 xxxxxxxx
+int divrIB(void) // DIV rr,#    11001rrr 00001010 xxxxxxxx
 {
     unsigned char i = readbyte();
 
@@ -3018,7 +3013,7 @@ int divrIB() // DIV rr,#    11001rrr 00001010 xxxxxxxx
     return 22;
 }
 
-int divrIW() // DIV rr,#    11011rrr 00001010 xxxxxxxx xxxxxxxx
+int divrIW(void) // DIV rr,#    11011rrr 00001010 xxxxxxxx xxxxxxxx
 {
     unsigned short i = readword();
 
@@ -3026,7 +3021,7 @@ int divrIW() // DIV rr,#    11011rrr 00001010 xxxxxxxx xxxxxxxx
     return 30;
 }
 
-int divRMB00() // DIV RR,(mem)   10000mmm 01010RRR
+int divRMB00(void) // DIV RR,(mem)   10000mmm 01010RRR
 {
     unsigned char i = memB;
 
@@ -3034,7 +3029,7 @@ int divRMB00() // DIV RR,(mem)   10000mmm 01010RRR
     return 22;
 }
 
-int divRMW10() // DIV RR,(mem)   10010mmm 01010RRR
+int divRMW10(void) // DIV RR,(mem)   10010mmm 01010RRR
 {
     unsigned short i = memW;
 
@@ -3081,19 +3076,19 @@ unsigned int myDivsW(signed int i, signed short j)
     return (res.quot & 0xFFFF) | ((res.rem & 0xFFFF) << 16);
 }
 
-int divsRrB() // DIVS RR,r    11001rrr 01011RRR
+int divsRrB(void) // DIVS RR,r    11001rrr 01011RRR
 {
     *cregsW[(lastbyte&7)>>1] = myDivsB((signed short)(*cregsW[(lastbyte&7)>>1]), (signed char)(*regB));
     return 24;
 }
 
-int divsRrW() // DIVS RR,r    11011rrr 01011RRR
+int divsRrW(void) // DIVS RR,r    11011rrr 01011RRR
 {
     *cregsL[lastbyte&7] = myDivsW((signed int)(*cregsL[lastbyte&7]), (signed short)(*regW));
     return 32;
 }
 
-int divsrIB() // DIVS rr,#    11001rrr 00001011 xxxxxxxx
+int divsrIB(void) // DIVS rr,#    11001rrr 00001011 xxxxxxxx
 {
     signed char i = readbyte();
 
@@ -3108,7 +3103,7 @@ int divsrIB() // DIVS rr,#    11001rrr 00001011 xxxxxxxx
     return 24;
 }
 
-int divsrIW() // DIVS rr,#    11011rrr 00001011 xxxxxxxx xxxxxxxx
+int divsrIW(void) // DIVS rr,#    11011rrr 00001011 xxxxxxxx xxxxxxxx
 {
     signed short i = readword();
 
@@ -3116,7 +3111,7 @@ int divsrIW() // DIVS rr,#    11011rrr 00001011 xxxxxxxx xxxxxxxx
     return 32;
 }
 
-int divsRMB00() // DIVS RR,(mem)  10000mmm 01011RRR
+int divsRMB00(void) // DIVS RR,(mem)  10000mmm 01011RRR
 {
     signed char i = memB;
 
@@ -3124,7 +3119,7 @@ int divsRMB00() // DIVS RR,(mem)  10000mmm 01011RRR
     return 24;
 }
 
-int divsRMW10() // DIVS RR,(mem)  10010mmm 01011RRR
+int divsRMW10(void) // DIVS RR,(mem)  10010mmm 01011RRR
 {
     signed short i = memW;
 
@@ -3136,7 +3131,7 @@ int divsRMW10() // DIVS RR,(mem)  10010mmm 01011RRR
 ////////////////////////////// MULA //////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-int mular() // MULA rr     11011rrr 00011001
+int mular(void) // MULA rr     11011rrr 00011001
 {
     unsigned int *p;
 
@@ -3154,7 +3149,7 @@ int mular() // MULA rr     11011rrr 00011001
 ////////////////////////////// MINC //////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-int minc1() // MINC1 #,r    11011rrr 00111000 xxxxxxxx xxxxxxxx
+int minc1(void) // MINC1 #,r    11011rrr 00111000 xxxxxxxx xxxxxxxx
 {
     unsigned short i;
 
@@ -3163,7 +3158,7 @@ int minc1() // MINC1 #,r    11011rrr 00111000 xxxxxxxx xxxxxxxx
     return 8;
 }
 
-int minc2() // MINC2 #,r    11011rrr 00111001 xxxxxxxx xxxxxxxx
+int minc2(void) // MINC2 #,r    11011rrr 00111001 xxxxxxxx xxxxxxxx
 {
     unsigned short i;
 
@@ -3172,7 +3167,7 @@ int minc2() // MINC2 #,r    11011rrr 00111001 xxxxxxxx xxxxxxxx
     return 8;
 }
 
-int minc4() // MINC4 #,r    11011rrr 00111010 xxxxxxxx xxxxxxxx
+int minc4(void) // MINC4 #,r    11011rrr 00111010 xxxxxxxx xxxxxxxx
 {
     unsigned short i;
 
@@ -3185,7 +3180,7 @@ int minc4() // MINC4 #,r    11011rrr 00111010 xxxxxxxx xxxxxxxx
 ////////////////////////////// MDEC //////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-int mdec1() // MDEC1 #,r    11011rrr 00111100 xxxxxxxx xxxxxxxx
+int mdec1(void) // MDEC1 #,r    11011rrr 00111100 xxxxxxxx xxxxxxxx
 {
     unsigned short i;
 
@@ -3194,7 +3189,7 @@ int mdec1() // MDEC1 #,r    11011rrr 00111100 xxxxxxxx xxxxxxxx
     return 7;
 }
 
-int mdec2() // MDEC2 #,r    11011rrr 00111101 xxxxxxxx xxxxxxxx
+int mdec2(void) // MDEC2 #,r    11011rrr 00111101 xxxxxxxx xxxxxxxx
 {
     unsigned short i;
 
@@ -3203,7 +3198,7 @@ int mdec2() // MDEC2 #,r    11011rrr 00111101 xxxxxxxx xxxxxxxx
     return 7;
 }
 
-int mdec4() // MDEC4 #,r    11011rrr 00111110 xxxxxxxx xxxxxxxx
+int mdec4(void) // MDEC4 #,r    11011rrr 00111110 xxxxxxxx xxxxxxxx
 {
     unsigned short i;
 
@@ -3254,72 +3249,72 @@ unsigned int MyAndL(unsigned int i, unsigned int j)
     return i;
 }
 
-int andRrB()
+int andRrB(void)
 {
     *cregsB[lastbyte&7] = MyAndB(*cregsB[lastbyte&7],*regB);
     return 4;
 }
-int andRrW()
+int andRrW(void)
 {
     *cregsW[lastbyte&7] = MyAndW(*cregsW[lastbyte&7],*regW);
     return 4;
 }
-int andRrL()
+int andRrL(void)
 {
     *cregsL[lastbyte&7] = MyAndL(*cregsL[lastbyte&7],*regL);
     return 7;
 }
-int andrIB()
+int andrIB(void)
 {
     *regB = MyAndB(*regB,readbyte());
     return 4;
 }
-int andrIW()
+int andrIW(void)
 {
     *regW = MyAndW(*regW,readword());
     return 4;
 }
-int andrIL()
+int andrIL(void)
 {
     *regL = MyAndL(*regL,readlong());
     return 7;
 }
-int andRMB00()
+int andRMB00(void)
 {
     *cregsB[lastbyte&7] = MyAndB(*cregsB[lastbyte&7],memB);
     return 4;
 }
-int andRMW10()
+int andRMW10(void)
 {
     *cregsW[lastbyte&7] = MyAndW(*cregsW[lastbyte&7],memW);
     return 4;
 }
-int andRML20()
+int andRML20(void)
 {
     *cregsL[lastbyte&7] = MyAndL(*cregsL[lastbyte&7],memL);
     return 6;
 }
-int andMRB00()
+int andMRB00(void)
 {
     mem_writeB(mem,MyAndB(memB,*cregsB[lastbyte&7]));
     return 6;
 }
-int andMRW10()
+int andMRW10(void)
 {
     mem_writeW(mem,MyAndW(memW,*cregsW[lastbyte&7]));
     return 6;
 }
-int andMRL20()
+int andMRL20(void)
 {
     mem_writeL(mem,MyAndL(memL,*cregsL[lastbyte&7]));
     return 10;
 }
-int andMI00()
+int andMI00(void)
 {
     mem_writeB(mem,MyAndB(memB,readbyte()));
     return 7;
 }
-int andwMI10()
+int andwMI10(void)
 {
     mem_writeW(mem,MyAndW(memW,readword()));
     return 8;
@@ -3329,7 +3324,7 @@ int andwMI10()
 ////////////////////////////// OR ////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-inline unsigned char MyOrB(unsigned char i, unsigned char j)
+static INLINE unsigned char MyOrB(unsigned char i, unsigned char j)
 {
     // 100% correct
     i|= j;
@@ -3347,7 +3342,7 @@ inline unsigned char MyOrB(unsigned char i, unsigned char j)
     return i;
 }
 
-inline unsigned short MyOrW(unsigned short i, unsigned short j)
+static INLINE unsigned short MyOrW(unsigned short i, unsigned short j)
 {
     i|= j;
     gen_regsSR = gen_regsSR & ~(SF|ZF|HF|VF|NF|CF);
@@ -3358,7 +3353,7 @@ inline unsigned short MyOrW(unsigned short i, unsigned short j)
     return i;
 }
 
-inline unsigned int MyOrL(unsigned int i, unsigned int j)
+static INLINE unsigned int MyOrL(unsigned int i, unsigned int j)
 {
     i|= j;
     gen_regsSR = gen_regsSR & ~(SF|ZF|HF|VF|NF|CF);
@@ -3368,72 +3363,72 @@ inline unsigned int MyOrL(unsigned int i, unsigned int j)
     return i;
 }
 
-int orRrB()
+int orRrB(void)
 {
     *cregsB[lastbyte&7] = MyOrB(*cregsB[lastbyte&7],*regB);
     return 4;
 }
-int orRrW()
+int orRrW(void)
 {
     *cregsW[lastbyte&7] = MyOrW(*cregsW[lastbyte&7],*regW);
     return 4;
 }
-int orRrL()
+int orRrL(void)
 {
     *cregsL[lastbyte&7] = MyOrL(*cregsL[lastbyte&7],*regL);
     return 7;
 }
-int orrIB()
+int orrIB(void)
 {
     *regB = MyOrB(*regB,readbyte());
     return 4;
 }
-int orrIW()
+int orrIW(void)
 {
     *regW = MyOrW(*regW,readword());
     return 4;
 }
-int orrIL()
+int orrIL(void)
 {
     *regL = MyOrL(*regL,readlong());
     return 7;
 }
-int orRMB00()
+int orRMB00(void)
 {
     *cregsB[lastbyte&7] = MyOrB(*cregsB[lastbyte&7],memB);
     return 4;
 }
-int orRMW10()
+int orRMW10(void)
 {
     *cregsW[lastbyte&7] = MyOrW(*cregsW[lastbyte&7],memW);
     return 4;
 }
-int orRML20()
+int orRML20(void)
 {
     *cregsL[lastbyte&7] = MyOrL(*cregsL[lastbyte&7],memL);
     return 6;
 }
-int orMRB00()
+int orMRB00(void)
 {
     mem_writeB(mem,MyOrB(memB,*cregsB[lastbyte&7]));
     return 6;
 }
-int orMRW10()
+int orMRW10(void)
 {
     mem_writeW(mem,MyOrW(memW,*cregsW[lastbyte&7]));
     return 6;
 }
-int orMRL20()
+int orMRL20(void)
 {
     mem_writeL(mem,MyOrL(memL,*cregsL[lastbyte&7]));
     return 10;
 }
-int orMI00()
+int orMI00(void)
 {
     mem_writeB(mem,MyOrB(memB,readbyte()));
     return 7;
 }
-int orwMI10()
+int orwMI10(void)
 {
     mem_writeW(mem,MyOrW(memW,readword()));
     return 8;
@@ -3443,7 +3438,7 @@ int orwMI10()
 ////////////////////////////// XOR ///////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-inline unsigned char MyXorB(unsigned char i, unsigned char j)
+static INLINE unsigned char MyXorB(unsigned char i, unsigned char j)
 {
     // 100% correct
     i^= j;
@@ -3461,7 +3456,7 @@ inline unsigned char MyXorB(unsigned char i, unsigned char j)
     return i;
 }
 
-inline unsigned short MyXorW(unsigned short i, unsigned short j)
+static INLINE unsigned short MyXorW(unsigned short i, unsigned short j)
 {
     i^= j;
     gen_regsSR = gen_regsSR & ~(SF|ZF|HF|VF|NF|CF);
@@ -3472,7 +3467,7 @@ inline unsigned short MyXorW(unsigned short i, unsigned short j)
     return i;
 }
 
-inline unsigned int MyXorL(unsigned int i, unsigned int j)
+static INLINE unsigned int MyXorL(unsigned int i, unsigned int j)
 {
     i^= j;
     gen_regsSR = gen_regsSR & ~(SF|ZF|HF|VF|NF|CF);
@@ -3482,72 +3477,72 @@ inline unsigned int MyXorL(unsigned int i, unsigned int j)
     return i;
 }
 
-int xorRrB()
+int xorRrB(void)
 {
     *cregsB[lastbyte&7] = MyXorB(*cregsB[lastbyte&7],*regB);
     return 4;
 }
-int xorRrW()
+int xorRrW(void)
 {
     *cregsW[lastbyte&7] = MyXorW(*cregsW[lastbyte&7],*regW);
     return 4;
 }
-int xorRrL()
+int xorRrL(void)
 {
     *cregsL[lastbyte&7] = MyXorL(*cregsL[lastbyte&7],*regL);
     return 7;
 }
-int xorrIB()
+int xorrIB(void)
 {
     *regB = MyXorB(*regB,readbyte());
     return 4;
 }
-int xorrIW()
+int xorrIW(void)
 {
     *regW = MyXorW(*regW,readword());
     return 4;
 }
-int xorrIL()
+int xorrIL(void)
 {
     *regL = MyXorL(*regL,readlong());
     return 7;
 }
-int xorRMB00()
+int xorRMB00(void)
 {
     *cregsB[lastbyte&7] = MyXorB(*cregsB[lastbyte&7],memB);
     return 4;
 }
-int xorRMW10()
+int xorRMW10(void)
 {
     *cregsW[lastbyte&7] = MyXorW(*cregsW[lastbyte&7],memW);
     return 4;
 }
-int xorRML20()
+int xorRML20(void)
 {
     *cregsL[lastbyte&7] = MyXorL(*cregsL[lastbyte&7],memL);
     return 6;
 }
-int xorMRB00()
+int xorMRB00(void)
 {
     mem_writeB(mem,MyXorB(memB,*cregsB[lastbyte&7]));
     return 6;
 }
-int xorMRW10()
+int xorMRW10(void)
 {
     mem_writeW(mem,MyXorW(memW,*cregsW[lastbyte&7]));
     return 6;
 }
-int xorMRL20()
+int xorMRL20(void)
 {
     mem_writeL(mem,MyXorL(memL,*cregsL[lastbyte&7]));
     return 10;
 }
-int xorMI00()
+int xorMI00(void)
 {
     mem_writeB(mem,MyXorB(memB,readbyte()));
     return 7;
 }
-int xorwMI10()
+int xorwMI10(void)
 {
     mem_writeW(mem,MyXorW(memW,readword()));
     return 8;
@@ -3557,13 +3552,13 @@ int xorwMI10()
 ////////////////////////////// CPL ///////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-int cplrB()
+int cplrB(void)
 {
     *regB = ~*regB;
     gen_regsSR|= HF|NF;
     return 4;
 }
-int cplrW()
+int cplrW(void)
 {
     *regW = ~*regW;
     gen_regsSR|= HF|NF;
@@ -3583,32 +3578,32 @@ const unsigned short power2[16] =
 #define LDCF(A,B) if (A & power2[B]) gen_regsSR|= CF; \
     else    gen_regsSR&= ~CF;
 
-int ldcf4rB()
+int ldcf4rB(void)
 {
     LDCF(*regB,readbyte());
     return 4;
 }
-int ldcf4rW()
+int ldcf4rW(void)
 {
     LDCF(*regW,readbyte());
     return 4;
 }
-int ldcfArB()
+int ldcfArB(void)
 {
     LDCF(*regB,*cregsB[1]);
     return 4;
 }
-int ldcfArW()
+int ldcfArW(void)
 {
     LDCF(*regW,*cregsB[1]);
     return 4;
 }
-int ldcf3M30()
+int ldcf3M30(void)
 {
     LDCF(mem_readB(mem),lastbyte&7);
     return 8;
 }
-int ldcfAM30()
+int ldcfAM30(void)
 {
     LDCF(mem_readB(mem),*cregsB[1]);
     return 8;
@@ -3618,7 +3613,7 @@ int ldcfAM30()
 ////////////////////////////// STCF //////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-int stcf4rB() // STCF #4,r   11001rrr 00100100 0000xxxx
+int stcf4rB(void) // STCF #4,r   11001rrr 00100100 0000xxxx
 {
     if (gen_regsSR & CF)
         *regB|= power2[readbyte()];
@@ -3627,7 +3622,7 @@ int stcf4rB() // STCF #4,r   11001rrr 00100100 0000xxxx
     return 4;
 }
 
-int stcf4rW() // STCF #4,r   11011rrr 00100100 0000xxxx
+int stcf4rW(void) // STCF #4,r   11011rrr 00100100 0000xxxx
 {
     if (gen_regsSR & CF)
         *regW|= power2[readbyte()];
@@ -3636,7 +3631,7 @@ int stcf4rW() // STCF #4,r   11011rrr 00100100 0000xxxx
     return 4;
 }
 
-int stcfArB() // STCF A,r    11001rrr 00101100
+int stcfArB(void) // STCF A,r    11001rrr 00101100
 {
     if (gen_regsSR & CF)
         *regB|= power2[*cregsB[1]];
@@ -3645,7 +3640,7 @@ int stcfArB() // STCF A,r    11001rrr 00101100
     return 4;
 }
 
-int stcfArW() // STCF A,r    11011rrr 00101100
+int stcfArW(void) // STCF A,r    11011rrr 00101100
 {
     if (gen_regsSR & CF)
         *regW|= power2[*cregsB[1]];
@@ -3654,7 +3649,7 @@ int stcfArW() // STCF A,r    11011rrr 00101100
     return 4;
 }
 
-int stcf3M30() // STCF #3,(mem)  10110mmm 10100xxx
+int stcf3M30(void) // STCF #3,(mem)  10110mmm 10100xxx
 {
     if (gen_regsSR & CF)
         mem_writeB(mem,mem_readB(mem) | power2[lastbyte&7]);
@@ -3663,7 +3658,7 @@ int stcf3M30() // STCF #3,(mem)  10110mmm 10100xxx
     return 8;
 }
 
-int stcfAM30() // STCF A,(mem)   10110mmm 00101100
+int stcfAM30(void) // STCF A,(mem)   10110mmm 00101100
 {
     if (gen_regsSR & CF)
         mem_writeB(mem,mem_readB(mem) | power2[*cregsB[1]]);
@@ -3679,32 +3674,32 @@ int stcfAM30() // STCF A,(mem)   10110mmm 00101100
 #define ANDCF(A,B) if ((A & power2[B]) && (gen_regsSR & CF)) gen_regsSR|= CF; \
     else          gen_regsSR&= ~CF;
 
-int andcf4rB()
+int andcf4rB(void)
 {
     ANDCF(*regB, readbyte());
     return 4;
 }
-int andcf4rW()
+int andcf4rW(void)
 {
     ANDCF(*regW, readbyte());
     return 4;
 }
-int andcfArB()
+int andcfArB(void)
 {
     ANDCF(*regB, *cregsB[1]);
     return 4;
 }
-int andcfArW()
+int andcfArW(void)
 {
     ANDCF(*regW, *cregsB[1]);
     return 4;
 }
-int andcf3M30()
+int andcf3M30(void)
 {
     ANDCF(mem_readB(mem), lastbyte&7);
     return 8;
 }
-int andcfAM30()
+int andcfAM30(void)
 {
     ANDCF(mem_readB(mem), *cregsB[1]);
     return 8;
@@ -3716,32 +3711,32 @@ int andcfAM30()
 
 #define ORCF(A,B) gen_regsSR|= ((A >> B) & CF);
 
-int orcf4rB()
+int orcf4rB(void)
 {
     ORCF(*regB, readbyte());
     return 4;
 }
-int orcf4rW()
+int orcf4rW(void)
 {
     ORCF(*regW, readbyte());
     return 4;
 }
-int orcfArB()
+int orcfArB(void)
 {
     ORCF(*regB, *cregsB[1]);
     return 4;
 }
-int orcfArW()
+int orcfArW(void)
 {
     ORCF(*regW, *cregsB[1]);
     return 4;
 }
-int orcf3M30()
+int orcf3M30(void)
 {
     ORCF(mem_readB(mem), (lastbyte&7));
     return 8;
 }
-int orcfAM30()
+int orcfAM30(void)
 {
     ORCF(mem_readB(mem), *cregsB[1]);
     return 8;
@@ -3753,32 +3748,32 @@ int orcfAM30()
 
 #define XORCF(A,B) gen_regsSR^= ((A >> B) & CF);
 
-int xorcf4rB()
+int xorcf4rB(void)
 {
     XORCF(*regB, readbyte());
     return 4;
 }
-int xorcf4rW()
+int xorcf4rW(void)
 {
     XORCF(*regW, readbyte());
     return 4;
 }
-int xorcfArB()
+int xorcfArB(void)
 {
     XORCF(*regB, *cregsB[1]);
     return 4;
 }
-int xorcfArW()
+int xorcfArW(void)
 {
     XORCF(*regW, *cregsB[1]);
     return 4;
 }
-int xorcf3M30()
+int xorcf3M30(void)
 {
     XORCF(mem_readB(mem), (lastbyte&7));
     return 8;
 }
-int xorcfAM30()
+int xorcfAM30(void)
 {
     XORCF(mem_readB(mem), *cregsB[1]);
     return 8;
@@ -3788,22 +3783,22 @@ int xorcfAM30()
 ////////////////////////////// xCF ///////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-int rcf()
+int rcf(void)
 {
     gen_regsSR&= ~(HF|NF|CF);
     return 2;
 }
-int scf()
+int scf(void)
 {
     gen_regsSR = (gen_regsSR & ~(HF|NF)) | CF;
     return 2;
 }
-int ccf()
+int ccf(void)
 {
     gen_regsSR = (gen_regsSR & ~NF) ^ CF;
     return 2;
 }
-int zcf()
+int zcf(void)
 {
     gen_regsSR = (gen_regsSR & ~(NF|CF)) | ((gen_regsSR & ZF) ? 0 : CF);
     return 2;
@@ -3815,17 +3810,17 @@ int zcf()
 
 #define BIT(A,B) gen_regsSR = (gen_regsSR & ~(ZF|NF)) | ((A & power2[B]) ? HF : HF|ZF);
 
-int bit4rB()
+int bit4rB(void)
 {
     BIT(*regB, readbyte());
     return 4;
 }
-int bit4rW()
+int bit4rW(void)
 {
     BIT(*regW, readbyte());
     return 4;
 }
-int bit3M30()
+int bit3M30(void)
 {
     BIT(mem_readB(mem), lastbyte&7);
     return 8;
@@ -3835,17 +3830,17 @@ int bit3M30()
 ////////////////////////////// RES ///////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-int res4rB()
+int res4rB(void)
 {
     *regB&= ~power2[readbyte()];
     return 4;
 }
-int res4rW()
+int res4rW(void)
 {
     *regW&= ~power2[readbyte()];
     return 4;
 }
-int res3M30()
+int res3M30(void)
 {
     mem_writeB(mem,mem_readB(mem) & ~power2[lastbyte&7]);
     return 8;
@@ -3855,19 +3850,19 @@ int res3M30()
 ////////////////////////////// SET ///////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-int set4rB()
+int set4rB(void)
 {
     *regB|= power2[readbyte()];
     return 4;
 }
-int set4rW()
+int set4rW(void)
 {
     *regW|= power2[readbyte()];
     return 4;
 }
 
 //Flavor
-int set3M30()
+int set3M30(void)
 {
     mem_writeB(mem,  mem_readB(mem) | power2[lastbyte&7]);
     return 8;
@@ -3877,17 +3872,17 @@ int set3M30()
 ////////////////////////////// CHG ///////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-int chg4rB()
+int chg4rB(void)
 {
     *regB^= power2[readbyte()];
     return 4;
 }
-int chg4rW()
+int chg4rW(void)
 {
     *regW^= power2[readbyte()];
     return 4;
 }
-int chg3M30()
+int chg3M30(void)
 {
     mem_writeB(mem,mem_readB(mem) ^ power2[lastbyte&7]);
     return 8;
@@ -3897,7 +3892,7 @@ int chg3M30()
 ////////////////////////////// TSET //////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-int tset4rB() // TSET #4,r   11001rrr 00110100 0000xxxx
+int tset4rB(void) // TSET #4,r   11001rrr 00110100 0000xxxx
 {
     unsigned char i = readbyte();
 
@@ -3908,7 +3903,7 @@ int tset4rB() // TSET #4,r   11001rrr 00110100 0000xxxx
     return 6;
 }
 
-int tset4rW() // TSET #4,r   11011rrr 00110100 0000xxxx
+int tset4rW(void) // TSET #4,r   11011rrr 00110100 0000xxxx
 {
     unsigned char i = readbyte();
 
@@ -3919,7 +3914,7 @@ int tset4rW() // TSET #4,r   11011rrr 00110100 0000xxxx
     return 6;
 }
 
-int tset3M30() // TSET #3,(mem)  10110mmm 10101xxx
+int tset3M30(void) // TSET #3,(mem)  10110mmm 10101xxx
 {
     unsigned char i = mem_readB(mem);
 
@@ -3934,7 +3929,7 @@ int tset3M30() // TSET #3,(mem)  10110mmm 10101xxx
 ////////////////////////////// BS1 ///////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-int bs1b() // BS1B A,r     11011rrr 00001111
+int bs1b(void) // BS1B A,r     11011rrr 00001111
 {
     unsigned short i = *regW;
 
@@ -3958,7 +3953,7 @@ int bs1b() // BS1B A,r     11011rrr 00001111
     return 4;
 }
 
-int bs1f() // BS1F A,r     11011rrr 00001110
+int bs1f(void) // BS1F A,r     11011rrr 00001110
 {
     unsigned short i = *regW;
 
@@ -3988,27 +3983,27 @@ int bs1f() // BS1F A,r     11011rrr 00001110
 ////////////////////////////// MISC //////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-int nop()
+int nop(void)
 {
     return 1;
 }
-int normal()
+int normal(void)
 {
     gen_regsSR = gen_regsSR & 0x7fff;
     return 4;
 }
-int tmax()
+int tmax(void)
 {
     gen_regsSR = gen_regsSR | 0x0400;
     return 4;
 }
-int ei()
+int ei(void)
 {
     gen_regsSR = (gen_regsSR & 0x8fff) | (readbyte()<<12);
     return 5;
 }
 
-int swi() // SWI #3     11111xxx
+int swi(void) // SWI #3     11111xxx
 {
     tlcsFastMemWriteL(gen_regsXSP-=4,gen_regsPC);
     tlcsFastMemWriteW(gen_regsXSP-=2,gen_regsSR);
@@ -4019,7 +4014,7 @@ int swi() // SWI #3     11111xxx
     return 16;
 }
 
-int halt()
+int halt(void)
 {
     --gen_regsPC;
     --my_pc;
@@ -4028,7 +4023,7 @@ int halt()
 
 //link y unlink joden el rockman
 
-int link() // LINK r,d16    11101rrr 00001100 xxxxxxxx xxxxxxxx
+int link(void) // LINK r,d16    11101rrr 00001100 xxxxxxxx xxxxxxxx
 {
     tlcsFastMemWriteL(gen_regsXSP-=4,*regL);
     *regL = gen_regsXSP;
@@ -4036,7 +4031,7 @@ int link() // LINK r,d16    11101rrr 00001100 xxxxxxxx xxxxxxxx
     return 10;
 }
 
-int unlk() // UNLK r     11101rrr 00001101
+int unlk(void) // UNLK r     11101rrr 00001101
 {
     gen_regsXSP = *regL;
     *regL = mem_readL(gen_regsXSP);
@@ -4044,14 +4039,14 @@ int unlk() // UNLK r     11101rrr 00001101
     return 8;
 }
 
-int ldf() // LDF #3     00010111 00000xxx
+int ldf(void) // LDF #3     00010111 00000xxx
 {
     gen_regsSR = (gen_regsSR & 0xf8ff) | ((readbyte() & 7) << 8);
     set_cregs();
     return 2;
 }
 
-int incf() // INCF      00001100
+int incf(void) // INCF      00001100
 {
     unsigned int i = gen_regsSR & 0x0700;
 
@@ -4063,7 +4058,7 @@ int incf() // INCF      00001100
     return 2;
 }
 
-int decf() // DECF      00001101
+int decf(void) // DECF      00001101
 {
     unsigned int i = gen_regsSR & 0x0700;
 
@@ -4075,163 +4070,163 @@ int decf() // DECF      00001101
     return 2;
 }
 
-int sccB0()
+int sccB0(void)
 {
     *regB = valCond0();
     return 6;
 }
-int sccB1()
+int sccB1(void)
 {
     *regB = valCond1();
     return 6;
 }
-int sccB2()
+int sccB2(void)
 {
     *regB = valCond2();
     return 6;
 }
-int sccB3()
+int sccB3(void)
 {
     *regB = valCond3();
     return 6;
 }
-int sccB4()
+int sccB4(void)
 {
     *regB = valCond4();
     return 6;
 }
-int sccB5()
+int sccB5(void)
 {
     *regB = valCond5();
     return 6;
 }
-int sccB6()
+int sccB6(void)
 {
     *regB = valCond6();
     return 6;
 }
-int sccB7()
+int sccB7(void)
 {
     *regB = valCond7();
     return 6;
 }
-int sccB8()
+int sccB8(void)
 {
     *regB = valCond8();
     return 6;
 }
-int sccB9()
+int sccB9(void)
 {
     *regB = valCond9();
     return 6;
 }
-int sccBA()
+int sccBA(void)
 {
     *regB = valCondA();
     return 6;
 }
-int sccBB()
+int sccBB(void)
 {
     *regB = valCondB();
     return 6;
 }
-int sccBC()
+int sccBC(void)
 {
     *regB = valCondC();
     return 6;
 }
-int sccBD()
+int sccBD(void)
 {
     *regB = valCondD();
     return 6;
 }
-int sccBE()
+int sccBE(void)
 {
     *regB = valCondE();
     return 6;
 }
-int sccBF()
+int sccBF(void)
 {
     *regB = valCondF();
     return 6;
 }
 
-int sccW0()
+int sccW0(void)
 {
     *regW = valCond0();
     return 6;
 }
-int sccW1()
+int sccW1(void)
 {
     *regW = valCond1();
     return 6;
 }
-int sccW2()
+int sccW2(void)
 {
     *regW = valCond2();
     return 6;
 }
-int sccW3()
+int sccW3(void)
 {
     *regW = valCond3();
     return 6;
 }
-int sccW4()
+int sccW4(void)
 {
     *regW = valCond4();
     return 6;
 }
-int sccW5()
+int sccW5(void)
 {
     *regW = valCond5();
     return 6;
 }
-int sccW6()
+int sccW6(void)
 {
     *regW = valCond6();
     return 6;
 }
-int sccW7()
+int sccW7(void)
 {
     *regW = valCond7();
     return 6;
 }
-int sccW8()
+int sccW8(void)
 {
     *regW = valCond8();
     return 6;
 }
-int sccW9()
+int sccW9(void)
 {
     *regW = valCond9();
     return 6;
 }
-int sccWA()
+int sccWA(void)
 {
     *regW = valCondA();
     return 6;
 }
-int sccWB()
+int sccWB(void)
 {
     *regW = valCondB();
     return 6;
 }
-int sccWC()
+int sccWC(void)
 {
     *regW = valCondC();
     return 6;
 }
-int sccWD()
+int sccWD(void)
 {
     *regW = valCondD();
     return 6;
 }
-int sccWE()
+int sccWE(void)
 {
     *regW = valCondE();
     return 6;
 }
-int sccWF()
+int sccWF(void)
 {
     *regW = valCondF();
     return 6;
@@ -4241,37 +4236,37 @@ int sccWF()
 ////////////////////////////// LDC/X /////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-int ldccrB()
+int ldccrB(void)
 {
     ldcRegs[readbyte()] = *regB;
     return 8;
 }
-int ldccrW()
+int ldccrW(void)
 {
     *((unsigned short *)&ldcRegs[readbyte()]) = *regW;
     return 8;
 }
-int ldccrL()
+int ldccrL(void)
 {
     *((unsigned int *)&ldcRegs[readbyte()]) = *regL;
     return 8;
 }
-int ldcrcB()
+int ldcrcB(void)
 {
     *regB = ldcRegs[readbyte()];
     return 8;
 }
-int ldcrcW()
+int ldcrcW(void)
 {
     *regW = *((unsigned short *)&ldcRegs[readbyte()]);
     return 8;
 }
-int ldcrcL()
+int ldcrcL(void)
 {
     *regL = *((unsigned int *)&ldcRegs[readbyte()]);
     return 8;
 }
-int ldx()  // LDX (#8),#   11110111 00000000 xxxxxxxx 00000000 xxxxxxxx 00000000
+int ldx(void)  // LDX (#8),#   11110111 00000000 xxxxxxxx 00000000 xxxxxxxx 00000000
 {
     unsigned char num8, data;
     readbyte();
@@ -4287,7 +4282,7 @@ int ldx()  // LDX (#8),#   11110111 00000000 xxxxxxxx 00000000 xxxxxxxx 00000000
 ////////////////////////////// RLC ///////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-inline unsigned char MyRlcB(unsigned char i, unsigned char nr)
+static INLINE unsigned char MyRlcB(unsigned char i, unsigned char nr)
 {
     nr = ((nr) ? nr : 16);
     for(;nr>0;nr--)
@@ -4316,7 +4311,7 @@ inline unsigned char MyRlcB(unsigned char i, unsigned char nr)
     return i;
 }
 
-inline unsigned short MyRlcW(unsigned short i, unsigned char nr)
+static INLINE unsigned short MyRlcW(unsigned short i, unsigned char nr)
 {
     nr = ((nr) ? nr : 16);
     for(;nr>0;nr--)
@@ -4339,7 +4334,7 @@ inline unsigned short MyRlcW(unsigned short i, unsigned char nr)
     return i;
 }
 
-inline unsigned int MyRlcL(unsigned int i, unsigned char nr)
+static INLINE unsigned int MyRlcL(unsigned int i, unsigned char nr)
 {
     nr = ((nr) ? nr : 16);
     for(;nr>0;nr--)
@@ -4363,42 +4358,42 @@ inline unsigned int MyRlcL(unsigned int i, unsigned char nr)
     return i;
 }
 
-int rlc4rB()
+int rlc4rB(void)
 {
     *regB = MyRlcB(*regB,readbyte());
     return 6;
 }
-int rlc4rW()
+int rlc4rW(void)
 {
     *regW = MyRlcW(*regW,readbyte());
     return 6;
 }
-int rlc4rL()
+int rlc4rL(void)
 {
     *regL = MyRlcL(*regL,readbyte());
     return 8;
 }
-int rlcArB()
+int rlcArB(void)
 {
     *regB = MyRlcB(*regB,*cregsB[1] & 0x0F);
     return 6;
 }
-int rlcArW()
+int rlcArW(void)
 {
     *regW = MyRlcW(*regW,*cregsB[1] & 0x0F);
     return 6;
 }
-int rlcArL()
+int rlcArL(void)
 {
     *regL = MyRlcL(*regL,*cregsB[1] & 0x0F);
     return 8;
 }
-int rlcM00()
+int rlcM00(void)
 {
     mem_writeB(mem,MyRlcB(memB,1));
     return 8;
 }
-int rlcwM10()
+int rlcwM10(void)
 {
     mem_writeW(mem,MyRlcW(memW,1));
     return 8;
@@ -4481,42 +4476,42 @@ unsigned int MyRrcL(unsigned int i, unsigned char nr)
     return i;
 }
 
-int rrc4rB()
+int rrc4rB(void)
 {
     *regB = MyRrcB(*regB,readbyte());
     return 6;
 }
-int rrc4rW()
+int rrc4rW(void)
 {
     *regW = MyRrcW(*regW,readbyte());
     return 6;
 }
-int rrc4rL()
+int rrc4rL(void)
 {
     *regL = MyRrcL(*regL,readbyte());
     return 8;
 }
-int rrcArB()
+int rrcArB(void)
 {
     *regB = MyRrcB(*regB,*cregsB[1] & 0x0F);
     return 6;
 }
-int rrcArW()
+int rrcArW(void)
 {
     *regW = MyRrcW(*regW,*cregsB[1] & 0x0F);
     return 6;
 }
-int rrcArL()
+int rrcArL(void)
 {
     *regL = MyRrcL(*regL,*cregsB[1] & 0x0F);
     return 8;
 }
-int rrcM00()
+int rrcM00(void)
 {
     mem_writeB(mem,MyRrcB(memB,1));
     return 8;
 }
-int rrcwM10()
+int rrcwM10(void)
 {
     mem_writeW(mem,MyRrcW(memW,1));
     return 8;
@@ -4605,42 +4600,42 @@ unsigned int MyRlL(unsigned int i, unsigned char nr)
     return i;
 }
 
-int rl4rB()
+int rl4rB(void)
 {
     *regB = MyRlB(*regB,readbyte());
     return 6;
 }
-int rl4rW()
+int rl4rW(void)
 {
     *regW = MyRlW(*regW,readbyte());
     return 6;
 }
-int rl4rL()
+int rl4rL(void)
 {
     *regL = MyRlL(*regL,readbyte());
     return 8;
 }
-int rlArB()
+int rlArB(void)
 {
     *regB = MyRlB(*regB,*cregsB[1] & 0x0F);
     return 6;
 }
-int rlArW()
+int rlArW(void)
 {
     *regW = MyRlW(*regW,*cregsB[1] & 0x0F);
     return 6;
 }
-int rlArL()
+int rlArL(void)
 {
     *regL = MyRlL(*regL,*cregsB[1] & 0x0F);
     return 8;
 }
-int rlM00()
+int rlM00(void)
 {
     mem_writeB(mem,MyRlB(memB,1));
     return 8;
 }
-int rlwM10()
+int rlwM10(void)
 {
     mem_writeW(mem,MyRlW(memW,1));
     return 8;
@@ -4729,42 +4724,42 @@ unsigned int MyRrL(unsigned int i, unsigned char nr)
     return i;
 }
 
-int rr4rB()
+int rr4rB(void)
 {
     *regB = MyRrB(*regB,readbyte());
     return 6;
 }
-int rr4rW()
+int rr4rW(void)
 {
     *regW = MyRrW(*regW,readbyte());
     return 6;
 }
-int rr4rL()
+int rr4rL(void)
 {
     *regL = MyRrL(*regL,readbyte());
     return 8;
 }
-int rrArB()
+int rrArB(void)
 {
     *regB = MyRrB(*regB,*cregsB[1] & 0x0F);
     return 6;
 }
-int rrArW()
+int rrArW(void)
 {
     *regW = MyRrW(*regW,*cregsB[1] & 0x0F);
     return 6;
 }
-int rrArL()
+int rrArL(void)
 {
     *regL = MyRrL(*regL,*cregsB[1] & 0x0F);
     return 8;
 }
-int rrM00()
+int rrM00(void)
 {
     mem_writeB(mem,MyRrB(memB,1));
     return 8;
 }
-int rrwM10()
+int rrwM10(void)
 {
     mem_writeW(mem,MyRrW(memW,1));
     return 8;
@@ -4838,42 +4833,42 @@ unsigned int MySlaL(unsigned int i, unsigned char nr)
     return i;
 }
 
-int sla4rB()
+int sla4rB(void)
 {
     *regB = MySlaB(*regB,readbyte());
     return 6;
 }
-int sla4rW()
+int sla4rW(void)
 {
     *regW = MySlaW(*regW,readbyte());
     return 6;
 }
-int sla4rL()
+int sla4rL(void)
 {
     *regL = MySlaL(*regL,readbyte());
     return 8;
 }
-int slaArB()
+int slaArB(void)
 {
     *regB = MySlaB(*regB,*cregsB[1] & 0x0F);
     return 6;
 }
-int slaArW()
+int slaArW(void)
 {
     *regW = MySlaW(*regW,*cregsB[1] & 0x0F);
     return 6;
 }
-int slaArL()
+int slaArL(void)
 {
     *regL = MySlaL(*regL,*cregsB[1] & 0x0F);
     return 8;
 }
-int slaM00()
+int slaM00(void)
 {
     mem_writeB(mem,MySlaB(memB,1));
     return 8;
 }
-int slawM10()
+int slawM10(void)
 {
     mem_writeW(mem,MySlaW(memW,1));
     return 8;
@@ -4883,7 +4878,7 @@ int slawM10()
 ////////////////////////////// SRA ///////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-inline unsigned char MySraB(unsigned char i, unsigned char nr)
+static INLINE unsigned char MySraB(unsigned char i, unsigned char nr)
 {
     nr = ((nr) ? nr : 16);
     for(;nr>0;nr--)
@@ -4908,7 +4903,7 @@ inline unsigned char MySraB(unsigned char i, unsigned char nr)
     return i;
 }
 
-inline unsigned short MySraW(unsigned short i, unsigned char nr)
+static INLINE unsigned short MySraW(unsigned short i, unsigned char nr)
 {
     nr = ((nr) ? nr : 16);
     for(;nr>0;nr--)
@@ -4927,7 +4922,7 @@ inline unsigned short MySraW(unsigned short i, unsigned char nr)
     return i;
 }
 
-inline unsigned int MySraL(unsigned int i, unsigned char nr)
+static INLINE unsigned int MySraL(unsigned int i, unsigned char nr)
 {
     nr = ((nr) ? nr : 16);
     for(;nr>0;nr--)
@@ -4947,42 +4942,42 @@ inline unsigned int MySraL(unsigned int i, unsigned char nr)
     return i;
 }
 
-int sra4rB()
+int sra4rB(void)
 {
     *regB = MySraB(*regB,readbyte());
     return 6;
 }
-int sra4rW()
+int sra4rW(void)
 {
     *regW = MySraW(*regW,readbyte());
     return 6;
 }
-int sra4rL()
+int sra4rL(void)
 {
     *regL = MySraL(*regL,readbyte());
     return 8;
 }
-int sraArB()
+int sraArB(void)
 {
     *regB = MySraB(*regB,*cregsB[1] & 0x0F);
     return 6;
 }
-int sraArW()
+int sraArW(void)
 {
     *regW = MySraW(*regW,*cregsB[1] & 0x0F);
     return 6;
 }
-int sraArL()
+int sraArL(void)
 {
     *regL = MySraL(*regL,*cregsB[1] & 0x0F);
     return 8;
 }
-int sraM00()
+int sraM00(void)
 {
     mem_writeB(mem,MySraB(memB,1));
     return 8;
 }
-int srawM10()
+int srawM10(void)
 {
     mem_writeW(mem,MySraW(memW,1));
     return 8;
@@ -4992,42 +4987,42 @@ int srawM10()
 ////////////////////////////// SLL ///////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-int sll4rB()
+int sll4rB(void)
 {
     *regB = MySlaB(*regB,readbyte());
     return 6;
 }
-int sll4rW()
+int sll4rW(void)
 {
     *regW = MySlaW(*regW,readbyte());
     return 6;
 }
-int sll4rL()
+int sll4rL(void)
 {
     *regL = MySlaL(*regL,readbyte());
     return 8;
 }
-int sllArB()
+int sllArB(void)
 {
     *regB = MySlaB(*regB,*cregsB[1] & 0x0F);
     return 6;
 }
-int sllArW()
+int sllArW(void)
 {
     *regW = MySlaW(*regW,*cregsB[1] & 0x0F);
     return 6;
 }
-int sllArL()
+int sllArL(void)
 {
     *regL = MySlaL(*regL,*cregsB[1] & 0x0F);
     return 8;
 }
-int sllM00()
+int sllM00(void)
 {
     mem_writeB(mem,MySlaB(memB,1));
     return 8;
 }
-int sllwM10()
+int sllwM10(void)
 {
     mem_writeW(mem,MySlaW(memW,1));
     return 8;
@@ -5037,7 +5032,7 @@ int sllwM10()
 ////////////////////////////// SRL ///////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-inline unsigned char MySrlB(unsigned char i, unsigned char nr)
+static INLINE unsigned char MySrlB(unsigned char i, unsigned char nr)
 {
     nr = ((nr) ? nr : 16);
     for(;nr>0;nr--)
@@ -5059,7 +5054,7 @@ inline unsigned char MySrlB(unsigned char i, unsigned char nr)
     return i;
 }
 
-inline unsigned short MySrlW(unsigned short i, unsigned char nr)
+static INLINE unsigned short MySrlW(unsigned short i, unsigned char nr)
 {
     nr = ((nr) ? nr : 16);
     for(;nr>0;nr--)
@@ -5075,7 +5070,7 @@ inline unsigned short MySrlW(unsigned short i, unsigned char nr)
     return i;
 }
 
-inline unsigned int MySrlL(unsigned int i, unsigned char nr)
+static INLINE unsigned int MySrlL(unsigned int i, unsigned char nr)
 {
     nr = ((nr) ? nr : 16);
     for(;nr>0;nr--)
@@ -5092,42 +5087,42 @@ inline unsigned int MySrlL(unsigned int i, unsigned char nr)
     return i;
 }
 
-int srl4rB()
+int srl4rB(void)
 {
     *regB = MySrlB(*regB,readbyte());
     return 6;
 }
-int srl4rW()
+int srl4rW(void)
 {
     *regW = MySrlW(*regW,readbyte());
     return 6;
 }
-int srl4rL()
+int srl4rL(void)
 {
     *regL = MySrlL(*regL,readbyte());
     return 8;
 }
-int srlArB()
+int srlArB(void)
 {
     *regB = MySrlB(*regB,*cregsB[1] & 0x0F);
     return 6;
 }
-int srlArW()
+int srlArW(void)
 {
     *regW = MySrlW(*regW,*cregsB[1] & 0x0F);
     return 6;
 }
-int srlArL()
+int srlArL(void)
 {
     *regL = MySrlL(*regL,*cregsB[1] & 0x0F);
     return 8;
 }
-int srlM00()
+int srlM00(void)
 {
     mem_writeB(mem,MySrlB(memB,1));
     return 8;
 }
-int srlwM10()
+int srlwM10(void)
 {
     mem_writeW(mem,MySrlW(memW,1));
     return 8;
@@ -5137,7 +5132,7 @@ int srlwM10()
 ////////////////////////////// RxD ///////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-int rld00() // RLD A,(mem)   10000mmm 00000110
+int rld00(void) // RLD A,(mem)   10000mmm 00000110
 {
     unsigned char i,j;
 
@@ -5160,7 +5155,7 @@ int rld00() // RLD A,(mem)   10000mmm 00000110
    return 12;
 }
 
-int rrd00() // RRD A,(mem)   10000mmm 00000111
+int rrd00(void) // RRD A,(mem)   10000mmm 00000111
 {
     unsigned char i,j;
 
@@ -5186,21 +5181,21 @@ int rrd00() // RRD A,(mem)   10000mmm 00000111
 ////////////////////////////// JP/JR /////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-int jp16()  // JP #16    00011010 xxxxxxxx xxxxxxxx
+int jp16(void)  // JP #16    00011010 xxxxxxxx xxxxxxxx
 {
     gen_regsPC = readword();
     my_pc = get_address(gen_regsPC);
     return 7;
 }
 
-int jp24()  // JP #24    00011011 xxxxxxxx xxxxxxxx xxxxxxxx
+int jp24(void)  // JP #24    00011011 xxxxxxxx xxxxxxxx xxxxxxxx
 {
     gen_regsPC = read24();
     my_pc = get_address(gen_regsPC);
     return 7;
 }
 
-int jrcc0()  // JR cc,$+2+d8   0110cccc xxxxxxxx
+int jrcc0(void)  // JR cc,$+2+d8   0110cccc xxxxxxxx
 {
     /*
     //cond0 always false
@@ -5214,7 +5209,7 @@ int jrcc0()  // JR cc,$+2+d8   0110cccc xxxxxxxx
     return 4;
 }
 
-int jrcc1()  // JR cc,$+2+d8   0110cccc xxxxxxxx
+int jrcc1(void)  // JR cc,$+2+d8   0110cccc xxxxxxxx
 {
     if (cond1())
     {
@@ -5226,7 +5221,7 @@ int jrcc1()  // JR cc,$+2+d8   0110cccc xxxxxxxx
     return 4;
 }
 
-int jrcc2()  // JR cc,$+2+d8   0110cccc xxxxxxxx
+int jrcc2(void)  // JR cc,$+2+d8   0110cccc xxxxxxxx
 {
     if (cond2())
     {
@@ -5238,7 +5233,7 @@ int jrcc2()  // JR cc,$+2+d8   0110cccc xxxxxxxx
     return 4;
 }
 
-int jrcc3()  // JR cc,$+2+d8   0110cccc xxxxxxxx
+int jrcc3(void)  // JR cc,$+2+d8   0110cccc xxxxxxxx
 {
     if (cond3())
     {
@@ -5250,7 +5245,7 @@ int jrcc3()  // JR cc,$+2+d8   0110cccc xxxxxxxx
     return 4;
 }
 
-int jrcc4()  // JR cc,$+2+d8   0110cccc xxxxxxxx
+int jrcc4(void)  // JR cc,$+2+d8   0110cccc xxxxxxxx
 {
     if (cond4())
     {
@@ -5262,7 +5257,7 @@ int jrcc4()  // JR cc,$+2+d8   0110cccc xxxxxxxx
     return 4;
 }
 
-int jrcc5()  // JR cc,$+2+d8   0110cccc xxxxxxxx
+int jrcc5(void)  // JR cc,$+2+d8   0110cccc xxxxxxxx
 {
     if (cond5())
     {
@@ -5274,7 +5269,7 @@ int jrcc5()  // JR cc,$+2+d8   0110cccc xxxxxxxx
     return 4;
 }
 
-int jrcc6()  // JR cc,$+2+d8   0110cccc xxxxxxxx
+int jrcc6(void)  // JR cc,$+2+d8   0110cccc xxxxxxxx
 {
     if (cond6())
     {
@@ -5285,7 +5280,7 @@ int jrcc6()  // JR cc,$+2+d8   0110cccc xxxxxxxx
     return 4;
 }
 
-int jrcc7()  // JR cc,$+2+d8   0110cccc xxxxxxxx
+int jrcc7(void)  // JR cc,$+2+d8   0110cccc xxxxxxxx
 {
     if (cond7())
     {
@@ -5297,7 +5292,7 @@ int jrcc7()  // JR cc,$+2+d8   0110cccc xxxxxxxx
     return 4;
 }
 
-int jrcc8()  // JR cc,$+2+d8   0110cccc xxxxxxxx
+int jrcc8(void)  // JR cc,$+2+d8   0110cccc xxxxxxxx
 {
     //if (cond8())//cond8 is always TRUE
     //{
@@ -5309,7 +5304,7 @@ int jrcc8()  // JR cc,$+2+d8   0110cccc xxxxxxxx
     //return 4;
 }
 
-int jrcc9()  // JR cc,$+2+d8   0110cccc xxxxxxxx
+int jrcc9(void)  // JR cc,$+2+d8   0110cccc xxxxxxxx
 {
     if(notCond9())
     {
@@ -5321,7 +5316,7 @@ int jrcc9()  // JR cc,$+2+d8   0110cccc xxxxxxxx
     return 8;
 }
 
-int jrccA()  // JR cc,$+2+d8   0110cccc xxxxxxxx
+int jrccA(void)  // JR cc,$+2+d8   0110cccc xxxxxxxx
 {
     if(notCondA())
     {
@@ -5333,7 +5328,7 @@ int jrccA()  // JR cc,$+2+d8   0110cccc xxxxxxxx
     return 8;
 }
 
-int jrccB()  // JR cc,$+2+d8   0110cccc xxxxxxxx
+int jrccB(void)  // JR cc,$+2+d8   0110cccc xxxxxxxx
 {
     if(notCondB())
     {
@@ -5345,7 +5340,7 @@ int jrccB()  // JR cc,$+2+d8   0110cccc xxxxxxxx
     return 8;
 }
 
-int jrccC()  // JR cc,$+2+d8   0110cccc xxxxxxxx
+int jrccC(void)  // JR cc,$+2+d8   0110cccc xxxxxxxx
 {
     if(notCondC())
     {
@@ -5357,7 +5352,7 @@ int jrccC()  // JR cc,$+2+d8   0110cccc xxxxxxxx
     return 8;
 }
 
-int jrccD()  // JR cc,$+2+d8   0110cccc xxxxxxxx
+int jrccD(void)  // JR cc,$+2+d8   0110cccc xxxxxxxx
 {
     if(notCondD())
     {
@@ -5369,7 +5364,7 @@ int jrccD()  // JR cc,$+2+d8   0110cccc xxxxxxxx
     return 8;
 }
 
-int jrccE()  // JR cc,$+2+d8   0110cccc xxxxxxxx
+int jrccE(void)  // JR cc,$+2+d8   0110cccc xxxxxxxx
 {
     if (notCondE())
     {
@@ -5381,7 +5376,7 @@ int jrccE()  // JR cc,$+2+d8   0110cccc xxxxxxxx
     return 8;
 }
 
-int jrccF()  // JR cc,$+2+d8   0110cccc xxxxxxxx
+int jrccF(void)  // JR cc,$+2+d8   0110cccc xxxxxxxx
 {
     if(notCondF())
     {
@@ -5393,7 +5388,7 @@ int jrccF()  // JR cc,$+2+d8   0110cccc xxxxxxxx
     return 8;
 }
 
-int jrlcc0()  // JR cc,$+2+d16   0110cccc xxxxxxxx
+int jrlcc0(void)  // JR cc,$+2+d16   0110cccc xxxxxxxx
 {
     /*
     //cond0 always false
@@ -5407,7 +5402,7 @@ int jrlcc0()  // JR cc,$+2+d16   0110cccc xxxxxxxx
     return 4;
 }
 
-int jrlcc1()  // JR cc,$+2+d16   0110cccc xxxxxxxx
+int jrlcc1(void)  // JR cc,$+2+d16   0110cccc xxxxxxxx
 {
     if (cond1())
     {
@@ -5419,7 +5414,7 @@ int jrlcc1()  // JR cc,$+2+d16   0110cccc xxxxxxxx
     return 4;
 }
 
-int jrlcc2()  // JR cc,$+2+d16   0110cccc xxxxxxxx
+int jrlcc2(void)  // JR cc,$+2+d16   0110cccc xxxxxxxx
 {
     if (cond2())
     {
@@ -5431,7 +5426,7 @@ int jrlcc2()  // JR cc,$+2+d16   0110cccc xxxxxxxx
     return 4;
 }
 
-int jrlcc3()  // JR cc,$+2+d16   0110cccc xxxxxxxx
+int jrlcc3(void)  // JR cc,$+2+d16   0110cccc xxxxxxxx
 {
     if (cond3())
     {
@@ -5443,7 +5438,7 @@ int jrlcc3()  // JR cc,$+2+d16   0110cccc xxxxxxxx
     return 4;
 }
 
-int jrlcc4()  // JR cc,$+2+d16   0110cccc xxxxxxxx
+int jrlcc4(void)  // JR cc,$+2+d16   0110cccc xxxxxxxx
 {
     if (cond4())
     {
@@ -5455,7 +5450,7 @@ int jrlcc4()  // JR cc,$+2+d16   0110cccc xxxxxxxx
     return 4;
 }
 
-int jrlcc5()  // JR cc,$+2+d16   0110cccc xxxxxxxx
+int jrlcc5(void)  // JR cc,$+2+d16   0110cccc xxxxxxxx
 {
     if (cond5())
     {
@@ -5467,7 +5462,7 @@ int jrlcc5()  // JR cc,$+2+d16   0110cccc xxxxxxxx
     return 4;
 }
 
-int jrlcc6()  // JR cc,$+2+d16   0110cccc xxxxxxxx
+int jrlcc6(void)  // JR cc,$+2+d16   0110cccc xxxxxxxx
 {
     if (cond6())
     {
@@ -5479,7 +5474,7 @@ int jrlcc6()  // JR cc,$+2+d16   0110cccc xxxxxxxx
     return 4;
 }
 
-int jrlcc7()  // JR cc,$+2+d16   0110cccc xxxxxxxx
+int jrlcc7(void)  // JR cc,$+2+d16   0110cccc xxxxxxxx
 {
     if (cond7())
     {
@@ -5491,7 +5486,7 @@ int jrlcc7()  // JR cc,$+2+d16   0110cccc xxxxxxxx
     return 4;
 }
 
-int jrlcc8()  // JR cc,$+2+d16   0110cccc xxxxxxxx
+int jrlcc8(void)  // JR cc,$+2+d16   0110cccc xxxxxxxx
 {
     //if (cond8())  //cond8 is always TRUE
     //{
@@ -5503,7 +5498,7 @@ int jrlcc8()  // JR cc,$+2+d16   0110cccc xxxxxxxx
     //return 4;
 }
 
-int jrlcc9()  // JR cc,$+2+d16   0110cccc xxxxxxxx
+int jrlcc9(void)  // JR cc,$+2+d16   0110cccc xxxxxxxx
 {
     if (notCond9())
     {
@@ -5515,7 +5510,7 @@ int jrlcc9()  // JR cc,$+2+d16   0110cccc xxxxxxxx
     return 8;
 }
 
-int jrlccA()  // JR cc,$+2+d16   0110cccc xxxxxxxx
+int jrlccA(void)  // JR cc,$+2+d16   0110cccc xxxxxxxx
 {
     if (notCondA())
     {
@@ -5527,7 +5522,7 @@ int jrlccA()  // JR cc,$+2+d16   0110cccc xxxxxxxx
     return 8;
 }
 
-int jrlccB()  // JR cc,$+2+d16   0110cccc xxxxxxxx
+int jrlccB(void)  // JR cc,$+2+d16   0110cccc xxxxxxxx
 {
     if (notCondB())
     {
@@ -5539,7 +5534,7 @@ int jrlccB()  // JR cc,$+2+d16   0110cccc xxxxxxxx
     return 8;
 }
 
-int jrlccC()  // JR cc,$+2+d16   0110cccc xxxxxxxx
+int jrlccC(void)  // JR cc,$+2+d16   0110cccc xxxxxxxx
 {
     if (notCondC())
     {
@@ -5551,7 +5546,7 @@ int jrlccC()  // JR cc,$+2+d16   0110cccc xxxxxxxx
     return 8;
 }
 
-int jrlccD()  // JR cc,$+2+d16   0110cccc xxxxxxxx
+int jrlccD(void)  // JR cc,$+2+d16   0110cccc xxxxxxxx
 {
     if (notCondD())
     {
@@ -5563,7 +5558,7 @@ int jrlccD()  // JR cc,$+2+d16   0110cccc xxxxxxxx
     return 8;
 }
 
-int jrlccE()  // JR cc,$+2+d16   0110cccc xxxxxxxx
+int jrlccE(void)  // JR cc,$+2+d16   0110cccc xxxxxxxx
 {
     //Thor
     if (notCondE())
@@ -5575,7 +5570,7 @@ int jrlccE()  // JR cc,$+2+d16   0110cccc xxxxxxxx
     return 8;
 }
 
-int jrlccF()  // JR cc,$+2+d16   0110cccc xxxxxxxx
+int jrlccF(void)  // JR cc,$+2+d16   0110cccc xxxxxxxx
 {
     if (notCondF())
     {
@@ -5587,7 +5582,7 @@ int jrlccF()  // JR cc,$+2+d16   0110cccc xxxxxxxx
     return 8;
 }
 
-int jpccM300() // JP cc,mem
+int jpccM300(void) // JP cc,mem
 {
     /*
     //cond0 always false
@@ -5602,7 +5597,7 @@ int jpccM300() // JP cc,mem
         return 4;
 }
 
-int jpccM301() // JP cc,mem
+int jpccM301(void) // JP cc,mem
 {
     if (cond1())
     {
@@ -5614,7 +5609,7 @@ int jpccM301() // JP cc,mem
         return 4;
 }
 
-int jpccM302() // JP cc,mem
+int jpccM302(void) // JP cc,mem
 {
     if (cond2())
     {
@@ -5626,7 +5621,7 @@ int jpccM302() // JP cc,mem
         return 4;
 }
 
-int jpccM303() // JP cc,mem
+int jpccM303(void) // JP cc,mem
 {
     if (cond3())
     {
@@ -5638,7 +5633,7 @@ int jpccM303() // JP cc,mem
         return 4;
 }
 
-int jpccM304() // JP cc,mem
+int jpccM304(void) // JP cc,mem
 {
     if (cond4())
     {
@@ -5650,7 +5645,7 @@ int jpccM304() // JP cc,mem
         return 4;
 }
 
-int jpccM305() // JP cc,mem
+int jpccM305(void) // JP cc,mem
 {
     if (cond5())
     {
@@ -5662,7 +5657,7 @@ int jpccM305() // JP cc,mem
         return 4;
 }
 
-int jpccM306() // JP cc,mem
+int jpccM306(void) // JP cc,mem
 {
     if (gen_regsSR & ZF)//cond6())
     {
@@ -5674,7 +5669,7 @@ int jpccM306() // JP cc,mem
         return 4;
 }
 
-int jpccM307() // JP cc,mem
+int jpccM307(void) // JP cc,mem
 {
     if (gen_regsSR & CF)//cond7())
     {
@@ -5686,7 +5681,7 @@ int jpccM307() // JP cc,mem
         return 4;
 }
 
-int jpccM308() // JP cc,mem
+int jpccM308(void) // JP cc,mem
 {
     //if (cond8()) //always TRUE
     //{
@@ -5698,7 +5693,7 @@ int jpccM308() // JP cc,mem
     //    return 4;
 }
 
-int jpccM309() // JP cc,mem
+int jpccM309(void) // JP cc,mem
 {
     if (notCond9())
     {
@@ -5710,7 +5705,7 @@ int jpccM309() // JP cc,mem
     return 8;
 }
 
-int jpccM30A() // JP cc,mem
+int jpccM30A(void) // JP cc,mem
 {
     if (notCondA())
     {
@@ -5722,7 +5717,7 @@ int jpccM30A() // JP cc,mem
     return 8;
 }
 
-int jpccM30B() // JP cc,mem
+int jpccM30B(void) // JP cc,mem
 {
     if (notCondB())
     {
@@ -5734,7 +5729,7 @@ int jpccM30B() // JP cc,mem
     return 8;
 }
 
-int jpccM30C() // JP cc,mem
+int jpccM30C(void) // JP cc,mem
 {
     if (notCondC())
     {
@@ -5746,7 +5741,7 @@ int jpccM30C() // JP cc,mem
     return 8;
 }
 
-int jpccM30D() // JP cc,mem
+int jpccM30D(void) // JP cc,mem
 {
     if (notCondD())
     {
@@ -5758,7 +5753,7 @@ int jpccM30D() // JP cc,mem
     return 8;
 }
 
-int jpccM30E() // JP cc,mem
+int jpccM30E(void) // JP cc,mem
 {
     if (notCondE())
     {
@@ -5770,7 +5765,7 @@ int jpccM30E() // JP cc,mem
     return 8;
 }
 
-int jpccM30F() // JP cc,mem
+int jpccM30F(void) // JP cc,mem
 {
     if (notCondF())
     {
@@ -5788,7 +5783,7 @@ int jpccM30F() // JP cc,mem
 ////////////////////////////// CALL //////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-int call16() // CALL #16    00011100 xxxxxxxx xxxxxxxx
+int call16(void) // CALL #16    00011100 xxxxxxxx xxxxxxxx
 {
     unsigned int address = readword();
 
@@ -5797,7 +5792,7 @@ int call16() // CALL #16    00011100 xxxxxxxx xxxxxxxx
     return 12;
 }
 
-int call24() // CALL #24    00011101 xxxxxxxx xxxxxxxx xxxxxxxx
+int call24(void) // CALL #24    00011101 xxxxxxxx xxxxxxxx xxxxxxxx
 {
     unsigned int address = read24();
 
@@ -5806,7 +5801,7 @@ int call24() // CALL #24    00011101 xxxxxxxx xxxxxxxx xxxxxxxx
     return 12;
 }
 
-int calr()  // CALR $+3+d16   00011110 xxxxxxxx xxxxxxxx
+int calr(void)  // CALR $+3+d16   00011110 xxxxxxxx xxxxxxxx
 {
     signed short d16 = readword();
 
@@ -5816,7 +5811,7 @@ int calr()  // CALR $+3+d16   00011110 xxxxxxxx xxxxxxxx
     return 12;
 }
 
-int callccM300() // CALL cc,mem  10110mmm 1110cccc
+int callccM300(void) // CALL cc,mem  10110mmm 1110cccc
 {
     /*
     //cond0 always false
@@ -5831,7 +5826,7 @@ int callccM300() // CALL cc,mem  10110mmm 1110cccc
         return 6;
 }
 
-int callccM301() // CALL cc,mem  10110mmm 1110cccc
+int callccM301(void) // CALL cc,mem  10110mmm 1110cccc
 {
     if (cond1())
     {
@@ -5843,7 +5838,7 @@ int callccM301() // CALL cc,mem  10110mmm 1110cccc
         return 6;
 }
 
-int callccM302() // CALL cc,mem  10110mmm 1110cccc
+int callccM302(void) // CALL cc,mem  10110mmm 1110cccc
 {
     if (cond2())
     {
@@ -5855,7 +5850,7 @@ int callccM302() // CALL cc,mem  10110mmm 1110cccc
         return 6;
 }
 
-int callccM303() // CALL cc,mem  10110mmm 1110cccc
+int callccM303(void) // CALL cc,mem  10110mmm 1110cccc
 {
     if (cond3())
     {
@@ -5867,7 +5862,7 @@ int callccM303() // CALL cc,mem  10110mmm 1110cccc
         return 6;
 }
 
-int callccM304() // CALL cc,mem  10110mmm 1110cccc
+int callccM304(void) // CALL cc,mem  10110mmm 1110cccc
 {
     if (cond4())
     {
@@ -5879,7 +5874,7 @@ int callccM304() // CALL cc,mem  10110mmm 1110cccc
         return 6;
 }
 
-int callccM305() // CALL cc,mem  10110mmm 1110cccc
+int callccM305(void) // CALL cc,mem  10110mmm 1110cccc
 {
     if (cond5())
     {
@@ -5891,7 +5886,7 @@ int callccM305() // CALL cc,mem  10110mmm 1110cccc
         return 6;
 }
 
-int callccM306() // CALL cc,mem  10110mmm 1110cccc
+int callccM306(void) // CALL cc,mem  10110mmm 1110cccc
 {
     if (gen_regsSR & ZF)//cond6())
     {
@@ -5903,7 +5898,7 @@ int callccM306() // CALL cc,mem  10110mmm 1110cccc
         return 6;
 }
 
-int callccM307() // CALL cc,mem  10110mmm 1110cccc
+int callccM307(void) // CALL cc,mem  10110mmm 1110cccc
 {
     if (gen_regsSR & CF)//cond7())
     {
@@ -5915,7 +5910,7 @@ int callccM307() // CALL cc,mem  10110mmm 1110cccc
         return 6;
 }
 
-int callccM308() // CALL cc,mem  10110mmm 1110cccc
+int callccM308(void) // CALL cc,mem  10110mmm 1110cccc
 {
     //if (cond8())//always TRUE
     //{
@@ -5927,7 +5922,7 @@ int callccM308() // CALL cc,mem  10110mmm 1110cccc
     //    return 6;
 }
 
-int callccM309() // CALL cc,mem  10110mmm 1110cccc
+int callccM309(void) // CALL cc,mem  10110mmm 1110cccc
 {
     if (notCond9())
         return 6;
@@ -5937,7 +5932,7 @@ int callccM309() // CALL cc,mem  10110mmm 1110cccc
     return 12;
 }
 
-int callccM30A() // CALL cc,mem  10110mmm 1110cccc
+int callccM30A(void) // CALL cc,mem  10110mmm 1110cccc
 {
     if (notCondA())
         return 6;
@@ -5947,7 +5942,7 @@ int callccM30A() // CALL cc,mem  10110mmm 1110cccc
     return 12;
 }
 
-int callccM30B() // CALL cc,mem  10110mmm 1110cccc
+int callccM30B(void) // CALL cc,mem  10110mmm 1110cccc
 {
     if (notCondB())
         return 6;
@@ -5957,7 +5952,7 @@ int callccM30B() // CALL cc,mem  10110mmm 1110cccc
     return 12;
 }
 
-int callccM30C() // CALL cc,mem  10110mmm 1110cccc
+int callccM30C(void) // CALL cc,mem  10110mmm 1110cccc
 {
     if (notCondC())
         return 6;
@@ -5967,7 +5962,7 @@ int callccM30C() // CALL cc,mem  10110mmm 1110cccc
     return 12;
 }
 
-int callccM30D() // CALL cc,mem  10110mmm 1110cccc
+int callccM30D(void) // CALL cc,mem  10110mmm 1110cccc
 {
     if (notCondD())
         return 6;
@@ -5977,7 +5972,7 @@ int callccM30D() // CALL cc,mem  10110mmm 1110cccc
     return 12;
 }
 
-int callccM30E() // CALL cc,mem  10110mmm 1110cccc
+int callccM30E(void) // CALL cc,mem  10110mmm 1110cccc
 {
     if (notCondE())
         return 6;
@@ -5987,7 +5982,7 @@ int callccM30E() // CALL cc,mem  10110mmm 1110cccc
     return 12;
 }
 
-int callccM30F() // CALL cc,mem  10110mmm 1110cccc
+int callccM30F(void) // CALL cc,mem  10110mmm 1110cccc
 {
     if (notCondF())
         return 6;
@@ -6001,7 +5996,7 @@ int callccM30F() // CALL cc,mem  10110mmm 1110cccc
 ////////////////////////////// DJNZ //////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-int djnzB() // DJNZ r,$+3+d8  11001rrr 00011100 xxxxxxxx
+int djnzB(void) // DJNZ r,$+3+d8  11001rrr 00011100 xxxxxxxx
 {
     if (--*regB)
     {
@@ -6018,7 +6013,7 @@ int djnzB() // DJNZ r,$+3+d8  11001rrr 00011100 xxxxxxxx
     }
 }
 
-int djnzW() // DJNZ r,$+3+d8  11011rrr 00011100 xxxxxxxx
+int djnzW(void) // DJNZ r,$+3+d8  11011rrr 00011100 xxxxxxxx
 {
     if (--*regW)
     {
@@ -6039,7 +6034,7 @@ int djnzW() // DJNZ r,$+3+d8  11011rrr 00011100 xxxxxxxx
 ////////////////////////////// RET ///////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-int ret()  // RET     00001110
+int ret(void)  // RET     00001110
 {
     gen_regsPC = mem_readL(gen_regsXSP);
     my_pc = get_address(gen_regsPC);
@@ -6047,7 +6042,7 @@ int ret()  // RET     00001110
     return 9;
 }
 
-int retcc0() // RET cc    10110000 1111cccc
+int retcc0(void) // RET cc    10110000 1111cccc
 {
     /*
     //cond0 always false
@@ -6063,7 +6058,7 @@ int retcc0() // RET cc    10110000 1111cccc
         return 6;
 }
 
-int retcc1() // RET cc    10110000 1111cccc
+int retcc1(void) // RET cc    10110000 1111cccc
 {
     if (cond1())
     {
@@ -6076,7 +6071,7 @@ int retcc1() // RET cc    10110000 1111cccc
         return 6;
 }
 
-int retcc2() // RET cc    10110000 1111cccc
+int retcc2(void) // RET cc    10110000 1111cccc
 {
     if (cond2())
     {
@@ -6089,7 +6084,7 @@ int retcc2() // RET cc    10110000 1111cccc
         return 6;
 }
 
-int retcc3() // RET cc    10110000 1111cccc
+int retcc3(void) // RET cc    10110000 1111cccc
 {
     if (cond3())
     {
@@ -6102,7 +6097,7 @@ int retcc3() // RET cc    10110000 1111cccc
         return 6;
 }
 
-int retcc4() // RET cc    10110000 1111cccc
+int retcc4(void) // RET cc    10110000 1111cccc
 {
     if (cond4())
     {
@@ -6115,7 +6110,7 @@ int retcc4() // RET cc    10110000 1111cccc
         return 6;
 }
 
-int retcc5() // RET cc    10110000 1111cccc
+int retcc5(void) // RET cc    10110000 1111cccc
 {
     if (cond5())
     {
@@ -6128,7 +6123,7 @@ int retcc5() // RET cc    10110000 1111cccc
         return 6;
 }
 
-int retcc6() // RET cc    10110000 1111cccc
+int retcc6(void) // RET cc    10110000 1111cccc
 {
     if (gen_regsSR & ZF)//cond6())
     {
@@ -6141,7 +6136,7 @@ int retcc6() // RET cc    10110000 1111cccc
         return 6;
 }
 
-int retcc7() // RET cc    10110000 1111cccc
+int retcc7(void) // RET cc    10110000 1111cccc
 {
     if (gen_regsSR & CF)//cond7())
     {
@@ -6150,11 +6145,10 @@ int retcc7() // RET cc    10110000 1111cccc
         my_pc = get_address(gen_regsPC);
         return 12;
     }
-    else
-        return 6;
+    return 6;
 }
 
-int retcc8() // RET cc    10110000 1111cccc
+int retcc8(void) // RET cc    10110000 1111cccc
 {
     //if (cond8())//always TRUE
     //{
@@ -6167,7 +6161,7 @@ int retcc8() // RET cc    10110000 1111cccc
     //    return 6;
 }
 
-int retcc9() // RET cc    10110000 1111cccc
+int retcc9(void) // RET cc    10110000 1111cccc
 {
     if (cond9())
     {
@@ -6176,11 +6170,10 @@ int retcc9() // RET cc    10110000 1111cccc
         my_pc = get_address(gen_regsPC);
         return 12;
     }
-    else
-        return 6;
+    return 6;
 }
 
-int retccA() // RET cc    10110000 1111cccc
+int retccA(void) // RET cc    10110000 1111cccc
 {
     if (condA())
     {
@@ -6189,11 +6182,10 @@ int retccA() // RET cc    10110000 1111cccc
         my_pc = get_address(gen_regsPC);
         return 12;
     }
-    else
-        return 6;
+    return 6;
 }
 
-int retccB() // RET cc    10110000 1111cccc
+int retccB(void) // RET cc    10110000 1111cccc
 {
     if (condB())
     {
@@ -6202,11 +6194,10 @@ int retccB() // RET cc    10110000 1111cccc
         my_pc = get_address(gen_regsPC);
         return 12;
     }
-    else
-        return 6;
+    return 6;
 }
 
-int retccC() // RET cc    10110000 1111cccc
+int retccC(void) // RET cc    10110000 1111cccc
 {
     if (condC())
     {
@@ -6219,7 +6210,7 @@ int retccC() // RET cc    10110000 1111cccc
         return 6;
 }
 
-int retccD() // RET cc    10110000 1111cccc
+int retccD(void) // RET cc    10110000 1111cccc
 {
     if (condD())
     {
@@ -6232,7 +6223,7 @@ int retccD() // RET cc    10110000 1111cccc
         return 6;
 }
 
-int retccE() // RET cc    10110000 1111cccc
+int retccE(void) // RET cc    10110000 1111cccc
 {
     if (notCondE())
         return 6;
@@ -6242,7 +6233,7 @@ int retccE() // RET cc    10110000 1111cccc
     return 12;
 }
 
-int retccF() // RET cc    10110000 1111cccc
+int retccF(void) // RET cc    10110000 1111cccc
 {
     if (condF())
     {
@@ -6251,11 +6242,10 @@ int retccF() // RET cc    10110000 1111cccc
         my_pc = get_address(gen_regsPC);
         return 12;
     }
-    else
-        return 6;
+    return 6;
 }
 
-int retd()  // RETD d16    00001111 xxxxxxxx xxxxxxxx
+int retd(void)  // RETD d16    00001111 xxxxxxxx xxxxxxxx
 {
     signed short d16 = readword();
 
@@ -6265,7 +6255,7 @@ int retd()  // RETD d16    00001111 xxxxxxxx xxxxxxxx
     return 9;
 }
 
-int reti()  // RETI     00000111
+int reti(void)  // RETI     00000111
 {
 #ifdef TARGET_GP2X
     register byte *gA asm("r4");
@@ -6316,10 +6306,10 @@ int reti()  // RETI     00000111
 ////////////////////////////// undefined /////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-int udef()
+int udef(void)
 {
     //dbg_print("*** Call to udef() in tlcs900h core ***\n");
-    m_bIsActive = false;
+    m_bIsActive = FALSE;
     return 1;
 }
 
@@ -6327,12 +6317,12 @@ int udef()
 //////////////////////////////// BIOS calls  /////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-inline int VECT_SHUTDOWN()
+static INLINE int VECT_SHUTDOWN(void)
 {
     return 10;
 }
 
-inline int VECT_CLOCKGEARSET(unsigned char speed, unsigned char regen)
+static INLINE int VECT_CLOCKGEARSET(unsigned char speed, unsigned char regen)
 {
     switch(speed)
     {
@@ -6355,7 +6345,7 @@ inline int VECT_CLOCKGEARSET(unsigned char speed, unsigned char regen)
     return 10;
 }
 
-inline unsigned char makeBCD(int i)
+static INLINE unsigned char makeBCD(int i)
 {
     int upper;
 
@@ -6392,7 +6382,7 @@ void initTimezone(void)
 }
 
 
-inline int VECT_RTCGET(unsigned int dest)
+static INLINE int VECT_RTCGET(unsigned int dest)
 {
     // dest+0 // year
     // dest+1 // month  all in BCD
@@ -6402,9 +6392,8 @@ inline int VECT_RTCGET(unsigned int dest)
     // dest+5 // nr year after leap : day of the week
     unsigned char *d = get_address(dest);
 
-    time_t now;
-    tm *lt;
-	now = time(NULL);
+    struct tm *lt;
+	time_t now = time(NULL);
 	initTimezone(); //make sure TZ is set up
     lt = localtime(&now);
     //int year = (lt->tm_year+1900) % 100;
@@ -6422,7 +6411,7 @@ inline int VECT_RTCGET(unsigned int dest)
 }
 
 
-inline int VECT_INTLVSET(unsigned char interrupt, unsigned char level)
+static INLINE int VECT_INTLVSET(unsigned char interrupt, unsigned char level)
 {
     //   0 - Interrupt from RTC alarm
     //   1 - Interrupt from the Z80 CPU
@@ -6470,19 +6459,19 @@ inline int VECT_INTLVSET(unsigned char interrupt, unsigned char level)
     return 100;
 }
 
-inline int VECT_SYSFONTSET(unsigned char parms)
+static INLINE int VECT_SYSFONTSET(unsigned char parms)
 {
     ngpBiosSYSFONTSET(get_address(0xA000),(parms>>4)&0x03,parms&0x03);
     return 100;
 }
 
-inline int VECT_ALARMSET(unsigned char day, unsigned char hour, unsigned char minute, unsigned char *result)
+static INLINE int VECT_ALARMSET(unsigned char day, unsigned char hour, unsigned char minute, unsigned char *result)
 {
     *result = 0;  // SYS_SUCCESS
     return 100;
 }
 
-inline int VECT_FLASHWRITE(unsigned char chip, unsigned short size, unsigned int from, unsigned int to, unsigned char *result)
+static INLINE int VECT_FLASHWRITE(unsigned char chip, unsigned short size, unsigned int from, unsigned int to, unsigned char *result)
 {
     unsigned char *fromAddr;
     //toAddr = get_address(((chip) ? 0x00800000 : 0x00200000)+to);
@@ -6494,21 +6483,21 @@ inline int VECT_FLASHWRITE(unsigned char chip, unsigned short size, unsigned int
     return 100;
 }
 
-inline int VECT_FLASHERS(unsigned char chip, unsigned char blockNum, unsigned char *result)
+static INLINE int VECT_FLASHERS(unsigned char chip, unsigned char blockNum, unsigned char *result)
 {
     vectFlashErase(chip, blockNum);
     *result = 0;
     return 100;
 }
 
-inline int VECT_FLASHALLERS(unsigned char chip, unsigned char *result)
+static INLINE int VECT_FLASHALLERS(unsigned char chip, unsigned char *result)
 {
     vectFlashChipErase(chip);
     *result = 0;
     return 100;
 }
 
-inline int VECT_GEMODESET(unsigned char mode)
+static INLINE int VECT_GEMODESET(unsigned char mode)
 {
     mem_writeB(0x87F0,0xAA);  // allow GE MODE registers to be written to
     if (mode < 0x10)
@@ -6528,7 +6517,7 @@ inline int VECT_GEMODESET(unsigned char mode)
 }
 
 // execute a bios function
-inline int doBios(unsigned char biosNr)
+static INLINE int doBios(unsigned char biosNr)
 {
     switch (biosNr)
     {
@@ -6613,7 +6602,7 @@ inline int doBios(unsigned char biosNr)
     return 100;      // let's just take a value... correct?
 }
 
-int bios()
+int bios(void)
 {
     unsigned char biosNr = readbyte();
 
@@ -7134,7 +7123,7 @@ int (*decode_tableF0[256])() =
 //////////////////////// decode instructions /////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-int decode80()  // (XWA) (XBC) (XDE) (XHL) (XIX) (XIY) (XIZ) (XSP) scr.B
+int decode80(void)  // (XWA) (XBC) (XDE) (XHL) (XIX) (XIY) (XIZ) (XSP) scr.B
 {
     mem = *cregsL[opcode&7];
     memB = mem_readB(mem);
@@ -7142,7 +7131,7 @@ int decode80()  // (XWA) (XBC) (XDE) (XHL) (XIX) (XIY) (XIZ) (XSP) scr.B
     return decode_table80[lastbyte]();
 }
 
-int decode88()  // (XWA+d) (XBC+d) (XDE+d) (XHL+d) (XIX+d) (XIY+d) (XIZ+d) (XSP+d) scr.B
+int decode88(void)  // (XWA+d) (XBC+d) (XDE+d) (XHL+d) (XIX+d) (XIY+d) (XIZ+d) (XSP+d) scr.B
 {
     mem = (*cregsL[opcode&7])+(signed char)readbyteSetLastbyte();
     memB = mem_readB(mem);
@@ -7150,7 +7139,7 @@ int decode88()  // (XWA+d) (XBC+d) (XDE+d) (XHL+d) (XIX+d) (XIY+d) (XIZ+d) (XSP+
     return 2 + decode_table80[lastbyte]();
 }
 
-int decode90()  // (XWA) (XBC) (XDE) (XHL) (XIX) (XIY) (XIZ) (XSP) scr.W
+int decode90(void)  // (XWA) (XBC) (XDE) (XHL) (XIX) (XIY) (XIZ) (XSP) scr.W
 {
     mem = *cregsL[opcode&7];
     memW = mem_readW(mem);
@@ -7158,7 +7147,7 @@ int decode90()  // (XWA) (XBC) (XDE) (XHL) (XIX) (XIY) (XIZ) (XSP) scr.W
     return decode_table90[lastbyte]();
 }
 
-int decode98()  // (XWA+d) (XBC+d) (XDE+d) (XHL+d) (XIX+d) (XIY+d) (XIZ+d) (XSP+d) scr.W
+int decode98(void)  // (XWA+d) (XBC+d) (XDE+d) (XHL+d) (XIX+d) (XIY+d) (XIZ+d) (XSP+d) scr.W
 {
     mem = (*cregsL[opcode&7])+(signed char)readbyteSetLastbyte();
     memW = mem_readW(mem);
@@ -7166,7 +7155,7 @@ int decode98()  // (XWA+d) (XBC+d) (XDE+d) (XHL+d) (XIX+d) (XIY+d) (XIZ+d) (XSP+
     return 2 + decode_table98[lastbyte]();
 }
 
-int decodeA0()  // (XWA) (XBC) (XDE) (XHL) (XIX) (XIY) (XIZ) (XSP) scr.L
+int decodeA0(void)  // (XWA) (XBC) (XDE) (XHL) (XIX) (XIY) (XIZ) (XSP) scr.L
 {
     mem = *cregsL[opcode&7];
     memL = mem_readL(mem);
@@ -7174,7 +7163,7 @@ int decodeA0()  // (XWA) (XBC) (XDE) (XHL) (XIX) (XIY) (XIZ) (XSP) scr.L
     return decode_tableA0[lastbyte]();
 }
 
-int decodeA8()  // (XWA+d) (XBC+d) (XDE+d) (XHL+d) (XIX+d) (XIY+d) (XIZ+d) (XSP+d) scr.L
+int decodeA8(void)  // (XWA+d) (XBC+d) (XDE+d) (XHL+d) (XIX+d) (XIY+d) (XIZ+d) (XSP+d) scr.L
 {
     mem = (*cregsL[opcode&7])+(signed char)readbyteSetLastbyte();
     memL = mem_readL(mem);
@@ -7182,49 +7171,49 @@ int decodeA8()  // (XWA+d) (XBC+d) (XDE+d) (XHL+d) (XIX+d) (XIY+d) (XIZ+d) (XSP+
     return 2 + decode_tableA0[lastbyte]();
 }
 
-int decodeB0()  // (XWA) (XBC) (XDE) (XHL) (XIX) (XIY) (XIZ) (XSP) dst
+int decodeB0(void)  // (XWA) (XBC) (XDE) (XHL) (XIX) (XIY) (XIZ) (XSP) dst
 {
     mem = *cregsL[opcode&7];
     lastbyte = readbyte();
     return decode_tableB0[lastbyte]();
 }
 
-int decodeB8()  // (XWA+d) (XBC+d) (XDE+d) (XHL+d) (XIX+d) (XIY+d) (XIZ+d) (XSP+d) dst
+int decodeB8(void)  // (XWA+d) (XBC+d) (XDE+d) (XHL+d) (XIX+d) (XIY+d) (XIZ+d) (XSP+d) dst
 {
     mem = (*cregsL[opcode&7])+(signed char)readbyteSetLastbyte();
     //lastbyte = readbyte();
     return 2 + decode_tableB8[lastbyte]();
 }
 
-int decodeBB()  // (XWA+d) (XBC+d) (XDE+d) (XHL+d) (XIX+d) (XIY+d) (XIZ+d) (XSP+d) dst
+int decodeBB(void)  // (XWA+d) (XBC+d) (XDE+d) (XHL+d) (XIX+d) (XIY+d) (XIZ+d) (XSP+d) dst
 {
     mem = (*cregsL[opcode&7])+(signed char)readbyteSetLastbyte();
     //lastbyte = readbyte();
     return 2 + decode_tableB8[lastbyte]();
 }
 
-int decodeC0()  // (n)                scr.B
+int decodeC0(void)  // (n)                scr.B
 {
     mem = readbyteSetLastbyte();
     memB = mem_readB(mem);
     return 2 + decode_tableC0[lastbyte]();
 }
 
-int decodeC1()  //   (nn)             scr.B
+int decodeC1(void)  //   (nn)             scr.B
 {
     mem = readwordSetLastbyte();
     memB = mem_readB(mem);
     return 2 + decode_tableC0[lastbyte]();
 }
 
-int decodeC2()  //     (nnn)           scr.B
+int decodeC2(void)  //     (nnn)           scr.B
 {
     mem = read24SetLastbyte();
     memB = mem_readB(mem);
     return 3 + decode_tableC0[lastbyte]();
 }
 
-int decodeC3()  //       (mem)         scr.B
+int decodeC3(void)  //       (mem)         scr.B
 {
     unsigned char reg = readbyte();
     signed short d16;
@@ -7271,7 +7260,7 @@ int decodeC3()  //       (mem)         scr.B
     return retval + decode_tableC0[lastbyte]();
 }
 
-int decodeC4()  //         (-xrr)       scr.B
+int decodeC4(void)  //         (-xrr)       scr.B
 {
     unsigned char reg = readbyteSetLastbyte();
 
@@ -7281,7 +7270,7 @@ int decodeC4()  //         (-xrr)       scr.B
     return 3 + decode_tableC0[lastbyte]();
 }
 
-int decodeC5()  //           (xrr+)     scr.B
+int decodeC5(void)  //           (xrr+)     scr.B
 {
     unsigned char reg = readbyteSetLastbyte();
 
@@ -7292,21 +7281,21 @@ int decodeC5()  //           (xrr+)     scr.B
     return 3 + decode_tableC0[lastbyte]();
 }
 
-int decodeC7()  // r                reg.B
+int decodeC7(void)  // r                reg.B
 {
     regB = allregsB[readbyteSetLastbyte()];
     //lastbyte = readbyte();
     return 1 + decode_tableC8[lastbyte]();
 }
 
-int decodeC8()  // W  A  B  C  D  E  H  L  reg.B
+int decodeC8(void)  // W  A  B  C  D  E  H  L  reg.B
 {
     regB = cregsB[opcode&7];
     lastbyte = readbyte();
     return decode_tableC8[lastbyte]();
 }
 
-int decodeD0()  // (n)                scr.W
+int decodeD0(void)  // (n)                scr.W
 {
     mem = readbyteSetLastbyte();
     memW = mem_readW(mem);
@@ -7314,7 +7303,7 @@ int decodeD0()  // (n)                scr.W
     return 2 + decode_tableD0[lastbyte]();
 }
 
-int decodeD1()  //   (nn)             scr.W
+int decodeD1(void)  //   (nn)             scr.W
 {
     mem = readwordSetLastbyte();
     memW = mem_readW(mem);
@@ -7322,7 +7311,7 @@ int decodeD1()  //   (nn)             scr.W
     return 2 + decode_tableD0[lastbyte]();
 }
 
-int decodeD2()  //     (nnn)           scr.W
+int decodeD2(void)  //     (nnn)           scr.W
 {
     mem = read24SetLastbyte();
     memW = mem_readW(mem);
@@ -7330,7 +7319,7 @@ int decodeD2()  //     (nnn)           scr.W
     return 3 + decode_tableD0[lastbyte]();
 }
 
-int decodeD3()  //       (mem)         scr.W
+int decodeD3(void)  //       (mem)         scr.W
 {
     unsigned char reg = readbyte();
     signed short d16;
@@ -7377,7 +7366,7 @@ int decodeD3()  //       (mem)         scr.W
     return retval + decode_tableD0[lastbyte]();
 }
 
-int decodeD4()  //         (-xrr)       scr.W
+int decodeD4(void)  //         (-xrr)       scr.W
 {
     unsigned char reg = readbyteSetLastbyte();
 
@@ -7387,7 +7376,7 @@ int decodeD4()  //         (-xrr)       scr.W
     return 3 + decode_tableD0[lastbyte]();
 }
 
-int decodeD5()  //           (xrr+)     scr.W
+int decodeD5(void)  //           (xrr+)     scr.W
 {
     unsigned char reg = readbyteSetLastbyte();
 
@@ -7398,21 +7387,21 @@ int decodeD5()  //           (xrr+)     scr.W
     return 3 + decode_tableD0[lastbyte]();
 }
 
-int decodeD7()  // r                reg.W
+int decodeD7(void)  // r                reg.W
 {
     regW = allregsW[readbyteSetLastbyte()];
     //lastbyte = readbyte();
     return 1 + decode_tableD8[lastbyte]();
 }
 
-int decodeD8()  // WA  BC  DE  HL  IX  IY  IZ  SP  reg.W
+int decodeD8(void)  // WA  BC  DE  HL  IX  IY  IZ  SP  reg.W
 {
     regW = cregsW[opcode&7];
     lastbyte = readbyte();
     return decode_tableD8[lastbyte]();
 }
 
-int decodeE0()  // (n)                scr.L
+int decodeE0(void)  // (n)                scr.L
 {
     mem = readbyteSetLastbyte();
     memL = mem_readL(mem);
@@ -7420,7 +7409,7 @@ int decodeE0()  // (n)                scr.L
     return 2 + decode_tableE0[lastbyte]();
 }
 
-int decodeE1()  //   (nn)             scr.L
+int decodeE1(void)  //   (nn)             scr.L
 {
     mem = readwordSetLastbyte();
     memL = mem_readL(mem);
@@ -7428,7 +7417,7 @@ int decodeE1()  //   (nn)             scr.L
     return 2 + decode_tableE0[lastbyte]();
 }
 
-int decodeE2()  //     (nnn)           scr.L
+int decodeE2(void)  //     (nnn)           scr.L
 {
     mem = read24SetLastbyte();
     memL = mem_readL(mem);
@@ -7436,7 +7425,7 @@ int decodeE2()  //     (nnn)           scr.L
     return 3 + decode_tableE0[lastbyte]();
 }
 
-int decodeE3()  //       (mem)         scr.L
+int decodeE3(void)  //       (mem)         scr.L
 {
     unsigned char reg = readbyte();
     signed short d16;
@@ -7483,7 +7472,7 @@ int decodeE3()  //       (mem)         scr.L
     return retval + decode_tableE0[lastbyte]();
 }
 
-int decodeE4()  //         (-xrr)       scr.L
+int decodeE4(void)  //         (-xrr)       scr.L
 {
     unsigned char reg = readbyteSetLastbyte();
 
@@ -7493,7 +7482,7 @@ int decodeE4()  //         (-xrr)       scr.L
     return 3 + decode_tableE0[lastbyte]();
 }
 
-int decodeE5()  //           (xrr+)     scr.L
+int decodeE5(void)  //           (xrr+)     scr.L
 {
     unsigned char reg = readbyteSetLastbyte();
 
@@ -7518,7 +7507,7 @@ int decodeE8(void)  // XWA  XBC  XDE  XHL  XIX  XIY  XIZ  XSP  reg.L
     return decode_tableE8[lastbyte]();
 }
 
-int decodeF0()  // (n)                dst
+int decodeF0(void)  // (n)                dst
 {
     mem = readbyteSetLastbyte();
     return 2 + decode_tableF0[lastbyte]();
@@ -7800,7 +7789,7 @@ void tlcs_init(void)
     //saved_my_pc = my_pc;
 }
 
-void tlcs_reinit()
+void tlcs_reinit(void)
 {
     int j;
 
@@ -7904,11 +7893,11 @@ void tlcs_reinit()
  else     return 0;
 }*/
 
-void tlcsDMA(unsigned char vector);
+static void tlcsDMA(unsigned char vector);
 
 // handle receiving of interrupt i
 // handle receiving of interrupt i
-inline void tlcs_interrupt(int irq)
+static INLINE void tlcs_interrupt(int irq)
 {
     // list of possible interrupts:
     // 00 - INT0 boot ??
@@ -8011,7 +8000,7 @@ void tlcs_interrupt_wrapper(int irq)
 #define DMA3V cpuram[0x7F]
 
 // handle DMA
-inline void tlcsDMAchannel(unsigned char *mode, unsigned int *src, unsigned int *dest, unsigned short *count, unsigned char *vector, int channel)
+static INLINE void tlcsDMAchannel(unsigned char *mode, unsigned int *src, unsigned int *dest, unsigned short *count, unsigned char *vector, int channel)
 {
     switch (*mode)
     {
@@ -8100,7 +8089,7 @@ inline void tlcsDMAchannel(unsigned char *mode, unsigned int *src, unsigned int 
     }
 }
 
-inline void tlcsDMA(unsigned char vector)
+static INLINE void tlcsDMA(unsigned char vector)
 {
     if (vector == DMA0V)
     {
@@ -8151,7 +8140,7 @@ int    timer3 = 0;
 
 // only timer mode 00, and maybe the other two 8 bit timer modes as well
 // 16bit combined timer mode not supported yet (might be easy to implement though)
-inline void tlcs1Timer(int stateChange, int timerNr, int run, int mode,
+static INLINE void tlcs1Timer(int stateChange, int timerNr, int run, int mode,
                        int *t0, int *t1,
                        int check0, int check1)
 {
@@ -8266,7 +8255,7 @@ inline void tlcs1Timer(int stateChange, int timerNr, int run, int mode,
 }
 
 // check and perform timer functions
-inline void tlcsTimers(int stateChange)
+static INLINE void tlcsTimers(int stateChange)
 {
     //Flavor, unroll these two calls into one function
 

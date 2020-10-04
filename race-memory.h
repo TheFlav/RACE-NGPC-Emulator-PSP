@@ -11,6 +11,7 @@
 #ifndef _MEMORYH_
 #define _MEMORYH_
 
+#include <retro_inline.h>
 #include "types.h"
 #include "neopopsound.h"
 #include "sound.h"
@@ -45,8 +46,6 @@ extern unsigned int cartAddrMask;		/* Mask for reading/writing mainrom */
 extern unsigned char	cpuram[];		/* 900h cpu core needs this.. */
 #endif
 extern unsigned char *cpuram;
-void tlcsMemWriteW(unsigned int addr, unsigned short data);
-void tlcsMemWriteL(unsigned int addr, unsigned int data);
 void mem_init(void);
 
 #if 0
@@ -159,7 +158,7 @@ extern void (*sm85MemWriteB)(unsigned short addr, unsigned char data);
 
 extern unsigned char realBIOSloaded;
 
-static inline unsigned char *get_address(unsigned int addr)
+static INLINE unsigned char *get_address(unsigned int addr)
 {
    addr&= 0x00FFFFFF;
    if (addr<0x00200000)
@@ -234,7 +233,7 @@ static inline unsigned char *get_address(unsigned int addr)
 }
 
 /* read a byte from a memory address (addr) */
-static inline unsigned char tlcsMemReadB(unsigned int addr)
+static INLINE unsigned char tlcsMemReadB(unsigned int addr)
 {
 	addr&= 0x00FFFFFF;
 
@@ -292,7 +291,7 @@ static inline unsigned char tlcsMemReadB(unsigned int addr)
 }
 
 /* read a word from a memory address (addr) */
-static inline unsigned short tlcsMemReadW(unsigned int addr)
+static INLINE unsigned short tlcsMemReadW(unsigned int addr)
 {
 #ifdef TARGET_GP2X
 	register unsigned short i asm("r0");
@@ -329,7 +328,7 @@ static inline unsigned short tlcsMemReadW(unsigned int addr)
 }
 
 /* read a long word from a memory address (addr) */
-static inline unsigned int tlcsMemReadL(unsigned int addr)
+static INLINE unsigned int tlcsMemReadL(unsigned int addr)
 {
 #ifdef TARGET_GP2X
 	register unsigned int i asm("r0");
@@ -374,7 +373,7 @@ static inline unsigned int tlcsMemReadL(unsigned int addr)
 }
 
 /* write a byte (data) to a memory address (addr) */
-static inline void tlcsMemWriteB(unsigned int addr, unsigned char data)
+static INLINE void tlcsMemWriteB(unsigned int addr, unsigned char data)
 {
 	addr&= 0x00FFFFFF;
     if (addr<0x000008a0)

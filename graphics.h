@@ -66,12 +66,12 @@ extern unsigned char *color_switch;
 BOOL graphics_init(void);
 void graphics_paint(void);
 void graphicsSetDarkFilterLevel(unsigned filterLevel);
+/* new renderer (NeoGeo Pocket (Color)) */
+void myGraphicsBlitLine(unsigned char render);
 
 #ifdef __cplusplus
 }
 #endif
-/* new renderer (NeoGeo Pocket (Color)) */
-void myGraphicsBlitLine(unsigned char render);
 
 /*
  * adventure vision stuff
