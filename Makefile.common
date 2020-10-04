@@ -52,7 +52,7 @@ SOURCES_C += \
 
 ifeq ($(DRZ80),1)
 	FLAGS += -DDRZ80
-	SOURCES_CXX += $(CORE_DIR)/DrZ80_support.cpp
+	SOURCES_C   += $(CORE_DIR)/DrZ80_support.c
 	SOURCES_ASM := $(CORE_DIR)/DrZ80.s
 else
 	FLAGS += -DCZ80

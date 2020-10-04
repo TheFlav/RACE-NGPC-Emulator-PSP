@@ -5,7 +5,6 @@
 extern "C" {
 #endif
 
-
 #include "DrZ80.h"
 
 /****************************************************************************/
@@ -16,7 +15,7 @@ typedef struct {
 	struct DrZ80 regs;
 }   Z80_Regs;
 
-extern Z80_Regs Z80;
+extern struct Z80_Regs Z80;
 
 #define Z80_IGNORE_INT	-1 /* Ignore interrupt */
 #define Z80_NMI_INT 	-2    /* Execute NMI */
@@ -24,8 +23,8 @@ extern Z80_Regs Z80;
 
 extern unsigned Z80_GetPC (void); /* Get program counter */
 extern int Z80_GetPreviousPC (void);
-extern void Z80_GetRegs (Z80_Regs *Regs);  /* Get registers */
-extern void Z80_SetRegs (Z80_Regs *Regs);  /* Set registers */
+extern void Z80_GetRegs (struct Z80_Regs *Regs);  /* Get registers */
+extern void Z80_SetRegs (struct Z80_Regs *Regs);  /* Set registers */
 
 extern void Z80_Reset(void);
 extern int Z80_Execute(int cycles); /* Execute cycles T-States - returns number of cycles actually run */
