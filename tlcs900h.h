@@ -16,6 +16,7 @@
 extern "C" {
 #endif
 
+extern unsigned char *rasterY;
 extern unsigned int gen_regsPC, gen_regsSR;
 extern unsigned char F2;
 extern unsigned int

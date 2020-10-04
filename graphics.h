@@ -29,9 +29,44 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+extern unsigned char *sprite_table;
+extern unsigned char *pattern_table;
+extern unsigned short*patterns;
+extern unsigned short *tile_table_front;
+extern unsigned short *tile_table_back;
+extern unsigned short *palette_table;
+extern unsigned char *bw_palette_table;
+extern unsigned char *sprite_palette_numbers;
+
+extern unsigned char *scanlineY;
+/* frame 0/1 priority registers */
+extern unsigned char *frame0Pri;
+extern unsigned char *frame1Pri;
+/* windowing registers */
+extern unsigned char *wndTopLeftX;
+extern unsigned char *wndTopLeftY;
+extern unsigned char *wndSizeX;
+extern unsigned char *wndSizeY;
+/* scrolling registers */
+extern unsigned char *scrollSpriteX;
+extern unsigned char *scrollSpriteY;
+extern unsigned char *scrollFrontX;
+extern unsigned char *scrollFrontY;
+extern unsigned char *scrollBackX;
+extern unsigned char *scrollBackY;
+/* background color selection register and table */
+extern unsigned char *bgSelect;
+extern unsigned short *bgTable;
+extern unsigned char *oowSelect;
+extern unsigned short *oowTable;
+/* machine constants */
+extern unsigned char *color_switch;
+
 BOOL graphics_init(void);
 void graphics_paint(void);
 void graphicsSetDarkFilterLevel(unsigned filterLevel);
+
 #ifdef __cplusplus
 }
 #endif

@@ -46,7 +46,6 @@ int finscan;
 int contador;
 extern int gfx_hacks;
 extern int fixsoundmahjong;
-unsigned char *rasterY = get_address(0x00008035);
 
 // ngpcdis.cpp
 //
