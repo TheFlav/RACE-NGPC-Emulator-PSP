@@ -19,9 +19,6 @@
 #define COMMAND_CHIP_ERASE      0x10
 #define COMMAND_INFO_READ       0x90
 
-/* we found a dirty one, so write the file */
-#define WRITE_SAVEGAME_IF_DIRTY if(needToWriteFile) writeSaveGameFile(); 
-
 #ifdef __cplusplus
 extern "C" {
 #endif

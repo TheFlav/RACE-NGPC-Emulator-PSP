@@ -14,6 +14,7 @@
  * TODO:
  */
 
+#include <stdio.h>
 #include "race-memory.h"
 #include "types.h"
 #include "input.h"		/* for Gameboy Input */
@@ -347,10 +348,7 @@ static unsigned char loadBIOS(void)
    fclose(biosFile);
 
    if(bytesRead != 0x10000)
-   {
-      fprintf(stderr, "loadBIOS: Bad BIOS file %s\n", "NPBIOS.BIN");
       return 0;
-   }
    return 1;
 }
 

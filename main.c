@@ -9,7 +9,7 @@
 //
 // This is the main program entry point
 //
-
+#include <stdio.h>
 #include "unzip.h"
 
 #include "types.h"
