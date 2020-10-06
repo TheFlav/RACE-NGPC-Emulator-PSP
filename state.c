@@ -53,7 +53,7 @@ struct race_state_0x11
   u32 PC_offset;
   s32 Z80_ICount;
 #elif DRZ80
-  Z80_Regs Z80;
+  struct Z80_Regs Z80;
 #endif
   /* Sound */
   int sndCycles;
@@ -90,7 +90,7 @@ struct race_state_0x10 /* Older state format */
    u32 PC_offset;
    s32 Z80_ICount;
 #elif DRZ80
-   Z80_Regs Z80;
+   struct Z80_Regs Z80;
 #endif
 
    /* Sound Chips */
@@ -115,7 +115,7 @@ static int state_store(race_state_t *rs)
   extern s32 Z80_ICount;
   int size_of_z80;
 #elif DRZ80
-  extern Z80_Regs Z80;
+  extern struct Z80_Regs Z80;
 #endif
   extern int sndCycles;
 
@@ -193,7 +193,7 @@ static int state_restore(race_state_t *rs)
   extern s32 Z80_ICount;
   int size_of_z80;
 #elif DRZ80
-  extern Z80_Regs Z80;
+  extern struct Z80_Regs Z80;
 #endif
   extern int sndCycles;
 
