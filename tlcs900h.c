@@ -285,57 +285,60 @@ static INLINE void tlcsFastMemWriteL(unsigned int addr, unsigned int data)
 
 static INLINE void tlcsMemWriteBaddrB(unsigned char addr, unsigned char data)
 {
-    //NOTA Super Real Mahjong sound fix
-    
-    if (gfx_hacks==1){
-    if (mainrom[0x000020] == 0x11 && mainrom[0x000021] == 0x01)
-    fixsoundmahjong++;}
-    
-    switch(addr) {
-    //case 0x80:	// CPU speed
-    //    break;
-    case 0xA0:	// L CH Sound Source Control Register
-        if (cpuram[0xB8] == 0x55 && cpuram[0xB9] == 0xAA)
+   //NOTA Super Real Mahjong sound fix
+   if (gfx_hacks==1)
+   {
+      if (mainrom[0x000020] == 0x11 && mainrom[0x000021] == 0x01)
+         fixsoundmahjong++;
+   }
+
+   switch(addr)
+   {
+      //case 0x80:	// CPU speed
+      //    break;
+      case 0xA0:	// L CH Sound Source Control Register
+         if (cpuram[0xB8] == 0x55 && cpuram[0xB9] == 0xAA)
             Write_SoundChipNoise(data);//Flavor SN76496Write(0, data);
-        break;
-    case 0xA1:	// R CH Sound Source Control Register
-        if (cpuram[0xB8] == 0x55 && cpuram[0xB9] == 0xAA)
+         break;
+      case 0xA1:	// R CH Sound Source Control Register
+         if (cpuram[0xB8] == 0x55 && cpuram[0xB9] == 0xAA)
             Write_SoundChipTone(data); //Flavor SN76496Write(0, data);
-        break;
-    case 0xA2:	// L CH DAC Control Register
-        ngpSoundExecute();
-        if (cpuram[0xB8] == 0xAA)
+         break;
+      case 0xA2:	// L CH DAC Control Register
+         ngpSoundExecute();
+         if (cpuram[0xB8] == 0xAA)
             dac_writeL(data); //Flavor DAC_data_w(0,data);
-        break;
-    /*case 0xA3:	// R CH DAC Control Register  //Flavor hack for mono only sound
-        ngpSoundExecute();
-        if (cpuram[0xB8] == 0xAA)
-            dac_writeR(data);//Flavor DAC_data_w(1,data);
-        break;*/
-    case 0xB8:	// Z80 Reset
-//				if (data == 0x55)	DAC_data_w(0,0);
-    case 0xB9:	// Sourd Source Reset Control Register
-        switch(data) {
-        case 0x55:
-            ngpSoundStart();
-            break;
-        case 0xAA:
-            ngpSoundExecute();
-            ngpSoundOff();
-            break;
-        }
-        break;
-    case 0xBA:
-        ngpSoundExecute();
+         break;
+         /*case 0xA3:	// R CH DAC Control Register  //Flavor hack for mono only sound
+           ngpSoundExecute();
+           if (cpuram[0xB8] == 0xAA)
+           dac_writeR(data);//Flavor DAC_data_w(1,data);
+           break;*/
+      case 0xB8:	// Z80 Reset
+         //				if (data == 0x55)	DAC_data_w(0,0);
+      case 0xB9:	// Sourd Source Reset Control Register
+         switch(data)
+         {
+            case 0x55:
+               ngpSoundStart();
+               break;
+            case 0xAA:
+               ngpSoundExecute();
+               ngpSoundOff();
+               break;
+         }
+         break;
+      case 0xBA:
+         ngpSoundExecute();
 #if defined(DRZ80) || defined(CZ80)
-        Z80_Cause_Interrupt(Z80_NMI_INT);
+         Z80_Cause_Interrupt(Z80_NMI_INT);
 #else
-        z80Interrupt(Z80NMI);
+         z80Interrupt(Z80NMI);
 #endif
-        break;
-    }
-    cpuram[addr] = data;
-    return;
+         break;
+   }
+   cpuram[addr] = data;
+   return;
 }
 
 
@@ -363,34 +366,40 @@ static INLINE void tlcsMemWriteWaddrB(unsigned int addr, unsigned short data)
 
 
 #define mem_writeW tlcsMemWriteW
-/*static INLINE void mem_writeW(unsigned int addr, unsigned short data) {
-// if (addr > 0x200000) memoryCycles+= 2;
- tlcsMemWriteW(addr, data);
-}*/
+#if 0
+static INLINE void mem_writeW(unsigned int addr, unsigned short data)
+{
+   // if (addr > 0x200000) memoryCycles+= 2;
+   tlcsMemWriteW(addr, data);
+}
+#endif
 
 // write a long word (data) to a memory address (addr)
 static INLINE void tlcsMemWriteL(unsigned int addr, unsigned int data)
 {
-    //Flavor:  I think we're getting carried away with this addr&0xFFFFFF junk.  It's all over, now.  :(
-    addr&=0xFFFFFF;
-    if (addr>0x00003fff && addr<0x00018000)
-    {
-        tlcsFastMemWriteL(addr, data);
-    }
-    else
-    {
-        tlcsMemWriteB(addr, (unsigned char)(data & 0xFF));
-        tlcsFastMemWriteB(addr+1, (unsigned char)((data>>8) & 0xFF));
-        tlcsFastMemWriteB(addr+2, (unsigned char)((data>>16) & 0xFF));
-        tlcsFastMemWriteB(addr+3, (unsigned char)((data>>24) & 0xFF));
-    }
+   //Flavor:  I think we're getting carried away with this addr&0xFFFFFF junk.  It's all over, now.  :(
+   addr&=0xFFFFFF;
+   if (addr>0x00003fff && addr<0x00018000)
+   {
+      tlcsFastMemWriteL(addr, data);
+   }
+   else
+   {
+      tlcsMemWriteB(addr, (unsigned char)(data & 0xFF));
+      tlcsFastMemWriteB(addr+1, (unsigned char)((data>>8) & 0xFF));
+      tlcsFastMemWriteB(addr+2, (unsigned char)((data>>16) & 0xFF));
+      tlcsFastMemWriteB(addr+3, (unsigned char)((data>>24) & 0xFF));
+   }
 }
 
 #define mem_writeL tlcsMemWriteL
-/*static INLINE void mem_writeL(unsigned int addr, unsigned int data) {
-// if (addr > 0x200000) memoryCycles+= 4;
- tlcsMemWriteL(addr, data);
-}*/
+#if 0
+static INLINE void mem_writeL(unsigned int addr, unsigned int data)
+{
+   // if (addr > 0x200000) memoryCycles+= 4;
+   tlcsMemWriteL(addr, data);
+}
+#endif
 
 
 static INLINE unsigned char readbyte(void)
@@ -963,17 +972,31 @@ static INLINE unsigned char srGE(void)
     return ((((gen_regsSR & (SF|VF)) == SF)
              || ((gen_regsSR & (SF|VF)) == VF)) ? 0 : 1);
 }
-//unsigned char srGE(void) { return ((((gen_regsSR & (SF|VF)) == (VF|SF))
-//          || ((gen_regsSR & (SF|VF)) == 0)) ? 1 : 0); }
+
+#if 0
+unsigned char srGE(void)
+{
+   return ((((gen_regsSR & (SF|VF)) == (VF|SF))
+            || ((gen_regsSR & (SF|VF)) == 0)) ? 1 : 0);
+}
+#endif
+
 static INLINE unsigned char srGT(void)
 {
     return (((((gen_regsSR & (SF|VF)) == SF)
               || ((gen_regsSR & (SF|VF)) == VF))
              || (gen_regsSR & ZF)) ? 0 : 1);
 }
-//unsigned char srGT(void) { return (((((gen_regsSR & (SF|VF)) == (VF|SF))
-//          || ((gen_regsSR & (SF|VF)) == 0))
-//          && (gen_regsSR & ZF)) ? 1 : 0); }
+
+#if 0
+unsigned char srGT(void)
+{
+   return (((((gen_regsSR & (SF|VF)) == (VF|SF))
+               || ((gen_regsSR & (SF|VF)) == 0))
+            && (gen_regsSR & ZF)) ? 1 : 0);
+}
+#endif
+
 static INLINE unsigned char srUGT(void)
 {
     return ((gen_regsSR & (ZF|CF)) ? 0 : 1);
@@ -1011,7 +1034,6 @@ static INLINE unsigned char srNC(void)
 #define valCondD srPL
 #define valCondE srNZ
 #define valCondF srNC
-
 
 static INLINE void set_cregs(void)  //optimized by Thor
 {
@@ -8281,16 +8303,18 @@ static void tlcsTI0(void)
    if (((T01MOD & 3) == 0) && (T8RUN & 1))
       timer0+= 1;  
 
-   if (gfx_hacks==1){   
+   if (gfx_hacks==1)
+   {
       //Arregla Samurai 2    
-      if (mainrom[0x000020] == 0x30)   {    
-
+      if (mainrom[0x000020] == 0x30)
+      {
          contador++;
          if (contador==100)
             timer0+= 1;
 
          if (contador==152)
-            contador=0;}   
+            contador=0;
+      }
 
       //Arregla el tablero del Super Real Mahjong, NO modo historia
       //Arregla Ohanabi 0x10
@@ -8300,8 +8324,10 @@ static void tlcsTI0(void)
 
       //Arregla Oelsol 0x07
       if (mainrom[0x000020] == 0x07 && *rasterY>0  )
-      {if (*scanlineY==2)
-         timer0-= 1; }
+      {
+         if (*scanlineY==2)
+            timer0-= 1;
+      }
 
       //Arregla Dekahel 0x08   
       if (mainrom[0x000020] == 0x08 && *rasterY==0 )
@@ -8312,13 +8338,13 @@ static void tlcsTI0(void)
       // timer0 = 0;     
 
       if (mainrom[0x000020] == 0x12)
-      {if (*scanlineY>122 && *rasterY==0 )
-         timer0 = 0;   
+      {
+         if (*scanlineY > 122 && *rasterY == 0)
+            timer0 = 0;   
          if (*scanlineY==2)
-            timer0+= 1;   }}
-
-
-
+            timer0+= 1;   
+      }
+   }
 }
 
 /* perform one cpu step */

@@ -749,7 +749,6 @@ static void spriteSort(unsigned int bw)
 static INLINE void spriteSortAll(unsigned int bw)
 {
     unsigned int spriteCode;
-    unsigned short *pt;
     unsigned char x, y, prevx=0, prevy=0;
     unsigned int i, j, k, scanline;
     SPRITE *spr;

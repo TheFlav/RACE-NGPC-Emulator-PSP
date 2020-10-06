@@ -107,7 +107,6 @@ static int initRom(void)
 {
    int		i, m;
    char	*licenseInfo   = " BY SNK CORPORATION";
-   char	*ggLicenseInfo = "TMR SEGA";
    BOOL	romFound       = TRUE;
 
    finscan=198;
@@ -197,6 +196,7 @@ static void initSysInfo(void)
 	m_sysInfo[NGPC].Ticks = 6*1024*1024;
 }
 
+#ifdef WANT_ZIP
 static char *getFileNameExtension(char *nom_fichier)
 {
    char *ptrPoint = nom_fichier;
@@ -209,7 +209,6 @@ static char *getFileNameExtension(char *nom_fichier)
    return ptrPoint;
 }
 
-#ifdef WANT_ZIP
 static int loadFromZipByName(unsigned char *buffer, char *archive,
       char *filename, int *filesize)
 {
@@ -298,7 +297,6 @@ static int loadFromZipByName(unsigned char *buffer, char *archive,
    memcpy(filename, name, _MAX_PATH);
    return 1;
 }
-#endif // WANT_ZIP
 
 /*
     Verifies if a file is a ZIP archive or not.
@@ -316,6 +314,7 @@ static int check_zip(char *filename)
       return (1);
    return (0);
 }
+#endif // WANT_ZIP
 
 static int strrchr2(const char *src, int c)
 {
@@ -335,7 +334,9 @@ int handleInputFile(char *romName)
 {
 	FILE *romFile;
 	int iDepth = 0;
+#ifdef WANT_ZIP
 	int size;
+#endif
 
 	initSysInfo();  //initialize it all
 
