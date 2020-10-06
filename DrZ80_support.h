@@ -11,9 +11,9 @@ extern "C" {
 /* The Z80 registers. HALT is set to 1 when the CPU is halted, the refresh  */
 /* register is calculated as follows: refresh=(Regs.R&127)|(Regs.R2&128)    */
 /****************************************************************************/
-typedef struct {
+typedef struct Z80_Regs {
 	struct DrZ80 regs;
-}   Z80_Regs;
+} Z80_Regs_s;
 
 extern struct Z80_Regs Z80;
 

@@ -30,8 +30,8 @@ extern "C" {
 
 extern int DrZ80Ver; /* Version number of library */
 
-struct DrZ80
-{ 
+typedef struct DrZ80
+{
   unsigned int Z80PC;           /*0x00 - PC Program Counter (Memory Base + PC) */
   unsigned int Z80A;            /*0x04 - A Register:   0xAA------ */
   unsigned int Z80F;            /*0x08 - F Register:   0x------FF */
@@ -66,7 +66,7 @@ struct DrZ80
   unsigned int (*z80_rebaseSP)(unsigned short new_sp);
   unsigned int (*z80_rebasePC)(unsigned short new_pc);
   unsigned int bla;
-};
+} DrZ80_s;
 
 extern int DrZ80Run(struct DrZ80 *pcy,unsigned int cyc);
 
