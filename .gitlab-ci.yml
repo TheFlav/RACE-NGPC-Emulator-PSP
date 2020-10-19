@@ -10,6 +10,8 @@ include:
   - project: 'libretro-infrastructure/ci-templates'
     file: '/vita-static.yml'
   - project: 'libretro-infrastructure/ci-templates'
+    file: '/psp-static.yml'
+  - project: 'libretro-infrastructure/ci-templates'
     file: '/ps2-static.yml'
   - project: 'libretro-infrastructure/ci-templates'
     file: '/linux-x64.yml'
@@ -71,3 +73,8 @@ libretro-build-ps2:
   extends:
     - .core-defs
     - .libretro-ps2-static-retroarch-master
+
+libretro-build-psp:
+  extends:
+    - .core-defs
+    - .libretro-psp-static-retroarch-master
