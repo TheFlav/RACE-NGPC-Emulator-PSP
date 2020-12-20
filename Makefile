@@ -123,26 +123,6 @@ else ifeq ($(platform),qnx)
 	CC = qcc -Vgcc_ntoarmv7le
 	CXX = QCC -Vgcc_ntoarmv7le_cpp
 
-# PS3
-else ifeq ($(platform),ps3)
-	TARGET := $(TARGET_NAME)_libretro_$(platform).a
-	CC = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-gcc.exe
-	CXX = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-g++.exe
-	AR = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-ar.exe
-	FLAGS += -DMSB_FIRST
-	STATIC_LINKING := 1
-	LIBS :=
-
-# sncps3
-else ifeq ($(platform), sncps3)
-	TARGET := $(TARGET_NAME)_libretro_ps3.a
-	CC = $(CELL_SDK)/host-win32/sn/bin/ps3ppusnc.exe
-	CXX = $(CELL_SDK)/host-win32/sn/bin/ps3ppusnc.exe
-	AR = $(CELL_SDK)/host-win32/sn/bin/ps3snarl.exe
-	FLAGS += -DMSB_FIRST
-	STATIC_LINKING := 1
-	LIBS :=
-
 # PS2
 else ifeq ($(platform),ps2)
 	TARGET := $(TARGET_NAME)_libretro_$(platform).a
