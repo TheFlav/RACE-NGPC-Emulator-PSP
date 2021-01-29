@@ -61,12 +61,20 @@ else ifeq ($(platform),osx)
 	LIBS :=
 	OSXVER = `sw_vers -productVersion | cut -d. -f 2`
 	OSX_LT_MAVERICKS = `(( $(OSXVER) <= 9)) && echo "YES"`
-	fpic += -mmacosx-version-min=10.1
+	MINVERSION=
+   ifeq ($(OSX_LT_MAVERICKS),YES)
+   	MINVERSION += -mmacosx-version-min=10.1
+   else ifeq ($(shell uname -p),arm)
+	MINVERSION =
+   endif
 	ifndef ($(NOUNIVERSAL))
 		CFLAGS  += $(ARCHFLAGS)
 		CXXFLAGS  += $(ARCHFLAGS)
 		LDFLAGS += $(ARCHFLAGS)
+		MINVERSION=
 	endif
+
+        fpic += $(MINVERSION)
 
 # iOS
 else ifneq (,$(findstring ios,$(platform)))
