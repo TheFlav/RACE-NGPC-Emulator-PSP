@@ -295,7 +295,7 @@ static INLINE unsigned short tlcsMemReadW(unsigned int addr)
 {
 #ifdef TARGET_GP2X
 	register unsigned short i asm("r0");
-	register byte *gA asm("r1");
+	register unsigned char *gA asm("r1");
 
 	gA = get_address(addr);
 
@@ -313,7 +313,7 @@ static INLINE unsigned short tlcsMemReadW(unsigned int addr)
     return i;
 #else
 /*	unsigned short i;
-	byte *gA = get_address(addr);
+	unsigned char *gA = get_address(addr);
 
     if(gA == 0)
         return 0;
@@ -332,7 +332,7 @@ static INLINE unsigned int tlcsMemReadL(unsigned int addr)
 {
 #ifdef TARGET_GP2X
 	register unsigned int i asm("r0");
-	register byte *gA asm("r4");
+	register unsigned char *gA asm("r4");
 
 	gA = get_address(addr);
 
@@ -354,7 +354,7 @@ static INLINE unsigned int tlcsMemReadL(unsigned int addr)
     return i;
 #else
 	unsigned int i;
-	byte *gA = get_address(addr);
+	unsigned char *gA = get_address(addr);
 
     if(gA == 0)
         return 0;

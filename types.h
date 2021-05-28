@@ -13,7 +13,6 @@
 #include <stdint.h>
 
 #define DWORD unsigned int
-#define byte unsigned char
 
 #define _u8   unsigned char
 #define Uint8 unsigned char
