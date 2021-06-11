@@ -57,7 +57,8 @@ extern EMUINFO		m_emuInfo;
 extern SYSTEMINFO	m_sysInfo[NR_OF_SYSTEMS];
 extern int romSize;
 
-int handleInputFile(char *romName);
+int handleInputFile(const char *romName,
+		const unsigned char *romData, int romSize);
 void mainemuinit(void);
 
 #ifdef __cplusplus

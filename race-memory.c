@@ -44,7 +44,7 @@ unsigned char cpuram[0x08a0];
  * on the gameboy maximum of 128kbyte of RAM is possible, plus some internal ram (64KB) */
 unsigned char __attribute__ ((__aligned__(4))) mainram[(64+32+128)*1024];
 // rom area for roms (4 Megabyte)
-unsigned char __attribute__ ((__aligned__(4))) mainrom[4*1024*1024];
+unsigned char __attribute__ ((__aligned__(4))) mainrom[MAINROM_SIZE_MAX];
 // cpu internal ROM including vector table starting at 0xff0000
 unsigned char __attribute__ ((__aligned__(4))) cpurom[256*1024];//prob only needs 0x10000
 //
