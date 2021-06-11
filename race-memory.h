@@ -34,6 +34,9 @@
 extern "C" {
 #endif
 
+/* Maximum ROM size is 4 megabytes */
+#define MAINROM_SIZE_MAX (4*1024*1024)
+
 extern unsigned char mainram[];			/* All RAM areas */
 extern unsigned char mainrom[];			/* ROM image area */
 extern unsigned char cpurom[];			/* Bios ROM image area */
@@ -362,7 +365,7 @@ static INLINE unsigned int tlcsMemReadL(unsigned int addr)
     i = *(gA++);
     i |= (*(gA++)) << 8;
     i |= (*(gA++)) << 16;
-    i |= (*gA) << 24;
+    i |= (unsigned int)(*gA) << 24;
 
 #if 0
 	return tlcsMemReadB(addr) | (tlcsMemReadB(addr +1) << 8) | (tlcsMemReadB(addr +2) << 16) | (tlcsMemReadB(addr +3) << 24);

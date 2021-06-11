@@ -792,7 +792,7 @@ static INLINE unsigned int readlong(void)
         i = *(my_pc++);
         i |= (*(my_pc++) << 8);
         i |= (*(my_pc++) << 16);
-        i |= (*(my_pc++) << 24);
+        i |= ((unsigned int)(*(my_pc++)) << 24);
         return i;
     }
     else

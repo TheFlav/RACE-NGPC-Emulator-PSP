@@ -261,7 +261,7 @@ static int loadFromZipByName(unsigned char *buffer, char *archive,
    *filesize = zinfo.uncompressed_size;
 
    /* Error: file size is zero */
-   if(*filesize <= 0 || *filesize > (4*1024*1024))
+   if(*filesize <= 0 || *filesize > MAINROM_SIZE_MAX)
    {
       unzClose(zhandle);
       return (0);
@@ -330,23 +330,35 @@ static int strrchr2(const char *src, int c)
   return 0;
 }
 
-int handleInputFile(char *romName)
+int handleInputFile(const char *romName,
+		const unsigned char *romData, int romSize)
 {
-	FILE *romFile;
-	int iDepth = 0;
 #ifdef WANT_ZIP
-	int size;
+	int iDepth = 0;
 #endif
 
 	initSysInfo();  //initialize it all
 
+#ifdef WANT_ZIP
 	//if it's a ZIP file, we need to handle that here.
 	iDepth = strrchr2(romName, '.');
 	iDepth++;
+#endif
 
-#ifdef WANT_ZIP
-	if( ( strcmp( romName + iDepth, "zip" ) == 0 ) || ( strcmp( romName + iDepth, "ZIP" ) == 0 ))
+	if (romData)
 	{
+		int size = romSize > MAINROM_SIZE_MAX ?
+				MAINROM_SIZE_MAX : romSize;
+
+		m_emuInfo.romSize = size;
+		memcpy(mainrom, romData, size);
+		strcpy(m_emuInfo.RomFileName, romName);
+	}
+#ifdef WANT_ZIP
+	else if ( ( strcmp( romName + iDepth, "zip" ) == 0 ) || ( strcmp( romName + iDepth, "ZIP" ) == 0 ))
+	{
+		int size;
+
 		//get ROM from ZIP
 		if(check_zip(romName))
 		{
@@ -365,9 +377,11 @@ int handleInputFile(char *romName)
 			return 0;
 		}
 	}
-	else
 #endif // WANT_ZIP
+	else
 	{
+		FILE *romFile = NULL;
+
 		//get ROM from binary ROM file
 		romFile = fopen(romName, "rb");
 		if(!romFile)
@@ -376,11 +390,13 @@ int handleInputFile(char *romName)
 			return 0;
 		}
 
-		m_emuInfo.romSize = fread(mainrom, 1, 4*1024*1024, romFile);
+		m_emuInfo.romSize = fread(mainrom, 1, MAINROM_SIZE_MAX, romFile);
 		strcpy(m_emuInfo.RomFileName, romName);
+
+		fclose(romFile);
 	}
 
-	if(!initRom())
+	if (!initRom())
 	{
 		fprintf(stderr, "initRom couldn't handle %s file\n", romName);
 		return 0;

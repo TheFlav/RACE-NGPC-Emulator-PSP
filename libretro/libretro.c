@@ -138,9 +138,20 @@ void retro_deinit(void)
 
 void retro_set_environment(retro_environment_t cb)
 {
+   static const struct retro_system_content_info_override content_overrides[] = {
+      {
+         RACE_EXTENSIONS, /* extensions */
+         false,           /* need_fullpath */
+         false            /* persistent_data */
+      },
+      { NULL, false, false }
+   };
+
    environ_cb = cb;
 
    libretro_set_core_options(environ_cb);
+   environ_cb(RETRO_ENVIRONMENT_SET_CONTENT_INFO_OVERRIDE,
+         (void*)content_overrides);
 }
 
 void retro_set_audio_sample(retro_audio_sample_t cb)
@@ -202,11 +213,13 @@ static bool race_initialize_sound(void)
     return true;
 }
 
-static bool race_initialize_system(const char* gamepath)
+static bool race_initialize_system(const char *gamepath,
+      const unsigned char *gamedata, size_t gamesize)
 {
    mainemuinit();
 
-   if(!handleInputFile((char *)gamepath)){
+   if (!handleInputFile(gamepath, gamedata, (int)gamesize))
+   {
       handle_error("ERROR handleInputFile");
       return false;
    }
@@ -298,8 +311,10 @@ bool retro_unserialize(const void *data, size_t size)
 
 bool retro_load_game(const struct retro_game_info *info)
 {
-   if (!info)
-      return false;
+   const struct retro_game_info_ext *info_ext = NULL;
+   const unsigned char *content_data          = NULL;
+   size_t content_size                        = 0;
+   char content_path[_MAX_PATH];
 
    struct retro_input_descriptor desc[] = {
       { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT,  "D-Pad Left" },
@@ -312,6 +327,44 @@ bool retro_load_game(const struct retro_game_info *info)
 
       { 0 },
    };
+
+   content_path[0] = '\0';
+
+   /* Attempt to fetch extended game info */
+   if (environ_cb(RETRO_ENVIRONMENT_GET_GAME_INFO_EXT, &info_ext))
+   {
+      content_data = (const unsigned char *)info_ext->data;
+      content_size = info_ext->size;
+
+      if (info_ext->file_in_archive)
+      {
+         /* We don't have a 'physical' file in this
+          * case, but the core still needs a filename
+          * in order to build the save file path.
+          * We therefore fake it, using the content
+          * directory, canonical content name, and
+          * content file extension */
+         snprintf(content_path, sizeof(content_path), "%s%c%s.%s",
+               info_ext->dir, path_default_slash_c(),
+               info_ext->name, info_ext->ext);
+      }
+      else
+      {
+         strncpy(content_path, info_ext->full_path, sizeof(content_path));
+         content_path[sizeof(content_path) - 1] = '\0';
+      }
+   }
+   else
+   {
+      if (!info || !info->path)
+         return false;
+
+      content_data = NULL;
+      content_size = 0;
+
+      strncpy(content_path, info->path, sizeof(content_path));
+      content_path[sizeof(content_path) - 1] = '\0';
+   }
 
    environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, desc);
 
@@ -331,7 +384,8 @@ bool retro_load_game(const struct retro_game_info *info)
       return false;
    }
 
-   if (!race_initialize_system(info->path))
+   if (!race_initialize_system(content_path,
+         content_data, content_size))
       return false;
 
    if (!race_initialize_sound())
