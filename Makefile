@@ -1,4 +1,5 @@
 WANT_ZIP=0
+LOW_MEMORY=0
 
 TARGET_NAME := race
 GIT_VERSION := " $(shell git rev-parse --short HEAD || echo unknown)"
@@ -333,6 +334,7 @@ else ifeq ($(platform), rs90)
    PLATFORM_DEFINES := -DCC_RESAMPLER -DCC_RESAMPLER_NO_HIGHPASS
    CFLAGS += -fomit-frame-pointer -ffast-math -march=mips32 -mtune=mips32
    CXXFLAGS += $(CFLAGS)
+   LOW_MEMORY = 1
 
 # GCW0
 else ifeq ($(platform), gcw0)
@@ -564,6 +566,10 @@ endif
 
 ifeq ($(WANT_ZIP),1)
 FLAGS += -DWANT_ZIP
+endif
+
+ifeq ($(LOW_MEMORY), 1)
+FLAGS += -DLOW_MEMORY
 endif
 
 ifeq (,$(findstring msvc,$(platform)))

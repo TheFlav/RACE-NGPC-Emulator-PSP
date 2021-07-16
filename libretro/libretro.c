@@ -141,7 +141,11 @@ void retro_set_environment(retro_environment_t cb)
    static const struct retro_system_content_info_override content_overrides[] = {
       {
          RACE_EXTENSIONS, /* extensions */
+#if defined(LOW_MEMORY)
+         true,            /* need_fullpath */
+#else
          false,           /* need_fullpath */
+#endif
          false            /* persistent_data */
       },
       { NULL, false, false }
@@ -333,9 +337,10 @@ bool retro_load_game(const struct retro_game_info *info)
    /* Attempt to fetch extended game info */
    if (environ_cb(RETRO_ENVIRONMENT_GET_GAME_INFO_EXT, &info_ext))
    {
+#if !defined(LOW_MEMORY)
       content_data = (const unsigned char *)info_ext->data;
       content_size = info_ext->size;
-
+#endif
       if (info_ext->file_in_archive)
       {
          /* We don't have a 'physical' file in this
@@ -358,9 +363,6 @@ bool retro_load_game(const struct retro_game_info *info)
    {
       if (!info || !info->path)
          return false;
-
-      content_data = NULL;
-      content_size = 0;
 
       strncpy(content_path, info->path, sizeof(content_path));
       content_path[sizeof(content_path) - 1] = '\0';
