@@ -60,7 +60,7 @@ extern unsigned short *oowTable;
 extern unsigned char *color_switch;
 
 BOOL graphics_init(void);
-void graphics_paint(void);
+void graphics_paint(unsigned char render);
 void graphicsSetDarkFilterLevel(unsigned filterLevel);
 /* new renderer (NeoGeo Pocket (Color)) */
 void myGraphicsBlitLine(unsigned char render);

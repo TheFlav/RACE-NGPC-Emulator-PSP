@@ -16,6 +16,8 @@
 extern "C" {
 #endif
 
+#define FRAMESKIP //undef this to do no FRAME skipping
+
 extern unsigned char *rasterY;
 extern unsigned int gen_regsPC, gen_regsSR;
 extern unsigned char F2;
@@ -60,7 +62,7 @@ void tlcs_reinit(void);
 /* execute interrupt */
 void tlcs_interrupt_wrapper(int irq);
 void ngpc_run(void);
-#ifdef AUTO_FRAMESKIP
+#ifdef FRAMESKIP
 void tlcs_execute(int cycles, int skipFrames); /* skipFrames=how many frames to skip for each frame rendered */
 #else
 void tlcs_execute(int cycles);
