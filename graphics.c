@@ -1314,8 +1314,7 @@ void myGraphicsBlitLine(unsigned char render)  /* NOTA */
         {
             /* start VBlank period */
             tlcsMemWriteB(0x00008010,tlcsMemReadB(0x00008010) | 0x40);
-            if (render)
-                graphics_paint();
+            graphics_paint(render);
         }
         *scanlineY+= 1;
     }

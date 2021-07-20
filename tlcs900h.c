@@ -8410,21 +8410,7 @@ static int tlcs_step(void)
 extern unsigned char *ngpScY;
 int ngOverflow = 0;
 
-#define FRAME_RATE_LIMIT  //should we limit the framerate or let it run wild?
-#define FRAMESKIP    //undef this to do no FRAME skipping
-
 #ifdef FRAMESKIP
-//#define AUTO_FRAMESKIP
-//#define FIXED_FRAMESKIP 1
-//#define MAX_SKIPFRAMES 2
-#endif
-
-#ifdef __LIBRETRO__
-#define FIXED_FRAMESKIP 0
-int frame=FIXED_FRAMESKIP;
-#endif
-
-#ifdef AUTO_FRAMESKIP
 void tlcs_execute(int cycles, int skipFrames)// skipFrames=how many frames to skip for each frame rendered
 #else
 void tlcs_execute(int cycles)
@@ -8434,12 +8420,7 @@ void tlcs_execute(int cycles)
     int hCounter = ngOverflow;
 
 #ifdef FRAMESKIP
-#ifdef FIXED_FRAMESKIP
-//    static int frame=FIXED_FRAMESKIP;
-#else
-
-    static int frame=1;
-#endif
+    int frame = skipFrames;
 #endif
 
     while(cycles > 0)
@@ -8499,19 +8480,12 @@ void tlcs_execute(int cycles)
                 if (tlcsMemReadB(0x8000)&0x80)
                     tlcs_interrupt(2);
 #ifdef FRAMESKIP
-#ifdef FIXED_FRAMESKIP
-
-                if(frame == 0)
-                    frame = FIXED_FRAMESKIP;
-#else
-
                 if(frame == 0)
                 {
                     frame = skipFrames;
-                    SDL_Rect numRect = drawNumber(skipFrames, 10, 24);
+                    //SDL_Rect numRect = drawNumber(skipFrames, 10, 24);
                     //SDL_UpdateRect(screen, numRect.x, numRect.y, numRect.w, numRect.h);
                 }
-#endif
                 else
                     frame--;
 #endif
@@ -8533,13 +8507,13 @@ void tlcs_execute(int cycles)
 //Flavor, this auto-frameskip code is messed up
 void ngpc_run(void)
 {
-#ifdef AUTO_FRAMESKIP
+#ifdef FRAMESKIP
     unsigned int skipFrames=0;
-#endif /* AUTO_FRAMESKIP */
+#endif /* FRAMESKIP */
 
     while(m_bIsActive)  //should be some way to exit
     {
-#ifdef AUTO_FRAMESKIP
+#ifdef FRAMESKIP
         tlcs_execute((6*1024*1024) / HOST_FPS, skipFrames);
 #else
         tlcs_execute((6*1024*1024) / HOST_FPS);
