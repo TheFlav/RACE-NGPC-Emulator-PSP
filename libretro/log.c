@@ -5,7 +5,7 @@
 
 #include "libretro.h"
 
-static retro_log_printf_t log_cb;
+retro_log_printf_t log_cb;
 
 void init_log(retro_environment_t environ_cb)
 {

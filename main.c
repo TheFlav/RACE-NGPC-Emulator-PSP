@@ -14,6 +14,8 @@
 #include "types.h"
 #include "main.h"
 
+#include <libretro.h>
+
 
 #include "flash.h"
 #include "race-memory.h"
@@ -38,6 +40,8 @@
 extern int finscan;
 extern int language;
 extern int tipo_consola;
+
+extern retro_log_printf_t log_cb;
 
 int		m_bIsActive;
 EMUINFO		m_emuInfo;
@@ -168,11 +172,11 @@ static int initRom(void)
          return TRUE;
       }
 
-      fprintf(stderr, "Not a valid or unsupported rom file.\n");
+      log_cb(RETRO_LOG_ERROR, "Not a valid or unsupported rom file.\n");
       return FALSE;
    }
 
-   fprintf(stderr, "Not a valid or unsupported rom file. romFound==FALSE\n");
+   log_cb(RETRO_LOG_ERROR, "Not a valid or unsupported rom file. romFound==FALSE\n");
    return FALSE;
 }
 
@@ -231,7 +235,7 @@ int handleInputFile(const char *romName,
 		romFile = fopen(romName, "rb");
 		if(!romFile)
 		{
-			fprintf(stderr, "Couldn't open %s file\n", romName);
+			log_cb(RETRO_LOG_ERROR, "Couldn't open %s file\n", romName);
 			return 0;
 		}
 
@@ -243,7 +247,7 @@ int handleInputFile(const char *romName,
 
 	if (!initRom())
 	{
-		fprintf(stderr, "initRom couldn't handle %s file\n", romName);
+		log_cb(RETRO_LOG_ERROR, "initRom couldn't handle %s file\n", romName);
 		return 0;
 	}
 
