@@ -1,4 +1,3 @@
-WANT_ZIP=0
 LOW_MEMORY=0
 
 TARGET_NAME := race
@@ -574,10 +573,6 @@ ifeq ($(DEBUG),1)
 FLAGS += -O0 -g
 else
 FLAGS += -O2 -DNDEBUG
-endif
-
-ifeq ($(WANT_ZIP),1)
-FLAGS += -DWANT_ZIP
 endif
 
 ifeq ($(LOW_MEMORY), 1)

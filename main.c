@@ -10,7 +10,6 @@
 // This is the main program entry point
 //
 #include <stdio.h>
-#include "unzip.h"
 
 #include "types.h"
 #include "main.h"
@@ -196,126 +195,6 @@ static void initSysInfo(void)
 	m_sysInfo[NGPC].Ticks = 6*1024*1024;
 }
 
-#ifdef WANT_ZIP
-static char *getFileNameExtension(char *nom_fichier)
-{
-   char *ptrPoint = nom_fichier;
-   while(*nom_fichier)
-   {
-      if (*nom_fichier == '.')
-         ptrPoint = nom_fichier;
-      nom_fichier++;
-   }
-   return ptrPoint;
-}
-
-static int loadFromZipByName(unsigned char *buffer, char *archive,
-      char *filename, int *filesize)
-{
-   char name[_MAX_PATH];
-   int i;
-   const char *recognizedExtensions[] = {
-      ".ngp",
-      ".npc",
-      ".ngc"
-   };
-
-   int zerror = UNZ_OK;
-   unzFile zhandle;
-   unz_file_info zinfo;
-
-   zhandle = unzOpen(archive);
-   if(!zhandle) return (0);
-
-   /* Seek to first file in archive */
-   zerror = unzGoToFirstFile(zhandle);
-   if(zerror != UNZ_OK)
-   {
-      unzClose(zhandle);
-      return (0);
-   }
-
-   //On scanne tous les fichiers de l'archive et ne prend que ceux qui ont une extension valable, sinon on prend le dernier fichier trouvé...
-   while (zerror == UNZ_OK) {
-      if (unzGetCurrentFileInfo(zhandle, &zinfo, name, 0xff, NULL, 0, NULL, 0) != UNZ_OK) {
-         unzClose(zhandle);
-         return 0;
-      }
-
-      //Vérifions que c'est la bonne extension
-      char *extension = getFileNameExtension(name);
-
-      for (i=0;i < ARRAY_SIZE(recognizedExtensions);i++)
-      {
-         if (!strcmp(extension, recognizedExtensions[i]))
-            break;
-      }
-      if (i < ARRAY_SIZE(recognizedExtensions))
-         break;
-
-      zerror = unzGoToNextFile(zhandle);
-   }
-
-   /* Get information about the file */
-   //    unzGetCurrentFileInfo(zhandle, &zinfo, &name[0], 0xff, NULL, 0, NULL, 0);
-   *filesize = zinfo.uncompressed_size;
-
-   /* Error: file size is zero */
-   if(*filesize <= 0 || *filesize > MAINROM_SIZE_MAX)
-   {
-      unzClose(zhandle);
-      return (0);
-   }
-
-   /* Open current file */
-   zerror = unzOpenCurrentFile(zhandle);
-   if(zerror != UNZ_OK)
-   {
-      unzClose(zhandle);
-      return (0);
-   }
-
-   /* Allocate buffer and read in file */
-   //buffer = malloc(*filesize);
-   //if(!buffer) return (NULL);
-   zerror = unzReadCurrentFile(zhandle, buffer, *filesize);
-
-   /* Internal error: free buffer and close file */
-   if(zerror < 0 || zerror != *filesize)
-   {
-      //free(buffer);
-      //buffer = NULL;
-      unzCloseCurrentFile(zhandle);
-      unzClose(zhandle);
-      return (0);
-   }
-
-   /* Close current file and archive file */
-   unzCloseCurrentFile(zhandle);
-   unzClose(zhandle);
-
-   memcpy(filename, name, _MAX_PATH);
-   return 1;
-}
-
-/*
-    Verifies if a file is a ZIP archive or not.
-    Returns: 1= ZIP archive, 0= not a ZIP archive
-*/
-static int check_zip(char *filename)
-{
-   unsigned char buf[2];
-   FILE *fd = fopen(filename, "rb");
-   if(!fd)
-      return (0);
-   fread(buf, 2, 1, fd);
-   fclose(fd);
-   if(memcmp(buf, "PK", 2) == 0)
-      return (1);
-   return (0);
-}
-#endif // WANT_ZIP
-
 static int strrchr2(const char *src, int c)
 {
   size_t len=strlen(src);
@@ -333,17 +212,7 @@ static int strrchr2(const char *src, int c)
 int handleInputFile(const char *romName,
 		const unsigned char *romData, int romSize)
 {
-#ifdef WANT_ZIP
-	int iDepth = 0;
-#endif
-
 	initSysInfo();  //initialize it all
-
-#ifdef WANT_ZIP
-	//if it's a ZIP file, we need to handle that here.
-	iDepth = strrchr2(romName, '.');
-	iDepth++;
-#endif
 
 	if (romData)
 	{
@@ -354,30 +223,6 @@ int handleInputFile(const char *romName,
 		memcpy(mainrom, romData, size);
 		strcpy(m_emuInfo.RomFileName, romName);
 	}
-#ifdef WANT_ZIP
-	else if ( ( strcmp( romName + iDepth, "zip" ) == 0 ) || ( strcmp( romName + iDepth, "ZIP" ) == 0 ))
-	{
-		int size;
-
-		//get ROM from ZIP
-		if(check_zip(romName))
-		{
-			char name[_MAX_PATH];
-			if(!loadFromZipByName(mainrom, romName, name, &size))
-			{
-				fprintf(stderr, "Load failed from %s\n", romName);
-				return 0;
-			}
-			m_emuInfo.romSize = size;
-			strcpy(m_emuInfo.RomFileName, romName);
-		}
-		else
-		{
-			fprintf(stderr, "%s not PKZIP file\n", romName);
-			return 0;
-		}
-	}
-#endif // WANT_ZIP
 	else
 	{
 		FILE *romFile = NULL;
