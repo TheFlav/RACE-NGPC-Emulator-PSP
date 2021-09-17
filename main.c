@@ -213,37 +213,25 @@ static int strrchr2(const char *src, int c)
   return 0;
 }
 
+#ifdef LOW_MEMORY
 int handleInputFile(const char *romName,
 		const unsigned char *romData, int romSize)
 {
+	FILE *romFile = NULL;
 	initSysInfo();  //initialize it all
 
-	if (romData)
+	//get ROM from binary ROM file
+	romFile = fopen(romName, "rb");
+	if(!romFile)
 	{
-		int size = romSize > MAINROM_SIZE_MAX ?
-				MAINROM_SIZE_MAX : romSize;
-
-		m_emuInfo.romSize = size;
-		memcpy(mainrom, romData, size);
-		strcpy(m_emuInfo.RomFileName, romName);
+		log_cb(RETRO_LOG_ERROR, "Couldn't open %s file\n", romName);
+		return 0;
 	}
-	else
-	{
-		FILE *romFile = NULL;
 
-		//get ROM from binary ROM file
-		romFile = fopen(romName, "rb");
-		if(!romFile)
-		{
-			log_cb(RETRO_LOG_ERROR, "Couldn't open %s file\n", romName);
-			return 0;
-		}
+	m_emuInfo.romSize = fread(mainrom, 1, MAINROM_SIZE_MAX, romFile);
+	strcpy(m_emuInfo.RomFileName, romName);
 
-		m_emuInfo.romSize = fread(mainrom, 1, MAINROM_SIZE_MAX, romFile);
-		strcpy(m_emuInfo.RomFileName, romName);
-
-		fclose(romFile);
-	}
+	fclose(romFile);
 
 	if (!initRom())
 	{
@@ -254,3 +242,27 @@ int handleInputFile(const char *romName,
 	setFlashSize(m_emuInfo.romSize);
 	return 1;
 }
+#else
+int handleInputFile(const char *romName,
+		const unsigned char *romData, int romSize)
+{
+	int size;
+	initSysInfo();  //initialize it all
+
+	size = romSize > MAINROM_SIZE_MAX ?
+		MAINROM_SIZE_MAX : romSize;
+
+	m_emuInfo.romSize = size;
+	memcpy(mainrom, romData, size);
+	strcpy(m_emuInfo.RomFileName, romName);
+
+	if (!initRom())
+	{
+		log_cb(RETRO_LOG_ERROR, "initRom couldn't handle %s file\n", romName);
+		return 0;
+	}
+
+	setFlashSize(m_emuInfo.romSize);
+	return 1;
+}
+#endif
