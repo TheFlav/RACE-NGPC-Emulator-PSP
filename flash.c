@@ -224,8 +224,6 @@ void setupNGFfilename(void)
 }
 
 /* write all the dirty blocks out to a file */
-/* TODO/FIXME - shouldn't this just go through libretro's get_memory_data
- * interface instead? */
 void writeSaveGameFile(void)
 {
    /* find the dirty blocks and write them to the .NGF file */
