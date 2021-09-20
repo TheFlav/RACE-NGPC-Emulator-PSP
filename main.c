@@ -15,7 +15,7 @@
 #include "main.h"
 
 #include <libretro.h>
-
+#include <streams/file_stream.h>
 
 #include "flash.h"
 #include "race-memory.h"
@@ -229,20 +229,30 @@ int handleInputFile(const char *romName,
 	}
 	else
 	{
-		FILE *romFile = NULL;
+		RFILE *romFile = NULL;
+		int64_t size   = 0;
 
 		//get ROM from binary ROM file
-		romFile = fopen(romName, "rb");
+		romFile = filestream_open(romName,
+				RETRO_VFS_FILE_ACCESS_READ,
+				RETRO_VFS_FILE_ACCESS_HINT_NONE);
 		if(!romFile)
 		{
 			log_cb(RETRO_LOG_ERROR, "Couldn't open %s file\n", romName);
 			return 0;
 		}
 
-		m_emuInfo.romSize = fread(mainrom, 1, MAINROM_SIZE_MAX, romFile);
-		strcpy(m_emuInfo.RomFileName, romName);
+		size = filestream_read(romFile, mainrom, MAINROM_SIZE_MAX);
+		filestream_close(romFile);
 
-		fclose(romFile);
+		if (size <= 0)
+		{
+			log_cb(RETRO_LOG_ERROR, "Couldn't read %s file\n", romName);
+			return 0;
+		}
+
+		m_emuInfo.romSize = (int)size;
+		strcpy(m_emuInfo.RomFileName, romName);
 	}
 
 	if (!initRom())

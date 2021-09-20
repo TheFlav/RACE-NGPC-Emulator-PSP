@@ -383,7 +383,17 @@ static INLINE void tlcsMemWriteL(unsigned int addr, unsigned int data)
    {
       tlcsFastMemWriteL(addr, data);
    }
-   else
+   // tlcsFastMemWriteB() writes to
+   // mainram[((addr&0xFFFFFF)-0x00004000)]
+   // > If (addr + 3) is greater than mainram
+   //   size ((64+32+128)*1024) then buffer
+   //   will overflow and core will likely
+   //   segfault
+   // > This should in theory never happen,
+   //   but it occurs randomly in some games.
+   //   Until the root cause is identified,
+   //   just place a guard here...
+   else if (addr < 0x0003C000 - 3)
    {
       tlcsMemWriteB(addr, (unsigned char)(data & 0xFF));
       tlcsFastMemWriteB(addr+1, (unsigned char)((data>>8) & 0xFF));

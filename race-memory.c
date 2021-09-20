@@ -15,6 +15,10 @@
  */
 
 #include <stdio.h>
+#if 0
+#include <streams/file_stream.h>
+#endif
+
 #include "race-memory.h"
 #include "types.h"
 #include "input.h"		/* for Gameboy Input */
@@ -339,17 +343,30 @@ const unsigned int ngpVectors[0x21] = {
 /* return 0 on fail */
 static unsigned char loadBIOS(void)
 {
-   int bytesRead;
-   FILE *biosFile = fopen("NPBIOS.BIN", "rb");
+#if 0
+   int64_t bytesRead;
+   RFILE *biosFile = filestream_open("NPBIOS.BIN",
+	 RETRO_VFS_FILE_ACCESS_READ,
+	 RETRO_VFS_FILE_ACCESS_HINT_NONE);
+
    if(!biosFile)
       return 0;
 
-   bytesRead = fread(cpurom, 1, 0x10000, biosFile);
-   fclose(biosFile);
+   bytesRead = filestream_read(biosFile, cpurom, 0x10000);
+   filestream_close(biosFile);
 
    if(bytesRead != 0x10000)
       return 0;
    return 1;
+#endif
+
+   /* Using a real bios file causes nothing but issues.
+    * The relevant code path has not been thoroughly tested,
+    * and there are known errors - e.g. the Test Mode button
+    * does not work correctly in Card Fighters' Clash.
+    * We therefore force-disable the loading of real bios
+    * files */
+   return 0;
 }
 
 void mem_init(void)
@@ -443,11 +460,21 @@ void mem_init(void)
 			//koyote.bin handling
             memcpy(mainram,koyote_bin,KOYOTE_BIN_SIZE/*12*1024*/);
 
-/*            FILE *fp=fopen("koyote.bin","rb");
+			/* What is this code, and why is it disabled?
+			 * koyote.bin is supposed to be a memory dump from the
+			 * console immediately after a boot (i.e. bios has executed
+			 * all of its routines and the ROM has just loaded, giving
+			 * us a fresh RAM post-bios). But it seems we already have
+			 * this data in koyote_bin. So why were we reading from
+			 * file here? And if this is legacy code (replaced by
+			 * koyote_bin), why not outright delete it? */
+#if 0
+			 RFILE *fp = filestream_open("koyote.bin", RETRO_VFS_FILE_ACCESS_READ,
+					RETRO_VFS_FILE_ACCESS_HINT_NONE)
             if (fp!=NULL)
 			{
-                fread(mainram,1,12*1024,fp);
-				fclose(fp);
+				filestream_read(fp, mainram, KOYOTE_BIN_SIZE/*12*1024*/);
+				filestream_close(fp);
 			}
 			else
 			{
@@ -455,8 +482,8 @@ void mem_init(void)
 				for(i=0; i<18; i++) {
 					*((unsigned int *)(&mainram[0x2FB8+4*i])) = (unsigned int)0x00FFF800;
 				}
-			}*/
-
+			}
+#endif
             // setup the additional CPU ram
             // interrupt priorities, timer settings, transfer settings, etc
             for(i=0; i<sizeof(ngpcpuram); i++)
