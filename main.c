@@ -43,6 +43,47 @@ extern int tipo_consola;
 
 extern retro_log_printf_t log_cb;
 
+/* standard VRAM table adresses */
+unsigned char *sprite_table           = NULL;
+unsigned char *pattern_table          = NULL;
+unsigned short *patterns              = NULL;
+unsigned short *tile_table_front      = NULL;
+unsigned short *tile_table_back       = NULL;
+unsigned short *palette_table         = NULL;
+unsigned char *bw_palette_table       = NULL;
+unsigned char *sprite_palette_numbers = NULL;
+
+/* VDP registers
+ *
+ * where is the vdp rendering now on the lcd display?
+ */
+
+unsigned char *scanlineY     = NULL;
+/* frame 0/1 priority registers */
+unsigned char *frame0Pri     = NULL;
+unsigned char *frame1Pri     = NULL;
+/* windowing registers */
+unsigned char *wndTopLeftX   = NULL;
+unsigned char *wndTopLeftY   = NULL; 
+unsigned char *wndSizeX      = NULL;
+unsigned char *wndSizeY      = NULL;
+/* scrolling registers */
+unsigned char *scrollSpriteX = NULL;
+unsigned char *scrollSpriteY = NULL;
+unsigned char *scrollFrontX  = NULL;
+unsigned char *scrollFrontY  = NULL;
+unsigned char *scrollBackX   = NULL;
+unsigned char *scrollBackY   = NULL;
+/* background color selection register and table */
+unsigned char *bgSelect      = NULL;
+unsigned short *bgTable      = NULL;
+unsigned char *oowSelect     = NULL;
+unsigned short *oowTable     = NULL;
+/* machine constants */
+unsigned char *color_switch  = NULL;
+
+unsigned char *rasterY       = NULL;
+
 int		m_bIsActive;
 EMUINFO		m_emuInfo;
 SYSTEMINFO	m_sysInfo[NR_OF_SYSTEMS];
@@ -51,11 +92,49 @@ SYSTEMINFO	m_sysInfo[NR_OF_SYSTEMS];
 
 void mainemuinit(void)
 {
-   // initialize cpu memory
+   sprite_table           = get_address(0x00008800);
+   pattern_table          = get_address(0x0000A000);
+   patterns               = (unsigned short*)pattern_table;
+   tile_table_front       = (unsigned short *)get_address(0x00009000);
+   tile_table_back        = (unsigned short *)get_address(0x00009800);
+   palette_table          = (unsigned short *)get_address(0x00008200);
+   bw_palette_table       = get_address(0x00008100);
+   sprite_palette_numbers = get_address(0x00008C00);
+
+   /* VDP registers
+    *
+    * where is the vdp rendering now on the lcd display?
+    */
+   scanlineY              = get_address(0x00008009);
+   /* frame 0/1 priority registers */
+   frame0Pri              = get_address(0x00008000);
+   frame1Pri              = get_address(0x00008030);
+   /* windowing registers */
+   wndTopLeftX            = get_address(0x00008002);
+   wndTopLeftY            = get_address(0x00008003);
+   wndSizeX               = get_address(0x00008004);
+   wndSizeY               = get_address(0x00008005);
+   /* scrolling registers */
+   scrollSpriteX          = get_address(0x00008020);
+   scrollSpriteY          = get_address(0x00008021);
+   scrollFrontX           = get_address(0x00008032);
+   scrollFrontY           = get_address(0x00008033);
+   scrollBackX            = get_address(0x00008034);
+   scrollBackY            = get_address(0x00008035);
+   /* background color selection register and table */
+   bgSelect               = get_address(0x00008118);
+   bgTable                = (unsigned short *)get_address(0x000083E0);
+   oowSelect              = get_address(0x00008012);
+   oowTable               = (unsigned short *)get_address(0x000083F0);
+/* machine constants */
+   color_switch           = get_address(0x00006F91);
+   rasterY                = get_address(0x00008035);
+
+   /* Initialize CPU memory */
    mem_init();
    graphics_init();
 
-   // initialize the TLCS-900H cpu
+   /* initialize the TLCS-900H CPU */
    tlcs_init();
 
 #if defined(CZ80)

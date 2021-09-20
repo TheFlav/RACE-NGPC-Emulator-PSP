@@ -567,7 +567,7 @@ CORE_DIR := .
 
 include Makefile.common
 
-OBJECTS := $(SOURCES_CXX:.cpp=.o) $(SOURCES_C:.c=.o) $(SOURCES_ASM:.s=.o)
+OBJECTS := $(SOURCES_C:.c=.o) $(SOURCES_ASM:.s=.o)
 
 ifeq ($(DEBUG),1)
 FLAGS += -O0 -g
@@ -600,7 +600,7 @@ ifneq (,$(findstring msvc,$(platform)))
 	LINKOUT = -out:
 	LD = link.exe
 else
-	LD = $(CXX)
+	LD = $(CC)
 endif
 
 %.o: %.cpp
@@ -613,7 +613,7 @@ ifeq ($(platform), theos_ios)
 COMMON_FLAGS := -DIOS $(COMMON_DEFINES) -I$(THEOS_INCLUDE_PATH) -Wno-error
 $(LIBRARY_NAME)_CFLAGS += $(CFLAGS) $(COMMON_FLAGS)
 $(LIBRARY_NAME)_CXXFLAGS += $(CXXFLAGS) $(COMMON_FLAGS)
-${LIBRARY_NAME}_FILES = $(SOURCES_CXX) $(SOURCES_C)
+${LIBRARY_NAME}_FILES = $(SOURCES_C)
 include $(THEOS_MAKE_PATH)/library.mk
 else
 all: $(TARGET)

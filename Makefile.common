@@ -9,12 +9,7 @@ ifneq (,$(findstring msvc2003,$(platform)))
 INCFLAGS += -I$(LIBRETRO_COMM_DIR)/include/compat/msvc
 endif
 
-SOURCES_C :=
-
-SOURCES_CXX := \
-	$(CORE_DIR)/race-globals.cpp
-
-SOURCES_C += \
+SOURCES_C := \
 	$(CORE_DIR)/tlcs900h.c \
 	$(CORE_DIR)/graphics.c \
 	$(CORE_DIR)/main.c \
