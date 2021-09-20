@@ -15,6 +15,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <streams/file_stream.h>
 #ifdef _WIN32
 #include <direct.h>
 #else
@@ -228,19 +229,20 @@ void writeSaveGameFile(void)
 {
    /* find the dirty blocks and write them to the .NGF file */
    int totalBlocks = bootBlockStartNum+4;
+   RFILE *ngfFile  = NULL;
    int i;
-   FILE *ngfFile;
 
-   int bytes;
+   int64_t bytes;
    struct NGFheaderStruct NGFheader;
    struct blockStruct block;
 
    setupNGFfilename();
 
-   ngfFile = fopen(ngfFilename, "wb");
+   ngfFile = filestream_open(ngfFilename,
+         RETRO_VFS_FILE_ACCESS_WRITE,
+         RETRO_VFS_FILE_ACCESS_HINT_NONE);
    if(!ngfFile)
       return;
-
 
    NGFheader.version = 0x53;
    NGFheader.numBlocks = 0;
@@ -269,34 +271,32 @@ void writeSaveGameFile(void)
 
    NGFheader.fileLen += NGFheader.numBlocks * sizeof(struct blockStruct);
 
-   bytes = fwrite(&NGFheader, 1, sizeof(struct NGFheaderStruct), ngfFile);
+   bytes = filestream_write(ngfFile, &NGFheader, sizeof(struct NGFheaderStruct));
    if(bytes != sizeof(struct NGFheaderStruct))
    {
-      fclose(ngfFile);
+      filestream_close(ngfFile);
       return;
    }
-
 
    for(i=0;i<totalBlocks;i++)
    {
       if(blocksDirty[0][i])
       {
-
          block.NGPCaddr = blockNumToAddr(0, i)+0x200000;
          block.len = blockSize(i);
 
-
-         bytes = fwrite(&block, 1, sizeof(struct blockStruct), ngfFile);
+         bytes = filestream_write(ngfFile, &block, sizeof(struct blockStruct));
          if(bytes != sizeof(struct blockStruct))
          {
-            fclose(ngfFile);
+            filestream_close(ngfFile);
             return;
          }
 
-         bytes = fwrite(&mainrom[blockNumToAddr(0, i)], 1, blockSize(i), ngfFile);
+         bytes = filestream_write(ngfFile,
+               &mainrom[blockNumToAddr(0, i)], blockSize(i));
          if(bytes != blockSize(i))
          {
-            fclose(ngfFile);
+            filestream_close(ngfFile);
             return;
          }
       }
@@ -311,24 +311,25 @@ void writeSaveGameFile(void)
             block.NGPCaddr = blockNumToAddr(1, i)+0x600000;
             block.len = blockSize(i);
 
-            bytes = fwrite(&block, 1, sizeof(struct blockStruct), ngfFile);
+            bytes = filestream_write(ngfFile, &block, sizeof(struct blockStruct));
             if(bytes != sizeof(struct blockStruct))
             {
-               fclose(ngfFile);
+               filestream_close(ngfFile);
                return;
             }
 
-            bytes = fwrite(&mainrom[blockNumToAddr(1, i)], 1, blockSize(i), ngfFile);
+            bytes = filestream_write(ngfFile,
+                  &mainrom[blockNumToAddr(1, i)], blockSize(i));
             if(bytes != blockSize(i))
             {
-               fclose(ngfFile);
+               filestream_close(ngfFile);
                return;
             }
          }
       }
    }
 
-   fclose(ngfFile);
+   filestream_close(ngfFile);
    /*	char msg[50];
       sprintf(msg, "Saved File %s", ngfFilename);
       printTTF(msg, 0, 100, yellow, 1, actualScreen, 1);*/
@@ -345,8 +346,9 @@ void writeSaveGameFile(void)
 void loadSaveGameFile(void)
 {
    /* find the NGF file and read it in */
-   FILE *ngfFile;
-   int bytes, i;
+   RFILE *ngfFile = NULL;
+   int64_t bytes;
+   int i;
    unsigned char *blocks;
    void *blockMem;
    struct NGFheaderStruct NGFheader;
@@ -354,18 +356,18 @@ void loadSaveGameFile(void)
 
    setupNGFfilename();
 
-   ngfFile = fopen(ngfFilename, "rb");
+   ngfFile = filestream_open(ngfFilename,
+         RETRO_VFS_FILE_ACCESS_READ,
+         RETRO_VFS_FILE_ACCESS_HINT_NONE);
    if(!ngfFile)
       return;
 
-   bytes = fread(&NGFheader, 1, sizeof(struct NGFheaderStruct), ngfFile);
-
+   bytes = filestream_read(ngfFile, &NGFheader, sizeof(struct NGFheaderStruct));
    if(bytes != sizeof(struct NGFheaderStruct))
    {
-      fclose(ngfFile);
+      filestream_close(ngfFile);
       return;
    }
-
 
    /*
       unsigned short version;		// always 0x53?
@@ -375,7 +377,7 @@ void loadSaveGameFile(void)
 
    if(NGFheader.version != 0x53)
    {
-      fclose(ngfFile);
+      filestream_close(ngfFile);
       return;
    }
 
@@ -387,8 +389,9 @@ void loadSaveGameFile(void)
 
    blocks = (unsigned char *)blockMem;
 
-   bytes = fread(blocks, 1, NGFheader.fileLen - sizeof(struct NGFheaderStruct), ngfFile);
-   fclose(ngfFile);
+   bytes = filestream_read(ngfFile, blocks,
+         NGFheader.fileLen - sizeof(struct NGFheaderStruct));
+   filestream_close(ngfFile);
 
    if(bytes != (NGFheader.fileLen - sizeof(struct NGFheaderStruct)))
    {

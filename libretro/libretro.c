@@ -3,6 +3,7 @@
 #include "log.h"
 #include <stdio.h>
 #include <string.h>
+#include <streams/file_stream.h>
 
 #include "../types.h"
 #include "../state.h"
@@ -241,6 +242,7 @@ void retro_deinit(void)
 
 void retro_set_environment(retro_environment_t cb)
 {
+   struct retro_vfs_interface_info vfs_iface_info;
    static const struct retro_system_content_info_override content_overrides[] = {
       {
          RACE_EXTENSIONS, /* extensions */
@@ -255,6 +257,11 @@ void retro_set_environment(retro_environment_t cb)
    };
 
    environ_cb = cb;
+
+   vfs_iface_info.required_interface_version = 1;
+   vfs_iface_info.iface                      = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VFS_INTERFACE, &vfs_iface_info))
+      filestream_vfs_init(&vfs_iface_info);
 
    libretro_set_core_options(environ_cb);
    environ_cb(RETRO_ENVIRONMENT_SET_CONTENT_INFO_OVERRIDE,
